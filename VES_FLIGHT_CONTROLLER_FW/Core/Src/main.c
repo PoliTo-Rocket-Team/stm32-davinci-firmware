@@ -496,38 +496,38 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_CS_Pin|BARO_1_CS_Pin|DEBUG_UART_Pin, GPIO_PIN_RESET);
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|DEBUG_UART_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LoRa_Debug_LED_GPIO_Port, LoRa_Debug_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LoRa_Debug_LED_Pin|FLASH_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_CS_Pin
-                          |BARO_2_CS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
+                          |BARO_2_nCS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : E_Match_Parachute_1_Pin E_Match_Parachute_2_Pin E_Match_Parachute_3_Pin E_Match_Parachute_4_Pin
-                           IMU_1_CS_Pin BARO_1_CS_Pin DEBUG_UART_Pin */
+                           IMU_1_nCS_Pin BARO_1_nCS_Pin DEBUG_UART_Pin */
   GPIO_InitStruct.Pin = E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_CS_Pin|BARO_1_CS_Pin|DEBUG_UART_Pin;
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|DEBUG_UART_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LoRa_Debug_LED_Pin */
-  GPIO_InitStruct.Pin = LoRa_Debug_LED_Pin;
+  /*Configure GPIO pins : LoRa_Debug_LED_Pin FLASH_nCS_Pin */
+  GPIO_InitStruct.Pin = LoRa_Debug_LED_Pin|FLASH_nCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LoRa_Debug_LED_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin IMU_2_CS_Pin
-                           BARO_2_CS_Pin GNSS_Debug_LED_Pin BUZZER_Pin */
-  GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_CS_Pin
-                          |BARO_2_CS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin;
+  /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin IMU_2_nCS_Pin
+                           BARO_2_nCS_Pin GNSS_Debug_LED_Pin BUZZER_Pin */
+  GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
+                          |BARO_2_nCS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
