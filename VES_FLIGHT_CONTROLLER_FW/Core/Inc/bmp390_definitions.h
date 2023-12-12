@@ -14,6 +14,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stddef.h>
+#include "stm32f4xx.h"
 
 typedef uint8_t 			UINT8;
 typedef int8_t 				INT8;
@@ -39,6 +40,11 @@ typedef int64_t 			INT64;
 #define BMP390_CONFIG_REG							UINT8_C(0x1F)
 #define BMP390_CALIB_DATA_REG						UINT8_C(0x31)
 #define BMP390_COMAND_REG							UINT8_C(0x7E)
+
+#define BMP390_OK									INT8_C(0)
+#define BMP390_ERR_NULL_PTR							INT8_C(-1)
+#define BMP390_ERR_COMMUNICATION_FAILED				INT8_C(-2)
+#define BMP390_INVALID_LENGTH						INT8_C(-3)
 
 /* POWER MODE */
 #define BMP390_MODE_SLEEP							UINT8_C(0x00)
@@ -106,6 +112,9 @@ typedef int64_t 			INT64;
 #define BMP390_ODR_0_003_HZ                       	UINT8_C(0x10)
 #define BMP390_ODR_0_001_HZ                       	UINT8_C(0x11)
 
+#define BMP390_LEN_CALIBRATION_DATA                	UINT8_C(21)
+#define BMP390_LEN_GEN_SETTINGS	                    UINT8_C(7)
+
 /* MACROS FOR BIT MASKING */
 #define BMP390_FATAL_ERR_MASK						UINT8_C(0x01)
 
@@ -147,7 +156,7 @@ typedef int64_t 			INT64;
 #define BMP390_SET_LOW_BYTE                       	UINT16_C(0x00FF)
 #define BMP390_SET_HIGH_BYTE                      	UINT16_C(0xFF00)
 
-
+#define BMP390_CONCAT_BYTES(MSB, LSB)             	(((UINT16)MSB << 8) | (UINT16)LSB)
 
 
 struct bmp390_reg_calib_data {
@@ -202,9 +211,9 @@ struct bmp390_error_status {
 
 struct bmp390_status {
 
-	struct bmp_390_sensor_status sensor;
+	struct bmp390_sensor_status sensor;
 
-	struct bmp_390_error_status error;
+	struct bmp390_error_status error;
 
 	UINT8 power_on_reset;
 };
@@ -266,10 +275,10 @@ struct bmp390_compensated_sensor_data
 struct bmp390_compensated_sensor_data
 {
     /*! Compensated temperature */
-    int64_t temperature;
+    INT64 temperature;
 
     /*! Compensated pressure */
-    uint64_t pressure;
+    UINT64 pressure;
 };
 
 /*!
@@ -287,39 +296,10 @@ struct bmp390_calibration_data
 struct bmp390_uncompensated_data
 {
     /*! un-compensated pressure */
-    uint64_t pressure;
+    UINT64 pressure;
 
     /*! un-compensated temperature */
-    int64_t temperature;
-};
-
-struct bmp390_handler
-{
-    /*! Chip Id */
-    uint8_t chip_id;
-
-    /*!
-     * The interface pointer is used to enable the user
-     * to link their interface descriptors for reference during the
-     * implementation of the read and write interfaces to the
-     * hardware.
-     */
-    void *intf_ptr;
-
-    /*! Decide SPI or I2C read mechanism */
-    UINT8 dummy_byte;
-
-    /*! Read function pointer */
-    bmp390_read_func_ptr_t read;
-
-    /*! Write function pointer */
-    bmp390_write_func_ptr_t write;
-
-    /*! Delay function pointer */
-    bmp390_delay_us_func_ptr_t delay_us;
-
-    /*! Trim data */
-    struct bmp390_calib_data calib_data;
+    INT64 temperature;
 };
 
 /********************************************************/
@@ -366,6 +346,38 @@ typedef INT8 (*bmp390_write_func_ptr_t)(UINT8 reg_addr, const UINT8 *read_data, 
 typedef void (*bmp390_delay_us_func_ptr_t)(UINT32 period, void *intf_ptr);
 
 /********************************************************/
+
+struct bmp390_handler
+{
+    /*! Chip Id */
+    uint8_t chip_id;
+
+    /*!
+     * The interface pointer is used to enable the user
+     * to link their interface descriptors for reference during the
+     * implementation of the read and write interfaces to the
+     * hardware.
+     */
+    SPI_HandleTypeDef *stm32_spi_handler;
+
+    /*! Decide SPI or I2C read mechanism */
+    UINT8 dummy_byte;
+
+    /*! Variable to store interface error or result */
+    HAL_StatusTypeDef interface_result;
+
+    /*! Read function pointer */
+    bmp390_read_func_ptr_t read;
+
+    /*! Write function pointer */
+    bmp390_write_func_ptr_t write;
+
+    /*! Delay function pointer */
+    bmp390_delay_us_func_ptr_t delay_us;
+
+    /*! Trim data */
+    struct bmp390_calibration_data calib_data;
+};
 
 #ifdef __cplusplus
 }
