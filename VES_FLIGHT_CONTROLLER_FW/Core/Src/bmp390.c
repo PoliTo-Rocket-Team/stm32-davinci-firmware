@@ -17,6 +17,16 @@ static void interleave_register_address(const UINT8 *reg_address, UINT8 *temp_bu
 
 static void parse_settings_data(const uint8_t *reg_data, struct bmp390_settings *settings);
 
+static INT8 get_sensor_status(struct bmp390_status *status, struct bmp390_handler *handler);
+
+static INT8 get_int_status(struct bmp390_status *status, struct bmp390_handler *handler);
+
+static INT8 get_err_status(struct bmp390_status *status, struct bmp390_handler *handler);
+
+static void parse_sensor_data(const UINT8 *reg_data, struct bmp390_uncompensated_sensor_data *uncompensated_data);
+
+static INT8 compensate_data(UINT8 sensor_comp, const struct bmp390_uncompensated_sensor_data *uncompensated_data, struct bmp390_compensated_sensor_data *compensated_data, struct bmp390_calibration_data *calib_data);
+
 INT8 bmp390_INIT(struct bmp390_handler *handler) {
 
 	INT8 result;
@@ -161,6 +171,36 @@ INT8 bmp390_get_status(struct bmp390_status *status, struct bmp390_handler *hand
 
 	return result;
 }
+
+INT8 bmp390_get_sensor_data(UINT8 sensor_comp, struct bmp390_compensated_sensor_data *compensated_data, struct bmp390_handler *handler) {
+
+	UINT8 result;
+
+	UINT8 reg_data[BMP390_LEN_PRESSURE_TEMP_DATA] = { 0 };
+	struct bmp390_uncompensated_sensor_data uncompensated_data = { 0 };
+
+	if (compensated_data != NULL) {
+
+		result = bmp390_get_registers(BMP390_DATA_REG, reg_data, BMP390_LEN_PRESSURE_TEMP_DATA, handler);
+
+		if (result == BMP390_OK) {
+
+			parse_sensor_data(reg_data, &uncompensated_data);
+
+			result = compensate_data(sensor_comp, &uncompensated_data, compensated_data, &handler -> calib_data);
+		}
+	}
+	else {
+
+		result = BMP390_ERR_NULL_PTR;
+	}
+
+	return result;
+}
+
+
+
+/* STATIC FUNCTIONS DEFINITIONS */
 
 static INT8 null_ptr_check(const struct bmp390_handler *handler) {
 
