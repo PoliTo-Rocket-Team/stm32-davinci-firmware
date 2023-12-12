@@ -264,6 +264,25 @@ static void interleave_register_address(const UINT8 *reg_address, UINT8 *temp_bu
 
 
 
+static void parse_sensor_data(const UINT8 *reg_data, struct bmp390_uncompensated_sensor_data *uncompensated_data) {
+
+	UINT32 data_xlsb;
+	UINT32 data_lsb;
+	UINT32 data_msb;
+
+	data_xlsb = (UINT32)reg_data[0];
+	data_lsb = (UINT32)reg_data[1] << 8;
+	data_msb = (UINT32)reg_data[2] << 16;
+
+	uncompensated_data -> pressure = data_msb | data_lsb | data_xlsb;
+
+	data_xlsb = (UINT32)reg_data[3];
+	data_lsb = (UINT32)reg_data[4] << 8;
+	data_msb = (UINT32)reg_data[5] << 16;
+
+	uncompensated_data -> temperature = data_msb | data_lsb | data_xlsb;
+}
+
 
 
 
