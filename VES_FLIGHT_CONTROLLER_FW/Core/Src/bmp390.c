@@ -15,7 +15,7 @@ static void parse_calibration_data(const UINT8 *reg_data, struct bmp390_handler 
 
 static void interleave_register_address(const UINT8 *reg_address, UINT8 *temp_buff, const UINT8 *reg_data, UINT32 len);
 
-static void parse_settings_data(const uint8_t *reg_data, struct bmp3_settings *settings);
+static void parse_settings_data(const uint8_t *reg_data, struct bmp390_settings *settings);
 
 INT8 bmp390_INIT(struct bmp390_handler *handler) {
 
@@ -57,7 +57,7 @@ INT8 bmp390_get_registers(UINT8 reg_address, UINT8 *reg_data, UINT32 len, struct
 		}
 
 		if (handler -> interface_result != HAL_OK) {
-				result = BMP390_COMMUNICATION_FAILED;
+				result = BMP390_ERR_COMMUNICATION_FAILED;
 		}
 	}
 	else {
@@ -68,7 +68,7 @@ INT8 bmp390_get_registers(UINT8 reg_address, UINT8 *reg_data, UINT32 len, struct
 	return result;
 }
 
-INT8 bmp390_set_registers(UINT8 reg_address, const UINT8 *reg_data, UINT32 len, struct bmp390_handler *handler) {
+INT8 bmp390_set_registers(UINT8 *reg_address, const UINT8 *reg_data, UINT32 len, struct bmp390_handler *handler) {
 
 	INT8 result;
 	UINT8 temp_buff[len * 2];
@@ -94,7 +94,7 @@ INT8 bmp390_set_registers(UINT8 reg_address, const UINT8 *reg_data, UINT32 len, 
 				temp_len = len * 2;
 			}
 			else {
-				temp _len = len;
+				temp_len = len;
 			}
 
 			handler -> interface_result = handler -> write(reg_address[0], temp_buff, temp_len, handler -> stm32_spi_handler);
@@ -120,7 +120,7 @@ INT8 bmp390_set_registers(UINT8 reg_address, const UINT8 *reg_data, UINT32 len, 
 INT8 bmp390_get_sensor_settings(struct bmp390_settings *settings, struct bmp390_handler *handler) {
 
 	INT8 result;
-	INT8 settings_data[BMP390_LEN_GEN_SETTINGS];
+	UINT8 settings_data[BMP390_LEN_GEN_SETTINGS];
 
 	if (settings != NULL) {
 
@@ -222,10 +222,7 @@ static void interleave_register_address(const UINT8 *reg_address, UINT8 *temp_bu
 	}
 }
 
-static void parse_settings_data(const uint8_t *reg_data, struct bmp3_settings *settings) {
 
-
-}
 
 
 
