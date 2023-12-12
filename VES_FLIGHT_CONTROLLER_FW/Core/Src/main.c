@@ -50,7 +50,6 @@ TIM_HandleTypeDef htim3;
 
 UART_HandleTypeDef huart1;
 UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart6;
 
 /* Definitions for defaultTask */
 osThreadId_t defaultTaskHandle;
@@ -68,7 +67,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_SPI1_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USART6_UART_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART1_UART_Init(void);
@@ -114,7 +112,6 @@ int main(void)
   MX_GPIO_Init();
   MX_SPI1_Init();
   MX_USART2_UART_Init();
-  MX_USART6_UART_Init();
   MX_SPI2_Init();
   MX_SPI3_Init();
   MX_USART1_UART_Init();
@@ -232,7 +229,7 @@ static void MX_SPI1_Init(void)
   /* SPI1 parameter configuration*/
   hspi1.Instance = SPI1;
   hspi1.Init.Mode = SPI_MODE_MASTER;
-  hspi1.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi1.Init.Direction = SPI_DIRECTION_2LINES;
   hspi1.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
@@ -270,7 +267,7 @@ static void MX_SPI2_Init(void)
   /* SPI2 parameter configuration*/
   hspi2.Instance = SPI2;
   hspi2.Init.Mode = SPI_MODE_MASTER;
-  hspi2.Init.Direction = SPI_DIRECTION_1LINE;
+  hspi2.Init.Direction = SPI_DIRECTION_2LINES;
   hspi2.Init.DataSize = SPI_DATASIZE_8BIT;
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
@@ -444,39 +441,6 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
-  * @brief USART6 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART6_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART6_Init 0 */
-
-  /* USER CODE END USART6_Init 0 */
-
-  /* USER CODE BEGIN USART6_Init 1 */
-
-  /* USER CODE END USART6_Init 1 */
-  huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
-  huart6.Init.Mode = UART_MODE_TX_RX;
-  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart6) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART6_Init 2 */
-
-  /* USER CODE END USART6_Init 2 */
-
-}
-
-/**
   * @brief GPIO Initialization Function
   * @param None
   * @retval None
@@ -496,22 +460,22 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|DEBUG_UART_Pin, GPIO_PIN_RESET);
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOA, LoRa_Debug_LED_Pin|FLASH_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
-                          |BARO_2_nCS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
+                          |GNSS_Debug_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : E_Match_Parachute_1_Pin E_Match_Parachute_2_Pin E_Match_Parachute_3_Pin E_Match_Parachute_4_Pin
-                           IMU_1_nCS_Pin BARO_1_nCS_Pin DEBUG_UART_Pin */
+                           IMU_1_nCS_Pin BARO_1_nCS_Pin BARO_2_nCS_Pin */
   GPIO_InitStruct.Pin = E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|DEBUG_UART_Pin;
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -525,9 +489,9 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin IMU_2_nCS_Pin
-                           BARO_2_nCS_Pin GNSS_Debug_LED_Pin BUZZER_Pin */
+                           GNSS_Debug_LED_Pin BUZZER_Pin */
   GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
-                          |BARO_2_nCS_Pin|GNSS_Debug_LED_Pin|BUZZER_Pin;
+                          |GNSS_Debug_LED_Pin|BUZZER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
