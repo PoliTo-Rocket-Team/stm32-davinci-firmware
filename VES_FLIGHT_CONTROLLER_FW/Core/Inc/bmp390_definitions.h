@@ -130,6 +130,7 @@ typedef int64_t 			INT64;
 #define BMP390_DATARDY_TEMP_MASK              	 	UINT8_C(0x40)
 
 #define BMP390_OPERATING_MODE_MASK                	UINT8_C(0x30)
+#define BMP390_OPERATING_MODE_POS					UINT8_C(0x04)
 
 #define BMP390_PRESSURE_EN_MASK                    	UINT8_C(0x01)
 
@@ -158,6 +159,12 @@ typedef int64_t 			INT64;
 #define BMP390_SET_HIGH_BYTE                      	UINT16_C(0xFF00)
 
 #define BMP390_CONCAT_BYTES(MSB, LSB)             	(((UINT16)MSB << 8) | (UINT16)LSB)
+
+#define BMP390_COMPENSATE_PRESSURE                 	UINT8_C(1)
+#define BMP390_COMPENSATE_TEMP                     	UINT8_C(2)
+#define BMP390_COMPENSATE_BOTH_PRESSURE_TEMP       	UINT8_C(3)
+
+#define BMP390_GET_BITS(reg_data, bitname)			((reg_data & (bitname##_MASK) >> (bitname##_POS)))
 
 
 struct bmp390_reg_calib_data {
