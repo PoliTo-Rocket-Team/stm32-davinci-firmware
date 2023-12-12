@@ -114,6 +114,7 @@ typedef int64_t 			INT64;
 
 #define BMP390_LEN_CALIBRATION_DATA                	UINT8_C(21)
 #define BMP390_LEN_GEN_SETTINGS	                    UINT8_C(7)
+#define BMP390_LEN_PRESSURE_TEMP_DATA              	UINT8_C(6)
 
 /* MACROS FOR BIT MASKING */
 #define BMP390_FATAL_ERR_MASK						UINT8_C(0x01)
@@ -293,7 +294,7 @@ struct bmp390_calibration_data
 #endif /* BMP3_FLOAT_COMPENSATION */
 
 
-struct bmp390_uncompensated_data
+struct bmp390_uncompensated_sensor_data
 {
     /*! un-compensated pressure */
     UINT64 pressure;

@@ -35,7 +35,7 @@ INT8 bmp390_set_operating_mode(struct bmp390_settings *settings, struct bmp390_h
 
 INT8 bmp390_get_operating_mode(UINT8 *op_mode, struct bmp390_handler *handler);
 
-INT8 bmp390_get_sensor_data(UINT8 sensor_comp, struct bmp390_compensated_sensor_data *data, struct bmp390_handler *handler);
+INT8 bmp390_get_sensor_data(UINT8 sensor_comp, struct bmp390_compensated_sensor_data *compensated_data, struct bmp390_handler *handler);
 
 INT8 bmp390_set_registers(UINT8 *reg_address, const UINT8 *reg_data, UINT32 len, struct bmp390_handler *handler);
 
