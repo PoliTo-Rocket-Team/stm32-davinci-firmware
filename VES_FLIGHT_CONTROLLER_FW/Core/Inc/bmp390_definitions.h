@@ -15,14 +15,14 @@ extern "C" {
 #include <stdint.h>
 #include <stddef.h>
 
-typedef uint8_t UINT8;
-typedef int8_t INT8;
-typedef uint16_t UINT16;
-typedef int16_t INT16;
-typedef uint32_t UINT32;
-typedef int32_t INT32;
-typedef uint64_t UINT64;
-typedef int64_t INT64;
+typedef uint8_t 			UINT8;
+typedef int8_t 				INT8;
+typedef uint16_t 			UINT16;
+typedef int16_t 			INT16;
+typedef uint32_t 			UINT32;
+typedef int32_t 			INT32;
+typedef uint64_t 			UINT64;
+typedef int64_t 			INT64;
 
 /* REGISTER ADDRESS */
 #define BMP390_CHIP_ID								UINT8_C(0x00)
@@ -293,7 +293,7 @@ struct bmp390_uncompensated_data
     int64_t temperature;
 };
 
-struct bmp3_handler
+struct bmp390_handler
 {
     /*! Chip Id */
     uint8_t chip_id;
@@ -310,16 +310,16 @@ struct bmp3_handler
     UINT8 dummy_byte;
 
     /*! Read function pointer */
-    bmp3_read_func_ptr_t read;
+    bmp390_read_func_ptr_t read;
 
     /*! Write function pointer */
-    bmp3_write_func_ptr_t write;
+    bmp390_write_func_ptr_t write;
 
     /*! Delay function pointer */
-    bmp3_delay_us_func_ptr_t delay_us;
+    bmp390_delay_us_func_ptr_t delay_us;
 
     /*! Trim data */
-    struct bmp3_calib_data calib_data;
+    struct bmp390_calib_data calib_data;
 };
 
 /********************************************************/
@@ -336,7 +336,7 @@ struct bmp3_handler
  * @retval 0 for Success
  * @retval Non-zero for Failure
  */
-typedef INT8 (*bmp3_read_func_ptr_t)(UINT8 reg_addr, UINT8 *read_data, UINT32 len, void *intf_ptr);
+typedef INT8 (*bmp390_read_func_ptr_t)(UINT8 reg_addr, UINT8 *read_data, UINT32 len, void *intf_ptr);
 
 
 /*!
@@ -352,7 +352,7 @@ typedef INT8 (*bmp3_read_func_ptr_t)(UINT8 reg_addr, UINT8 *read_data, UINT32 le
  * @retval Non-zero for Failure
  *
  */
-typedef INT8 (*bmp3_write_func_ptr_t)(UINT8 reg_addr, const UINT8 *read_data, UINT32 len, void *intf_ptr);
+typedef INT8 (*bmp390_write_func_ptr_t)(UINT8 reg_addr, const UINT8 *read_data, UINT32 len, void *intf_ptr);
 
 /*!
  * @brief Delay function pointer which should be mapped to
@@ -363,7 +363,7 @@ typedef INT8 (*bmp3_write_func_ptr_t)(UINT8 reg_addr, const UINT8 *read_data, UI
  *                                  for interface related call backs
  *
  */
-typedef void (*bmp3_delay_us_func_ptr_t)(UINT32 period, void *intf_ptr);
+typedef void (*bmp390_delay_us_func_ptr_t)(UINT32 period, void *intf_ptr);
 
 /********************************************************/
 
