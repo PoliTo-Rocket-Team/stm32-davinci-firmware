@@ -27,6 +27,10 @@ static void parse_sensor_data(const UINT8 *reg_data, struct bmp390_uncompensated
 
 static INT8 compensate_data(UINT8 sensor_comp, const struct bmp390_uncompensated_sensor_data *uncompensated_data, struct bmp390_compensated_sensor_data *compensated_data, struct bmp390_calibration_data *calib_data);
 
+static INT8 compensate_temperature(INT64 *temperature, const struct bmp390_uncompensated_sensor_data *uncompensated_data, struct bmp390_calibration_data *calib_data);
+
+static INT8 compensate_pressure(UINT64 *pressure, const struct bmp390_uncompensated_sensor_data *uncompensated_data, struct bmp390_calibration_data *calib_data);
+
 INT8 bmp390_INIT(struct bmp390_handler *handler) {
 
 	INT8 result;
@@ -198,6 +202,32 @@ INT8 bmp390_get_sensor_data(UINT8 sensor_comp, struct bmp390_compensated_sensor_
 	return result;
 }
 
+INT8 bmp390_get_operating_mode(UINT8 *op_mode, struct bmp390_handler *handler) {
+
+	INT8 result;
+
+	if (op_mode != NULL) {
+
+		result = bmp390_get_registers(BMP390_PWR_CTRL_REG, op_mode, 1, handler);
+
+		*op_mode = BMP390_GET_BITS(*op_mode, BMP390_OPERATING_MODE);
+	}
+	else {
+
+		result = BMP390_ERR_NULL_PTR;
+	}
+
+	return result;
+}
+
+
+
+
+
+
+
+
+
 
 
 /* STATIC FUNCTIONS DEFINITIONS */
@@ -281,6 +311,42 @@ static void parse_sensor_data(const UINT8 *reg_data, struct bmp390_uncompensated
 	data_msb = (UINT32)reg_data[5] << 16;
 
 	uncompensated_data -> temperature = data_msb | data_lsb | data_xlsb;
+}
+
+static INT8 compensate_data(UINT8 sensor_comp, const struct bmp390_uncompensated_sensor_data *uncompensated_data, struct bmp390_compensated_sensor_data *compensated_data, struct bmp390_calibration_data *calib_data) {
+
+	INT8 result = BMP390_OK;
+
+	if ((uncompensated_data != NULL) && (compensated_data != NULL) && (calib_data != NULL)) {
+
+		if (sensor_comp == BMP390_COMPENSATE_BOTH_PRESSURE_TEMP) {
+
+			/*
+			 * NOTE : Temperature compensation must be done first.
+			 * Followed by pressure compensation
+			 * Compensated temperature updated in calib structure,
+			 * is needed for pressure calculation
+			 */
+
+			result = compensate_temperature(&compensated_data -> temperature, uncompensated_data, calib_data);
+
+			if (result == BMP390_OK) {
+
+				result = compensate_pressure(&compensated_data -> pressure, uncompensated_data, calib_data);
+			}
+		}
+		else {
+
+			compensated_data -> temperature = 0;
+			compensated_data -> pressure = 0;
+		}
+	}
+	else {
+
+		result = BMP390_ERR_NULL_PTR;
+	}
+
+	return result;
 }
 
 
