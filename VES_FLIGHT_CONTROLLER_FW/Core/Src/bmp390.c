@@ -220,6 +220,46 @@ INT8 bmp390_get_operating_mode(UINT8 *op_mode, struct bmp390_handler *handler) {
 	return result;
 }
 
+INT8 bmp390_set_operating_mode(struct bmp390_settings *settings, struct bmp390_handler *handler) {
+
+	INT8 result;
+	UINT8 last_set_mode;
+
+	result = null_ptr_check(handler);
+
+	if ((result == BMP390_OK) && (settings != NULL)) {
+
+		UINT8 curr_mode = settings -> operating_mode;
+
+		result = bmp390_get_operating_mode(&last_set_mode, handler);
+
+		if ((last_set_mode != BMP390_MODE_SLEEP) && (result == BMP390_OK)) {
+
+			result = put_device_to_sleep_mode(handler);
+
+//			handler -> delay_us(5000, handler -> intf_ptr);
+		}
+
+		if (result == BMP390_OK) {
+
+			if (curr_mode == BMP390_MODE_NORMAL) {
+
+				result = put_device_to_normal_mode(handler);
+			}
+			else if (curr_mode == BMP390_MODE_FORCED) {
+
+				result = put_device_to_forced_mode(handler);
+			}
+		}
+	}
+	else {
+
+		result = BMP390_ERR_NULL_PTR;
+	}
+
+	return result;
+}
+
 
 
 
