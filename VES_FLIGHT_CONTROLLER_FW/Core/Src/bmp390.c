@@ -260,7 +260,52 @@ INT8 bmp390_set_operating_mode(struct bmp390_settings *settings, struct bmp390_h
 	return result;
 }
 
+INT8 bmp390_spi_read(struct bmp390_handler *handler, UINT8 reg_address, UINT8 *read_data, const UINT8 length) {
 
+	UINT8 result;
+	UINT8 buffer;
+	UINT32 timeout = 1000;
+
+	BMP390_SENSOR1_CS_LOW;	//setting the CS of the baro to LOW
+
+	buffer = reg_address;
+	result = HAL_SPI_Transmit(handler -> stm32_spi_handler, (UINT8 *)&buffer, 1, timeout);
+
+	if (result != HAL_OK) {
+
+		BMP390_SENSOR1_CS_HIGH;
+
+		return result;
+	}
+
+	if (length > 0) {
+
+		result = HAL_SPI_Transmit(handler -> stm32_spi_handler, read_data, length, timeout);
+
+		if (result != HAL_OK) {
+
+			BMP390_SENSOR1_CS_HIGH;
+
+			return result;
+		}
+	}
+
+	BMP390_SENSOR1_CS_HIGH;
+
+	return result;
+}
+
+INT8 bmp390_spi_write(struct bmp390_handler *handler, UINT8 reg_address, const UINT8 *write_data, const UINT8 length) {
+
+	UINT8 result;
+	UINT8 buffer;
+
+	BMP390_SENSOR1_CS_LOW;
+
+	buffer = reg_address;
+
+	HAL_SPI_Transmit(handler -> stm32_spi_handler, &buffer, );
+}
 
 
 
