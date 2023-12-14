@@ -14,7 +14,7 @@ extern "C" {
 
 #include <stdint.h>
 #include <stddef.h>
-#include "stm32f4xx.h"
+#include "main.h"
 
 typedef uint8_t 			UINT8;
 typedef int8_t 				INT8;
@@ -165,6 +165,10 @@ typedef int64_t 			INT64;
 #define BMP390_COMPENSATE_BOTH_PRESSURE_TEMP       	UINT8_C(3)
 
 #define BMP390_GET_BITS(reg_data, bitname)			((reg_data & (bitname##_MASK) >> (bitname##_POS)))
+
+#define BMP390_SENSOR1_CS_LOW						HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_RESET);
+#define BMP390_SENSOR1_CS_HIGH						HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_SET);
+
 
 
 struct bmp390_reg_calib_data {
