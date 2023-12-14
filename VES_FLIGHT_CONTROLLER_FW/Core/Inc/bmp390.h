@@ -43,6 +43,12 @@ INT8 bmp390_get_registers(UINT8 reg_address, UINT8 *reg_data, UINT32 len, struct
 
 INT8 bmp390_get_status(struct bmp390_status *status, struct bmp390_handler *handler);
 
+INT8 bmp390_spi_init();
+
+INT8 bmp390_spi_read(struct bmp390_handler *handler, UINT8 reg_address, UINT8 *read_data, const UINT8 length);
+
+INT8 bmp390_spi_write(struct bmp390_handler *handler, UINT8 reg_address, const UINT8 *write_data, const UINT8 length);
+
 #ifdef __cplusplus
 }
 #endif
