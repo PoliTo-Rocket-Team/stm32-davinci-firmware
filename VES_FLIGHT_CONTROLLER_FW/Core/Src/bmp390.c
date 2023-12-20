@@ -299,12 +299,24 @@ INT8 bmp390_spi_write(struct bmp390_handler *handler, UINT8 reg_address, const U
 
 	UINT8 result;
 	UINT8 buffer;
+	UINT32 timeout = 1000;
 
 	BMP390_SENSOR1_CS_LOW;
 
 	buffer = reg_address;
 
-	HAL_SPI_Transmit(handler -> stm32_spi_handler, &buffer, );
+	HAL_SPI_Transmit(handler -> stm32_spi_handler, (UINT8 *)&buffer, 1, timeout);
+
+	if (result != HAL_OK) {
+
+		BMP390_SENSOR1_CS_HIGH;
+
+		return result;
+	}
+
+	if (length > 0) {
+
+	}
 }
 
 
