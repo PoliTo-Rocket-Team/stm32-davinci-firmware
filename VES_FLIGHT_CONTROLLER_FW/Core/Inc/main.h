@@ -67,12 +67,12 @@ void Error_Handler(void);
 #define E_Match_Parachute_3_GPIO_Port GPIOC
 #define E_Match_Parachute_4_Pin GPIO_PIN_3
 #define E_Match_Parachute_4_GPIO_Port GPIOC
-#define LoRa_Debug_LED_Pin GPIO_PIN_1
-#define LoRa_Debug_LED_GPIO_Port GPIOA
-#define LoRa_UART2_TX_Pin GPIO_PIN_2
-#define LoRa_UART2_TX_GPIO_Port GPIOA
-#define LoRa_UART2_RX_Pin GPIO_PIN_3
-#define LoRa_UART2_RX_GPIO_Port GPIOA
+#define SPI1_SCK_SENSOR1_Pin GPIO_PIN_5
+#define SPI1_SCK_SENSOR1_GPIO_Port GPIOA
+#define SPI1_MISO_SENSOR1_Pin GPIO_PIN_6
+#define SPI1_MISO_SENSOR1_GPIO_Port GPIOA
+#define SPI1_MOSI_SENSOR1_Pin GPIO_PIN_7
+#define SPI1_MOSI_SENSOR1_GPIO_Port GPIOA
 #define IMU_1_nCS_Pin GPIO_PIN_4
 #define IMU_1_nCS_GPIO_Port GPIOC
 #define BARO_1_nCS_Pin GPIO_PIN_5
@@ -105,12 +105,6 @@ void Error_Handler(void);
 #define DEBUG_LED_FLASH_GPIO_Port GPIOD
 #define AIRBRAKES_PWM_Pin GPIO_PIN_4
 #define AIRBRAKES_PWM_GPIO_Port GPIOB
-#define GNSS_Debug_LED_Pin GPIO_PIN_5
-#define GNSS_Debug_LED_GPIO_Port GPIOB
-#define GNSS_UART1_TX_Pin GPIO_PIN_6
-#define GNSS_UART1_TX_GPIO_Port GPIOB
-#define GNSS_UART1_RX_Pin GPIO_PIN_7
-#define GNSS_UART1_RX_GPIO_Port GPIOB
 #define BUZZER_Pin GPIO_PIN_9
 #define BUZZER_GPIO_Port GPIOB
 
