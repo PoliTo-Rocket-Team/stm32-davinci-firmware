@@ -67,6 +67,10 @@ void Error_Handler(void);
 #define E_Match_Parachute_3_GPIO_Port GPIOC
 #define E_Match_Parachute_4_Pin GPIO_PIN_3
 #define E_Match_Parachute_4_GPIO_Port GPIOC
+#define SERIAL_COM_PORT_PRINT_TX_Pin GPIO_PIN_2
+#define SERIAL_COM_PORT_PRINT_TX_GPIO_Port GPIOA
+#define SERIAL_COM_PORT_PRINT_RX_Pin GPIO_PIN_3
+#define SERIAL_COM_PORT_PRINT_RX_GPIO_Port GPIOA
 #define SPI1_SCK_SENSOR1_Pin GPIO_PIN_5
 #define SPI1_SCK_SENSOR1_GPIO_Port GPIOA
 #define SPI1_MISO_SENSOR1_Pin GPIO_PIN_6
@@ -109,7 +113,11 @@ void Error_Handler(void);
 #define BUZZER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define DEBUG_EN
 
+#ifdef DEBUG_EN
+HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data);
+#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
