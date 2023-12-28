@@ -369,7 +369,26 @@ uint8_t W25Q128_global_block_unlock(W25Q128* memory) {
 }
 
 uint8_t W25Q128_individual_block_lock(W25Q128* memory, uint8_t* address) {
-	return HAL_ERROR;
+	uint8_t txdata = W25Q128_INDIVIDUAL_BLOCK_LOCK;
+	uint8_t result = HAL_ERROR;
+
+	result = W25Q128_write_enable(memory);
+
+	W25Q128_CS_LOW(memory);
+
+	if (result == HAL_OK) {
+		result = HAL_ERROR;
+
+		if (HAL_SPI_Transmit(memory -> spi_handle, &txdata, 1, W25Q128_TIMEOUT) == HAL_OK) {
+			result = HAL_OK;
+		}
+	}
+
+	W25Q128_CS_HIGH(memory);
+
+	W25Q128_write_disable(memory);
+
+	return result;
 }
 
 uint8_t W25Q128_individual_block_unlock(W25Q128* memory, uint8_t* address) {
