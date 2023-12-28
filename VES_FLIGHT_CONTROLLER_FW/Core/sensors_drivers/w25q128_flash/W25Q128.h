@@ -11,15 +11,15 @@
 #include <stdint.h>
 #include <stm32f4xx.h>
 
-#define SPIF_CMSIS_RTOS_DISABLE               0
-#define SPIF_CMSIS_RTOS_V1                    1
-#define SPIF_CMSIS_RTOS_V2                    2
+#define W25Q128_CMSIS_RTOS_DISABLE               0
+#define W25Q128_CMSIS_RTOS_V1                    1
+#define W25Q128_CMSIS_RTOS_V2                    2
 
-#define SPIF_CMSIS_RTOS      SPIF_CMSIS_RTOS_DISABLE
+#define W25Q128_CMSIS_RTOS      W25Q128_CMSIS_RTOS_DISABLE
 
-#if SPIF_CMSIS_RTOS == SPIF_CMSIS_RTOS_DISABLE
+#if W25Q128_CMSIS_RTOS == W25Q128_CMSIS_RTOS_DISABLE
 #define Delay(x) HAL_Delay(x)
-#elif SPIF_CMSIS_RTOS == SPIF_CMSIS_RTOS_V1
+#elif W25Q128_CMSIS_RTOS == W25Q128_CMSIS_RTOS_V1
 #include "cmsis_os.h"
 #define Delay(x) osDelay(x)
 #else
