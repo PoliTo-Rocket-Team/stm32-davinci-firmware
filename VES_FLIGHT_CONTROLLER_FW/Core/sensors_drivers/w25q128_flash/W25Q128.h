@@ -32,7 +32,7 @@
 
 #define W25Q128_TIMEOUT						100
 
-#define SPI_MODE	0x4018
+#define SPI_MODE							0x4018
 
 #define W25Q128_WRITE_ENABLE				0x06
 #define W25Q128_VOLATILE_SR_WRITE_ENABLE	0x50
