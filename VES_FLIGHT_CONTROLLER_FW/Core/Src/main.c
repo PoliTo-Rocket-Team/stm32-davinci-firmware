@@ -473,14 +473,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-#ifdef DEBUG_EN
 
-#include <string.h>
-
-HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data) {
-	return HAL_UART_Transmit(&huart2, data, strlen((const char *)data) + 1, 100);
-}
-#endif
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */

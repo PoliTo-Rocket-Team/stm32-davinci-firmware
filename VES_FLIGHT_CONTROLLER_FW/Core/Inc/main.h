@@ -113,11 +113,7 @@ void Error_Handler(void);
 #define BUZZER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
-#define DEBUG_EN
 
-#ifdef DEBUG_EN
-HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data);
-#endif
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
