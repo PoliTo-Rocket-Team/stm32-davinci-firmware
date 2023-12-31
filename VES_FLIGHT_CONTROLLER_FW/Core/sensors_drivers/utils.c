@@ -9,6 +9,8 @@
 
 #ifdef DEBUG_EN
 
+extern UART_HandleTypeDef huart2;
+
 #include <string.h>
 
 HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data) {
