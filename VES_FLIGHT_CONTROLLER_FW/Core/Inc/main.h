@@ -87,8 +87,6 @@ void Error_Handler(void);
 #define Channel1_PYRO_GPIO_Port GPIOB
 #define Channel2_PYRO_Pin GPIO_PIN_2
 #define Channel2_PYRO_GPIO_Port GPIOB
-#define IMU_2_nCS_Pin GPIO_PIN_12
-#define IMU_2_nCS_GPIO_Port GPIOB
 #define SPI2_SCK_SENSOR2_Pin GPIO_PIN_13
 #define SPI2_SCK_SENSOR2_GPIO_Port GPIOB
 #define SPI2_MISO_SENSOR2_Pin GPIO_PIN_14
@@ -97,6 +95,14 @@ void Error_Handler(void);
 #define SPI2_MOSI_SENSOR2_GPIO_Port GPIOB
 #define BARO_2_nCS_Pin GPIO_PIN_6
 #define BARO_2_nCS_GPIO_Port GPIOC
+#define IMU_2_nCS_Pin GPIO_PIN_7
+#define IMU_2_nCS_GPIO_Port GPIOC
+#define MAIN_COM_CLK_Pin GPIO_PIN_8
+#define MAIN_COM_CLK_GPIO_Port GPIOA
+#define MAIN_COM_TX_Pin GPIO_PIN_9
+#define MAIN_COM_TX_GPIO_Port GPIOA
+#define MAIN_COM_RX_Pin GPIO_PIN_10
+#define MAIN_COM_RX_GPIO_Port GPIOA
 #define FLASH_nCS_Pin GPIO_PIN_15
 #define FLASH_nCS_GPIO_Port GPIOA
 #define SPI3_SCK_FLASH_Pin GPIO_PIN_10

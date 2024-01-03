@@ -48,6 +48,7 @@ SPI_HandleTypeDef hspi3;
 
 TIM_HandleTypeDef htim3;
 
+USART_HandleTypeDef husart1;
 UART_HandleTypeDef huart2;
 
 /* Definitions for defaultTask */
@@ -69,6 +70,7 @@ static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
+static void MX_USART1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -113,6 +115,7 @@ int main(void)
   MX_SPI3_Init();
   MX_TIM3_Init();
   MX_USART2_UART_Init();
+  MX_USART1_Init();
   /* USER CODE BEGIN 2 */
 
   /* USER CODE END 2 */
@@ -372,6 +375,40 @@ static void MX_TIM3_Init(void)
 }
 
 /**
+  * @brief USART1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_USART1_Init(void)
+{
+
+  /* USER CODE BEGIN USART1_Init 0 */
+
+  /* USER CODE END USART1_Init 0 */
+
+  /* USER CODE BEGIN USART1_Init 1 */
+
+  /* USER CODE END USART1_Init 1 */
+  husart1.Instance = USART1;
+  husart1.Init.BaudRate = 115200;
+  husart1.Init.WordLength = USART_WORDLENGTH_8B;
+  husart1.Init.StopBits = USART_STOPBITS_1;
+  husart1.Init.Parity = USART_PARITY_NONE;
+  husart1.Init.Mode = USART_MODE_TX_RX;
+  husart1.Init.CLKPolarity = USART_POLARITY_LOW;
+  husart1.Init.CLKPhase = USART_PHASE_1EDGE;
+  husart1.Init.CLKLastBit = USART_LASTBIT_DISABLE;
+  if (HAL_USART_Init(&husart1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN USART1_Init 2 */
+
+  /* USER CODE END USART1_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -424,11 +461,10 @@ static void MX_GPIO_Init(void)
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin, GPIO_PIN_RESET);
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin|IMU_2_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
-                          |BUZZER_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_nCS_GPIO_Port, FLASH_nCS_Pin, GPIO_PIN_RESET);
@@ -437,18 +473,16 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : E_Match_Parachute_1_Pin E_Match_Parachute_2_Pin E_Match_Parachute_3_Pin E_Match_Parachute_4_Pin
-                           IMU_1_nCS_Pin BARO_1_nCS_Pin BARO_2_nCS_Pin */
+                           IMU_1_nCS_Pin BARO_1_nCS_Pin BARO_2_nCS_Pin IMU_2_nCS_Pin */
   GPIO_InitStruct.Pin = E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_4_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin;
+                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin|IMU_2_nCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin IMU_2_nCS_Pin
-                           BUZZER_Pin */
-  GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|IMU_2_nCS_Pin
-                          |BUZZER_Pin;
+  /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin BUZZER_Pin */
+  GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|BUZZER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
