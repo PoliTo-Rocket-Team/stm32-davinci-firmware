@@ -453,8 +453,8 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
-  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOH_CLK_ENABLE();
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
@@ -464,7 +464,7 @@ static void MX_GPIO_Init(void)
                           |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin|IMU_2_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|BUZZER_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(FLASH_nCS_GPIO_Port, FLASH_nCS_Pin, GPIO_PIN_RESET);
@@ -481,8 +481,8 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
-  /*Configure GPIO pins : Status_LED_Pin Channel1_PYRO_Pin Channel2_PYRO_Pin BUZZER_Pin */
-  GPIO_InitStruct.Pin = Status_LED_Pin|Channel1_PYRO_Pin|Channel2_PYRO_Pin|BUZZER_Pin;
+  /*Configure GPIO pins : Channel1_PYRO_Pin Channel2_PYRO_Pin Status_LED_Pin BUZZER_Pin */
+  GPIO_InitStruct.Pin = Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin|BUZZER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

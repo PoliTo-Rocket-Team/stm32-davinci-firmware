@@ -81,12 +81,12 @@ void Error_Handler(void);
 #define IMU_1_nCS_GPIO_Port GPIOC
 #define BARO_1_nCS_Pin GPIO_PIN_5
 #define BARO_1_nCS_GPIO_Port GPIOC
-#define Status_LED_Pin GPIO_PIN_0
-#define Status_LED_GPIO_Port GPIOB
 #define Channel1_PYRO_Pin GPIO_PIN_1
 #define Channel1_PYRO_GPIO_Port GPIOB
 #define Channel2_PYRO_Pin GPIO_PIN_2
 #define Channel2_PYRO_GPIO_Port GPIOB
+#define Status_LED_Pin GPIO_PIN_10
+#define Status_LED_GPIO_Port GPIOB
 #define SPI2_SCK_SENSOR2_Pin GPIO_PIN_13
 #define SPI2_SCK_SENSOR2_GPIO_Port GPIOB
 #define SPI2_MISO_SENSOR2_Pin GPIO_PIN_14
