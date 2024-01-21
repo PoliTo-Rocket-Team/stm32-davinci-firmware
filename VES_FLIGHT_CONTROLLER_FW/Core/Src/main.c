@@ -254,7 +254,7 @@ static void MX_ADC1_Init(void)
 
   /** Configure for the selected ADC regular channel its corresponding rank in the sequencer and its sample time.
   */
-  sConfig.Channel = ADC_CHANNEL_13;
+  sConfig.Channel = ADC_CHANNEL_11;
   sConfig.Rank = 1;
   sConfig.SamplingTime = ADC_SAMPLETIME_3CYCLES;
   if (HAL_ADC_ConfigChannel(&hadc1, &sConfig) != HAL_OK)
@@ -516,8 +516,8 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOC, E_Match_Parachute_4_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin|IMU_2_nCS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|IMU_1_nCS_Pin|BARO_1_nCS_Pin
+                          |BARO_2_nCS_Pin|IMU_2_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin|BUZZER_Pin, GPIO_PIN_RESET);
@@ -528,10 +528,10 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : E_Match_Parachute_4_Pin E_Match_Parachute_3_Pin E_Match_Parachute_1_Pin E_Match_Parachute_2_Pin
-                           IMU_1_nCS_Pin BARO_1_nCS_Pin BARO_2_nCS_Pin IMU_2_nCS_Pin */
-  GPIO_InitStruct.Pin = E_Match_Parachute_4_Pin|E_Match_Parachute_3_Pin|E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin
-                          |IMU_1_nCS_Pin|BARO_1_nCS_Pin|BARO_2_nCS_Pin|IMU_2_nCS_Pin;
+  /*Configure GPIO pins : E_Match_Parachute_1_Pin E_Match_Parachute_2_Pin IMU_1_nCS_Pin BARO_1_nCS_Pin
+                           BARO_2_nCS_Pin IMU_2_nCS_Pin */
+  GPIO_InitStruct.Pin = E_Match_Parachute_1_Pin|E_Match_Parachute_2_Pin|IMU_1_nCS_Pin|BARO_1_nCS_Pin
+                          |BARO_2_nCS_Pin|IMU_2_nCS_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;

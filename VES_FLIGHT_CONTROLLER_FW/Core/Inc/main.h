@@ -59,15 +59,11 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define E_Match_Parachute_4_Pin GPIO_PIN_13
-#define E_Match_Parachute_4_GPIO_Port GPIOC
-#define E_Match_Parachute_3_Pin GPIO_PIN_14
-#define E_Match_Parachute_3_GPIO_Port GPIOC
-#define E_Match_Parachute_1_Pin GPIO_PIN_0
+#define E_Match_Parachute_1_Pin GPIO_PIN_13
 #define E_Match_Parachute_1_GPIO_Port GPIOC
-#define E_Match_Parachute_2_Pin GPIO_PIN_1
+#define E_Match_Parachute_2_Pin GPIO_PIN_14
 #define E_Match_Parachute_2_GPIO_Port GPIOC
-#define PITOT_DIFF_PRESS_SENS_Pin GPIO_PIN_3
+#define PITOT_DIFF_PRESS_SENS_Pin GPIO_PIN_1
 #define PITOT_DIFF_PRESS_SENS_GPIO_Port GPIOC
 #define SERIAL_COM_PORT_PRINT_TX_Pin GPIO_PIN_2
 #define SERIAL_COM_PORT_PRINT_TX_GPIO_Port GPIOA
