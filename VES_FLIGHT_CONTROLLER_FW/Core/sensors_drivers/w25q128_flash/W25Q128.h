@@ -15,7 +15,7 @@
 #define W25Q128_CMSIS_RTOS_V1                    1
 #define W25Q128_CMSIS_RTOS_V2                    2
 
-#define W25Q128_CMSIS_RTOS      W25Q128_CMSIS_RTOS_DISABLE
+#define W25Q128_CMSIS_RTOS      W25Q128_CMSIS_RTOS_V2
 
 #if W25Q128_CMSIS_RTOS == W25Q128_CMSIS_RTOS_DISABLE
 #define Delay(x) HAL_Delay(x)
