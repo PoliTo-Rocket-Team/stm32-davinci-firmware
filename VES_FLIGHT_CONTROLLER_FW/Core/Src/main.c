@@ -33,7 +33,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-
+#define SENSORS_TASK_PERIOD 10	/* Period of Sensors Task Period in TICKS */
+#define AIR_BRAKES_HANDLING_TASK_PERIOD 0
+#define PITOT_TUBE_TASK_PERIOD 0
+#define FLASH_WRITE_TASK_PERIOD 0
+#define PARACHUTES_DEPLOY_TASK_PERIOD 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -53,15 +57,49 @@ TIM_HandleTypeDef htim3;
 USART_HandleTypeDef husart1;
 UART_HandleTypeDef huart2;
 
-/* Definitions for defaultTask */
-osThreadId_t defaultTaskHandle;
-const osThreadAttr_t defaultTask_attributes = {
-  .name = "defaultTask",
+/* Definitions for StartupTask */
+osThreadId_t StartupTaskHandle;
+const osThreadAttr_t StartupTask_attributes = {
+  .name = "StartupTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for ParachutesDply */
+osThreadId_t ParachutesDplyHandle;
+const osThreadAttr_t ParachutesDply_attributes = {
+  .name = "ParachutesDply",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for FlashWriteTask */
+osThreadId_t FlashWriteTaskHandle;
+const osThreadAttr_t FlashWriteTask_attributes = {
+  .name = "FlashWriteTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for SensorsReadTask */
+osThreadId_t SensorsReadTaskHandle;
+const osThreadAttr_t SensorsReadTask_attributes = {
+  .name = "SensorsReadTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for AirBrakesTask */
+osThreadId_t AirBrakesTaskHandle;
+const osThreadAttr_t AirBrakesTask_attributes = {
+  .name = "AirBrakesTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for PitotSensorTask */
+osThreadId_t PitotSensorTaskHandle;
+const osThreadAttr_t PitotSensorTask_attributes = {
+  .name = "PitotSensorTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -74,7 +112,12 @@ static void MX_TIM3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART1_Init(void);
 static void MX_ADC1_Init(void);
-void StartDefaultTask(void *argument);
+void Startup(void *argument);
+void ParachutesDeploy(void *argument);
+void FlashWrite(void *argument);
+void SensorsRead(void *argument);
+void AirBrakesHandling(void *argument);
+void PitotTube(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -122,6 +165,12 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
+
+
+  /* FLASH INITIALIZATION */
+
+
+
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -144,8 +193,23 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* creation of defaultTask */
-  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
+  /* creation of StartupTask */
+  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
+
+  /* creation of ParachutesDply */
+  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
+
+  /* creation of FlashWriteTask */
+  FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
+
+  /* creation of SensorsReadTask */
+  SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
+
+  /* creation of AirBrakesTask */
+  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
+
+  /* creation of PitotSensorTask */
+  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -537,6 +601,28 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : PC15 PC0 PC2 PC3
+                           PC8 PC9 */
+  GPIO_InitStruct.Pin = GPIO_PIN_15|GPIO_PIN_0|GPIO_PIN_2|GPIO_PIN_3
+                          |GPIO_PIN_8|GPIO_PIN_9;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PA0 PA1 PA4 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_4;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : PB0 PB12 PB3 PB5
+                           PB6 PB7 PB8 */
+  GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_3|GPIO_PIN_5
+                          |GPIO_PIN_6|GPIO_PIN_7|GPIO_PIN_8;
+  GPIO_InitStruct.Mode = GPIO_MODE_ANALOG;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
   /*Configure GPIO pins : Channel1_PYRO_Pin Channel2_PYRO_Pin Status_LED_Pin BUZZER_Pin */
   GPIO_InitStruct.Pin = Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin|BUZZER_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
@@ -566,14 +652,14 @@ static void MX_GPIO_Init(void)
 
 /* USER CODE END 4 */
 
-/* USER CODE BEGIN Header_StartDefaultTask */
+/* USER CODE BEGIN Header_Startup */
 /**
-  * @brief  Function implementing the defaultTask thread.
+  * @brief  Function implementing the StartupTask thread.
   * @param  argument: Not used
   * @retval None
   */
-/* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void *argument)
+/* USER CODE END Header_Startup */
+void Startup(void *argument)
 {
   /* init code for USB_DEVICE */
   MX_USB_DEVICE_Init();
@@ -584,6 +670,96 @@ void StartDefaultTask(void *argument)
     osDelay(1);
   }
   /* USER CODE END 5 */
+}
+
+/* USER CODE BEGIN Header_ParachutesDeploy */
+/**
+* @brief Function implementing the ParachutesDply thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_ParachutesDeploy */
+void ParachutesDeploy(void *argument)
+{
+  /* USER CODE BEGIN ParachutesDeploy */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END ParachutesDeploy */
+}
+
+/* USER CODE BEGIN Header_FlashWrite */
+/**
+* @brief Function implementing the FlashWriteTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_FlashWrite */
+void FlashWrite(void *argument)
+{
+  /* USER CODE BEGIN FlashWrite */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END FlashWrite */
+}
+
+/* USER CODE BEGIN Header_SensorsRead */
+/**
+* @brief Function implementing the SensorsReadTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SensorsRead */
+void SensorsRead(void *argument)
+{
+  /* USER CODE BEGIN SensorsRead */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END SensorsRead */
+}
+
+/* USER CODE BEGIN Header_AirBrakesHandling */
+/**
+* @brief Function implementing the AirBrakesTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_AirBrakesHandling */
+void AirBrakesHandling(void *argument)
+{
+  /* USER CODE BEGIN AirBrakesHandling */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END AirBrakesHandling */
+}
+
+/* USER CODE BEGIN Header_PitotTube */
+/**
+* @brief Function implementing the PitotSensorTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_PitotTube */
+void PitotTube(void *argument)
+{
+  /* USER CODE BEGIN PitotTube */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END PitotTube */
 }
 
 /**
