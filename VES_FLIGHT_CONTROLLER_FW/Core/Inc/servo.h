@@ -33,7 +33,7 @@ typedef struct {
 
 	float minpos_period_ms;
 	float maxpos_period_ms;
-	uint32_t *TIM_CCR;
+	volatile uint32_t *TIM_CCR;
 	TIM_TypeDef *TIM_Instance;
 	uint16_t maxpos_pulse;
 	uint16_t minpos_pulse;
