@@ -305,7 +305,7 @@ INT8 bmp390_spi_write(struct bmp390_handler *handler, UINT8 reg_address, const U
 
 	buffer = reg_address;
 
-	HAL_SPI_Transmit(handler -> stm32_spi_handler, (UINT8 *)&buffer, 1, timeout);
+	result = HAL_SPI_Transmit(handler -> stm32_spi_handler, (UINT8 *)&buffer, 1, timeout);
 
 	if (result != HAL_OK) {
 
