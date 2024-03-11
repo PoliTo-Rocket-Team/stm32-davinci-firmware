@@ -41,6 +41,27 @@ uint8_t W25Q128_read_id(W25Q128* memory) {
 	}
 }
 
+uint8_t W25Q128_read_manufacturer_dev_id(W25Q128* memory) {
+	uint8_t txdata[4];
+	uint8_t result = HAL_ERROR;
+	uint8_t rxbuffer[4] = {0};
+
+	txdata[0] = W25Q128_MANUFACTURER_DEVICE_ID;
+	txdata[1] = 0x0;
+	txdata[2] = 0x0;
+	txdata[3] = 0x0;
+
+	W25Q128_CS_LOW(memory);
+
+	if (HAL_SPI_TransmitReceive(memory -> spi_handle, txdata, rxbuffer, 4, W25Q128_TIMEOUT) == HAL_OK) {
+		result = HAL_OK;
+	}
+
+	W25Q128_CS_HIGH(memory);
+
+	return result;
+}
+
 uint8_t W25Q128_power_up(W25Q128* memory) {
 	uint8_t txdata = W25Q128_RELEASE_POWER_DOWN_ID;
 	uint8_t result = HAL_ERROR;
