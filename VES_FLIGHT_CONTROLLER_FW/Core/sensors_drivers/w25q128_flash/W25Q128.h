@@ -84,6 +84,7 @@ typedef struct {
 uint8_t W25Q128_init(W25Q128*, GPIO_TypeDef*, uint16_t, SPI_HandleTypeDef*);
 uint8_t W25Q128_read_id(W25Q128*);
 uint8_t W25Q128_read_manufacturer_dev_id(W25Q128*);
+uint8_t W25Q128_read_JEDEC_id(W25Q128*);
 uint8_t W25Q128_power_up(W25Q128*);
 uint8_t W25Q128_power_down(W25Q128*);
 

@@ -9,6 +9,28 @@
 #include "W25Q128.h"
 #endif
 
+static uint8_t transmit(W25Q128 *memory, uint8_t *buf, uint32_t len) {
+
+    uint8_t result = HAL_ERROR;
+
+    if (HAL_SPI_Transmit(memory->spi_handle, buf, len, W25Q128_TIMEOUT) == HAL_OK) {
+    	result = HAL_OK;
+    }
+
+    return result;
+}
+
+static uint8_t receive(W25Q128 *memory, uint8_t *buf, uint32_t len) {
+
+	uint8_t result = HAL_ERROR;
+
+    if (HAL_SPI_Receive(memory->spi_handle, buf, len, W25Q128_TIMEOUT) == HAL_OK) {
+    	result = HAL_OK;
+    }
+
+    return result;
+}
+
 uint8_t W25Q128_init(W25Q128* memory, GPIO_TypeDef* CS_Port, uint16_t CS_Pin, SPI_HandleTypeDef* hspi) {
 	memory -> CS_Port = CS_Port;
 	memory -> CS_Pin = CS_Pin;
@@ -20,41 +42,62 @@ uint8_t W25Q128_init(W25Q128* memory, GPIO_TypeDef* CS_Port, uint16_t CS_Pin, SP
 }
 
 uint8_t W25Q128_read_id(W25Q128* memory) {
+	uint8_t result = HAL_ERROR;
 	uint8_t txdata[5] = {W25Q128_READ_UNIQUE_ID, 0x00, 0x00, 0x00, 0x00};
-	uint8_t rxbuffer[13];
+	uint8_t rxbuffer[8] = {0};
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_TransmitReceive(memory -> spi_handle, txdata, rxbuffer, 13, W25Q128_TIMEOUT) == HAL_OK) {
-		W25Q128_CS_HIGH(memory);
-
-		for (int i = 0; i < 8; i++) {
-			memory -> ID[i] = rxbuffer[i + 5];
+	if (transmit(memory, txdata, 5) == HAL_OK) {
+		if (receive(memory, rxbuffer, 8) == HAL_OK) {
+			result = HAL_OK;
 		}
-
-		return HAL_OK;
 	}
-	else {
-		W25Q128_CS_HIGH(memory);
 
-		return HAL_ERROR;
-	}
+	W25Q128_CS_HIGH(memory);
+
+	return result;
 }
 
 uint8_t W25Q128_read_manufacturer_dev_id(W25Q128* memory) {
-	uint8_t txdata[4];
+	uint8_t txdata[4] = {0};
 	uint8_t result = HAL_ERROR;
-	uint8_t rxbuffer[4] = {0};
+	uint8_t rxbuffer[2] = {0};
+	uint16_t ret = 0;
 
 	txdata[0] = W25Q128_MANUFACTURER_DEVICE_ID;
-	txdata[1] = 0x0;
-	txdata[2] = 0x0;
-	txdata[3] = 0x0;
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_TransmitReceive(memory -> spi_handle, txdata, rxbuffer, 4, W25Q128_TIMEOUT) == HAL_OK) {
-		result = HAL_OK;
+	if (transmit(memory, txdata, 4) == HAL_OK) {
+		if (receive(memory, rxbuffer, 2) == HAL_OK) {
+			ret = (rxbuffer[0] << 8) | (rxbuffer[1]);
+			if (ret == 0xEF17) {
+				result = HAL_OK;
+			}
+		}
+	}
+
+	W25Q128_CS_HIGH(memory);
+
+	return result;
+}
+
+uint8_t W25Q128_read_JEDEC_id(W25Q128* memory) {
+	uint8_t txdata= W25Q128_JEDEC_ID;
+	uint8_t result = HAL_ERROR;
+	uint8_t rxbuffer[3] = {0};
+	uint32_t ret = 0;
+
+	W25Q128_CS_LOW(memory);
+
+	if (transmit(memory, &txdata, 1) == HAL_OK) {
+		if (receive(memory, rxbuffer, 3) == HAL_OK) {
+			ret = (uint32_t) ((rxbuffer[0] << 16) | (rxbuffer[1] << 8) | (rxbuffer[2]));
+			if (ret == 0xEF4018) {
+				result = HAL_OK;
+			}
+		}
 	}
 
 	W25Q128_CS_HIGH(memory);
@@ -85,7 +128,7 @@ uint8_t W25Q128_power_down(W25Q128* memory) {
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_Transmit(memory -> spi_handle, &txdata, 1, W25Q128_TIMEOUT) == HAL_OK) {
+	if (transmit(memory, &txdata, 1) == HAL_OK) {
 		result = HAL_OK;
 	}
 
@@ -93,25 +136,25 @@ uint8_t W25Q128_power_down(W25Q128* memory) {
 
 	return result;
 }
-
+//FIXME
 uint8_t W25Q128_read_statusreg1(W25Q128* memory, uint8_t* data) {
 	uint8_t txdata = W25Q128_READ_STATUS_REGISTER_1;
 	uint8_t result = HAL_ERROR;
-	uint8_t rxbuffer[2];
+//	uint8_t rxbuffer;
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_TransmitReceive(memory -> spi_handle, &txdata, rxbuffer, 2, W25Q128_TIMEOUT) == HAL_OK) {
-		result = HAL_OK;
+	if (transmit(memory, &txdata, 1) == HAL_OK) {
+		if (receive(memory, data, 1) == HAL_OK) {
+			result = HAL_OK;
+		}
 	}
 
 	W25Q128_CS_HIGH(memory);
 
-	data[0] = rxbuffer[1];
-
 	return result;
 }
-
+//FIXME
 uint8_t W25Q128_write_statusreg1(W25Q128* memory, uint8_t settings) {
 	uint8_t txdata[2] = {W25Q128_WRITE_STATUS_REGISTER_1, settings & 0x7C};
 	uint8_t result = HAL_ERROR;
@@ -211,7 +254,7 @@ uint8_t W25Q128_write_enable(W25Q128* memory) {
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_Transmit(memory -> spi_handle, &txdata, 1, W25Q128_TIMEOUT) == HAL_OK) {
+	if (transmit(memory, &txdata, 1) == HAL_OK) {
 		result = HAL_OK;
 	}
 
@@ -226,7 +269,7 @@ uint8_t W25Q128_write_disable(W25Q128* memory) {
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_Transmit(memory -> spi_handle, &txdata, 1, W25Q128_TIMEOUT) == HAL_OK) {
+	if (transmit(memory, &txdata, 1) == HAL_OK) {
 		result = HAL_OK;
 	}
 
@@ -252,25 +295,27 @@ uint8_t W25Q128_write_volatile_enable(W25Q128* memory) {\
 uint8_t W25Q128_read_data(W25Q128* memory, uint8_t* address, uint8_t* data, uint16_t length) {
 	uint8_t txdata[4] = {W25Q128_READ_DATA, address[0], address[1], address[2]};
 	uint8_t result = HAL_ERROR;
-	uint8_t rxbuffer[length + 4];
+	uint8_t rxbuffer[length];
 
 	W25Q128_CS_LOW(memory);
 
-	if (HAL_SPI_TransmitReceive(memory -> spi_handle, txdata, rxbuffer, (length + 4), W25Q128_TIMEOUT) == HAL_OK) {
-		result = HAL_OK;
+	if (transmit(memory, txdata, 4) == HAL_OK) {
+		if (receive(memory, rxbuffer, length) == HAL_OK) {
+			result = HAL_OK;
+		}
 	}
 
 	W25Q128_CS_HIGH(memory);
 
 	for (int i = 0; i < length; i++) {
-		data [i] = rxbuffer[i + 4];
+		data [i] = rxbuffer[i];
 	}
 
 	return result;
 }
 
 uint8_t W25Q128_write_data(W25Q128* memory, uint8_t* address, uint8_t* data, uint16_t length) {
-	uint8_t txdata[4 + length];
+	uint8_t txdata[4 + 256] = {0};
 	uint8_t result = HAL_ERROR;
 
 	txdata[0] = W25Q128_PAGE_PROGRAM;
@@ -289,14 +334,14 @@ uint8_t W25Q128_write_data(W25Q128* memory, uint8_t* address, uint8_t* data, uin
 	if (result == HAL_OK) {
 		result = HAL_ERROR;
 
-		if (HAL_SPI_Transmit(memory -> spi_handle, txdata, length + 4, W25Q128_TIMEOUT) == HAL_OK) {
+		if (transmit(memory, txdata, length + 4) == HAL_OK) {
 			result = HAL_OK;
 		}
 	}
 
 	W25Q128_CS_HIGH(memory);
 
-	W25Q128_write_disable(memory);
+	W25Q128_write_disable(memory); //done automatically by the memory (?)
 
 	return result;
 }
