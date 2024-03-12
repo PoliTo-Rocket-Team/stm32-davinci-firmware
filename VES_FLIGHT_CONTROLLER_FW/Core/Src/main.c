@@ -100,6 +100,7 @@ const osThreadAttr_t PitotSensorTask_attributes = {
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* USER CODE BEGIN PV */
+W25Q128 flash;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -165,16 +166,30 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-
+  int result = HAL_ERROR;
+  uint8_t read_data[4] = {0};
+  uint8_t addr[3] = {0};
+  uint8_t data[4] = {0x88, 0x44, 0x22, 0x11};
 
   /* FLASH INITIALIZATION */
+  result = W25Q128_init(&flash, FLASH_nCS_GPIO_Port, FLASH_nCS_Pin, &hspi3);
 
+  if (result != HAL_OK) {
+		Error_Handler();
+  }
+
+//  W25Q128_read_id(&flash);
+//  W25Q128_read_manufacturer_dev_id(&flash);
+//  W25Q128_read_JEDEC_id(&flash);
+
+  W25Q128_write_data(&flash, addr, data, 4);
+  W25Q128_read_data(&flash, addr, read_data, 4);
 
 
   /* USER CODE END 2 */
 
   /* Init scheduler */
-  osKernelInitialize();
+//  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -194,33 +209,33 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of StartupTask */
-  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
-
-  /* creation of ParachutesDply */
-  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
-
-  /* creation of FlashWriteTask */
-  FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
-
-  /* creation of SensorsReadTask */
-  SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
-
-  /* creation of AirBrakesTask */
-  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
-
-  /* creation of PitotSensorTask */
-  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
-
-  /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
-  /* USER CODE END RTOS_THREADS */
-
-  /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
-  /* USER CODE END RTOS_EVENTS */
-
-  /* Start scheduler */
-  osKernelStart();
+//  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
+//
+//  /* creation of ParachutesDply */
+//  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
+//
+//  /* creation of FlashWriteTask */
+//  FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
+//
+//  /* creation of SensorsReadTask */
+//  SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
+//
+//  /* creation of AirBrakesTask */
+//  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
+//
+//  /* creation of PitotSensorTask */
+//  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
+//
+//  /* USER CODE BEGIN RTOS_THREADS */
+//  /* add threads, ... */
+//  /* USER CODE END RTOS_THREADS */
+//
+//  /* USER CODE BEGIN RTOS_EVENTS */
+//  /* add events, ... */
+//  /* USER CODE END RTOS_EVENTS */
+//
+//  /* Start scheduler */
+//  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
@@ -354,7 +369,7 @@ static void MX_SPI1_Init(void)
   hspi1.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi1.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi1.Init.NSS = SPI_NSS_SOFT;
-  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi1.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi1.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi1.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi1.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -392,7 +407,7 @@ static void MX_SPI2_Init(void)
   hspi2.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi2.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi2.Init.NSS = SPI_NSS_SOFT;
-  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi2.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi2.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi2.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi2.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
