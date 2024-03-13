@@ -185,8 +185,11 @@ int main(void)
   /* FIXME it seems that to program the flash
    * we need to write to previously erased cells (0xFF) content
    */
+  /* ERASE THE CONTENT OF THE BLOCK OF 4KB STARTING AT 0x0 */
   W25Q128_erase_sector(&flash, addr);
+  /* WRITE 4 BYTES OF DATA STARTING FROM 0x0 */
   W25Q128_write_data(&flash, addr, data, 4);
+  /* READ 4 BYTES OF DATA STARTING FROM 0x0 */
   W25Q128_read_data(&flash, addr, read_data, 4);
 
 
