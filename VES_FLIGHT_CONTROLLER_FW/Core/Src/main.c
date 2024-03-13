@@ -192,6 +192,20 @@ int main(void)
   /* READ 4 BYTES OF DATA STARTING FROM 0x0 */
   W25Q128_read_data(&flash, addr, read_data, 4);
 
+  W25Q128_erase_sector(&flash, addr);
+
+  for (int i = 0; i < 100; i++) {
+	  data[0] = data[1] = data[2] = data[3] = (uint8_t) (i % 254);
+	  W25Q128_write_data(&flash, addr, data, 4);
+	  W25Q128_read_data(&flash, addr, read_data, 4);
+	  for (int j = 0; j < 4; j++) {
+		  if (data[j] != read_data[j]) {
+			  Error_Handler();
+		  }
+	  }
+	  addr[0] += 4;
+  }
+
 
   /* USER CODE END 2 */
 
