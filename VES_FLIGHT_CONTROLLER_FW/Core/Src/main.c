@@ -182,6 +182,10 @@ int main(void)
 //  W25Q128_read_manufacturer_dev_id(&flash);
 //  W25Q128_read_JEDEC_id(&flash);
 
+  /* FIXME it seems that to program the flash
+   * we need to write to previously erased cells (0xFF) content
+   */
+  W25Q128_erase_sector(&flash, addr);
   W25Q128_write_data(&flash, addr, data, 4);
   W25Q128_read_data(&flash, addr, read_data, 4);
 
