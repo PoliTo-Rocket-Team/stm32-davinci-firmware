@@ -51,6 +51,7 @@ uint8_t W25Q128_read_id(W25Q128* memory) {
 	if (transmit(memory, txdata, 5) == HAL_OK) {
 		if (receive(memory, rxbuffer, 8) == HAL_OK) {
 			result = HAL_OK;
+			//id = 0xE4620C90D7124B42
 		}
 	}
 
@@ -138,12 +139,12 @@ uint8_t W25Q128_power_down(W25Q128* memory) {
 }
 
 uint8_t W25Q128_read_statusreg1(W25Q128* memory, uint8_t* data) {
-	uint8_t txdata = W25Q128_READ_STATUS_REGISTER_1;
+	uint8_t txdata[1] = {W25Q128_READ_STATUS_REGISTER_1};
 	uint8_t result = HAL_ERROR;
 
 	W25Q128_CS_LOW(memory);
 
-	if (transmit(memory, &txdata, 1) == HAL_OK) {
+	if (transmit(memory, txdata, 1) == HAL_OK) {
 		if (receive(memory, data, 1) == HAL_OK) {
 			result = HAL_OK;
 		}
@@ -174,12 +175,12 @@ uint8_t W25Q128_write_statusreg1(W25Q128* memory, uint8_t settings) {
 }
 
 uint8_t W25Q128_read_statusreg2(W25Q128* memory, uint8_t* data) {
-	uint8_t txdata = W25Q128_READ_STATUS_REGISTER_2;
+	uint8_t txdata[1] = {W25Q128_READ_STATUS_REGISTER_2};
 	uint8_t result = HAL_ERROR;
 
 	W25Q128_CS_LOW(memory);
 
-	if (transmit(memory, &txdata, 1) == HAL_OK) {
+	if (transmit(memory, txdata, 1) == HAL_OK) {
 		if (receive(memory, data, 1) == HAL_OK) {
 			result = HAL_OK;
 		}
@@ -246,12 +247,12 @@ uint8_t W25Q128_write_statusreg3(W25Q128* memory, uint8_t settings) {
 }
 
 uint8_t W25Q128_write_enable(W25Q128* memory) {
-	uint8_t txdata = W25Q128_WRITE_ENABLE;
+	uint8_t txdata[1] = {W25Q128_WRITE_ENABLE};
 	uint8_t result = HAL_ERROR;
 
 	W25Q128_CS_LOW(memory);
 
-	if (transmit(memory, &txdata, 1) == HAL_OK) {
+	if (transmit(memory, txdata, 1) == HAL_OK) {
 		result = HAL_OK;
 	}
 
@@ -261,12 +262,12 @@ uint8_t W25Q128_write_enable(W25Q128* memory) {
 }
 
 uint8_t W25Q128_write_disable(W25Q128* memory) {
-	uint8_t txdata = W25Q128_WRITE_DISABLE;
+	uint8_t txdata[1] = {W25Q128_WRITE_DISABLE};
 	uint8_t result = HAL_ERROR;
 
 	W25Q128_CS_LOW(memory);
 
-	if (transmit(memory, &txdata, 1) == HAL_OK) {
+	if (transmit(memory, txdata, 1) == HAL_OK) {
 		result = HAL_OK;
 	}
 
@@ -353,7 +354,7 @@ uint8_t W25Q128_erase_sector(W25Q128* memory, uint8_t* address) {
 }
 
 uint8_t W25Q128_chip_erase(W25Q128* memory) {
-	uint8_t txdata = W25Q128_CHIP_ERASE;
+	uint8_t txdata[1] = {W25Q128_CHIP_ERASE};
 	uint8_t result = HAL_ERROR;
 
 	result = W25Q128_write_enable(memory);
@@ -363,12 +364,14 @@ uint8_t W25Q128_chip_erase(W25Q128* memory) {
 	if (result == HAL_OK) {
 		result = HAL_ERROR;
 
-		if (transmit(memory, &txdata, 1) == HAL_OK) {
+		if (transmit(memory, txdata, 1) == HAL_OK) {
 			result = HAL_OK;
 		}
 	}
 
 	W25Q128_CS_HIGH(memory);
+
+	result = W25Q128_write_disable(memory);
 
 	return result;
 }

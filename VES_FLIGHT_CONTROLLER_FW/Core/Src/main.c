@@ -168,6 +168,7 @@ int main(void)
 
   int result = HAL_ERROR;
   uint8_t read_data[4] = {0};
+  uint8_t read_page[4096] = {0};
   uint8_t addr[3] = {0};
   uint8_t data[4] = {0x88, 0x44, 0x22, 0x11};
 
@@ -178,33 +179,87 @@ int main(void)
 		Error_Handler();
   }
 
-//  W25Q128_read_id(&flash);
-//  W25Q128_read_manufacturer_dev_id(&flash);
-//  W25Q128_read_JEDEC_id(&flash);
+  HAL_Delay(100);
+
+  HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_SET);
+
+  W25Q128_chip_erase(&flash);
+
+  uint8_t reg1 = 1;
+
+  do {
+  	  W25Q128_read_statusreg1(&flash, &reg1);
+    } while (reg1 & 1);
+
+  HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
+
+  W25Q128_read_data(&flash, addr, read_page, 4096);
+
+  for (int i = 0; i < 4096; i++) {
+	  if (read_page[i] != 255) {
+		  HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_SET);
+	  }
+  }
+
+  W25Q128_read_id(&flash);
+  HAL_Delay(100);
+  W25Q128_read_manufacturer_dev_id(&flash);
+  HAL_Delay(100);
+  W25Q128_read_JEDEC_id(&flash);
+  HAL_Delay(100);
 
   /* FIXME it seems that to program the flash
    * we need to write to previously erased cells (0xFF) content
    */
   /* ERASE THE CONTENT OF THE BLOCK OF 4KB STARTING AT 0x0 */
   W25Q128_erase_sector(&flash, addr);
+  do {
+  	  W25Q128_read_statusreg1(&flash, &reg1);
+    } while (reg1 & 1);
+  W25Q128_read_data(&flash, addr, read_data, 4);
+  HAL_Delay(100);
   /* WRITE 4 BYTES OF DATA STARTING FROM 0x0 */
   W25Q128_write_data(&flash, addr, data, 4);
+  do {
+  	  W25Q128_read_statusreg1(&flash, &reg1);
+    } while (reg1 & 1);
   /* READ 4 BYTES OF DATA STARTING FROM 0x0 */
   W25Q128_read_data(&flash, addr, read_data, 4);
+  HAL_Delay(100);
 
+  //FIXME erase_sector does not work FIXME
   W25Q128_erase_sector(&flash, addr);
+  do {
+  	  W25Q128_read_statusreg1(&flash, &reg1);
+    } while ((reg1 & 0x11) == 0x11);
+  W25Q128_read_data(&flash, addr, read_data, 4);
+  HAL_Delay(100);
 
-  for (int i = 0; i < 100; i++) {
+  W25Q128_chip_erase(&flash);
+
+  do {
+		W25Q128_read_statusreg1(&flash, &reg1);
+	} while (reg1 & 1);
+
+  W25Q128_read_data(&flash, addr, read_data, 4);
+
+  for (int i = 0; i < 64; i++) {
 	  data[0] = data[1] = data[2] = data[3] = (uint8_t) (i % 254);
 	  W25Q128_write_data(&flash, addr, data, 4);
+	  HAL_Delay(50);
 	  W25Q128_read_data(&flash, addr, read_data, 4);
+	  HAL_Delay(50);
 	  for (int j = 0; j < 4; j++) {
 		  if (data[j] != read_data[j]) {
+			  HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_SET);
 			  Error_Handler();
 		  }
 	  }
+
 	  addr[0] += 4;
   }
+
+
 
 
   /* USER CODE END 2 */
