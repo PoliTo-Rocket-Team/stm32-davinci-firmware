@@ -33,6 +33,7 @@ extern "C" {
 /* USER CODE BEGIN Includes */
 #include "W25Q128.h"
 #include "servo.h"
+#include "test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
