@@ -171,7 +171,7 @@ int main(void)
   /* USER CODE END 2 */
 
   /* Init scheduler */
-//  osKernelInitialize();
+  osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
   /* add mutexes, ... */
@@ -191,33 +191,33 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of StartupTask */
-//  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
-//
-//  /* creation of ParachutesDply */
-//  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
-//
-//  /* creation of FlashWriteTask */
-//  FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
-//
-//  /* creation of SensorsReadTask */
-//  SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
-//
-//  /* creation of AirBrakesTask */
-//  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
-//
-//  /* creation of PitotSensorTask */
-//  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
-//
-//  /* USER CODE BEGIN RTOS_THREADS */
-//  /* add threads, ... */
-//  /* USER CODE END RTOS_THREADS */
-//
-//  /* USER CODE BEGIN RTOS_EVENTS */
-//  /* add events, ... */
-//  /* USER CODE END RTOS_EVENTS */
-//
-//  /* Start scheduler */
-//  osKernelStart();
+  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
+
+  /* creation of ParachutesDply */
+  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
+
+  /* creation of FlashWriteTask */
+  FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
+
+  /* creation of SensorsReadTask */
+  SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
+
+  /* creation of AirBrakesTask */
+  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
+
+  /* creation of PitotSensorTask */
+  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
+
+  /* USER CODE BEGIN RTOS_THREADS */
+  /* add threads, ... */
+  /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
+
+  /* Start scheduler */
+  osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
   /* Infinite loop */
