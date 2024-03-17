@@ -338,6 +338,8 @@ uint8_t W25Q128_erase_sector(W25Q128* memory, uint8_t* address) {
 
 	result = W25Q128_write_enable(memory);
 
+	W25Q128_CS_LOW(memory);
+
 	if (result == HAL_OK) {
 		result = HAL_ERROR;
 
