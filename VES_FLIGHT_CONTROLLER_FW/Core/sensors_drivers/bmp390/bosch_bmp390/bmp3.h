@@ -374,151 +374,151 @@ int8_t bmp3_get_regs(uint8_t reg_addr, uint8_t *reg_data, uint32_t len, struct b
  * @retval >0 -> Warning
  * @retval <0 -> Error
  */
-int8_t bmp3_set_fifo_settings(uint16_t desired_settings,
-                              const struct bmp3_fifo_settings *fifo_settings,
-                              struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_get_fifo_settings bmp3_get_fifo_settings
- * \code
- * int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev);
- * \endcode
- * @details This API gets the fifo_config_1(fifo_mode,
- * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
- * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
- * settings from the sensor.
- *
- * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
- * @param[in] dev           : Structure instance of bmp3_dev.
- *
- * @return Result of API execution status
- * @retval 0  -> Success
- * @retval >0 -> Warning
- * @retval <0 -> Error
- */
-int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_get_fifo_data bmp3_get_fifo_data
- * \code
- * int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
- *                         const struct bmp3_fifo_settings *fifo_settings,
- *                         struct bmp3_dev *dev);
- * \endcode
- * @details This API gets the fifo data from the sensor.
- *
- * @param[in,out] fifo      : Structure instance of bmp3_fifo_data
- * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
- * @param[in] dev           : Structure instance of bmp3_dev
- *
- * @return Result of API execution status.
- * @retval 0  -> Success
- * @retval >0 -> Warning
- * @retval <0 -> Error
- */
-int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
-                          const struct bmp3_fifo_settings *fifo_settings,
-                          struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_get_fifo_length bmp3_get_fifo_length
- * \code
- * int8_t bmp3_get_fifo_length(uint16_t *fifo_length, struct bmp3_dev *dev);
- * \endcode
- * @details This API gets the fifo length from the sensor.
- *
- * @param[out] fifo_length : Variable used to store the fifo length.
- * @param[in] dev          : Structure instance of bmp3_dev.
- *
- * @return Result of API execution status.
- * @retval 0  -> Success
- * @retval >0 -> Warning
- * @retval <0 -> Error
- */
-int8_t bmp3_get_fifo_length(uint16_t *fifo_length, struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_extract_fifo_data bmp3_extract_fifo_data
- * \code
- * int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev);
- * \endcode
- * @details This API extracts the temperature and/or pressure data from the FIFO
- * data which is already read from the fifo.
- *
- * @param[out] data : Array of bmp3_data structures where the temperature
- *                    and pressure frames will be stored.
- * @param[in] fifo  : Structure instance of bmp3_fifo_data
- * @param[in] dev   : Structure instance of bmp3_dev
- *
- * @return Result of API execution status.
- * @retval 0  -> Success
- * @retval <0 -> Error
- */
-int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_set_fifo_watermark bmp3_set_fifo_watermark
- * \code
- * int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
- *                              const struct bmp3_fifo_settings *fifo_settings,
- *                              struct bmp3_dev *dev);
- * \endcode
- * @details This API sets the fifo watermark length according to the frames count
- * set by the user in the device structure. Refer below for usage.
- *
- * @note: fifo.req_frames = 50;
- *
- * @param[in] fifo          : Structure instance of bmp3_fifo_data
- * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
- * @param[in] dev           : Structure instance of bmp3_dev
- *
- * @return Result of API execution status.
- * @retval 0  -> Success
- * @retval <0 -> Error
- */
-int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
-                               const struct bmp3_fifo_settings *fifo_settings,
-                               struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_get_fifo_watermark bmp3_get_fifo_watermark
- * \code
- * int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev);
- * \endcode
- * @details This API gets the fifo watermark length according to the frames count
- * set by the user in the device structure
- *
- * @param[in] watermark_len : Watermark level value
- * @param[in] dev           : Structure instance of bmp3_dev
- *
- * @return Result of API execution status.
- * @retval 0  -> Success
- * @retval <0 -> Error
- */
-int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev);
-
-/*!
- * \ingroup bmp3ApiFIFO
- * \page bmp3_api_bmp3_fifo_flush bmp3_fifo_flush
- * \code
- * int8_t bmp3_fifo_flush(const struct bmp3_dev *dev);
- * \endcode
- * @details This API performs fifo flush
- *
- * @param[in] dev : Structure instance of bmp3_dev.
- *
- * @return Result of API execution status
- * @retval 0  -> Success
- * @retval >0 -> Warning
- * @retval <0 -> Error
- */
-int8_t bmp3_fifo_flush(struct bmp3_dev *dev);
+//int8_t bmp3_set_fifo_settings(uint16_t desired_settings,
+//                              const struct bmp3_fifo_settings *fifo_settings,
+//                              struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_get_fifo_settings bmp3_get_fifo_settings
+// * \code
+// * int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev);
+// * \endcode
+// * @details This API gets the fifo_config_1(fifo_mode,
+// * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
+// * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
+// * settings from the sensor.
+// *
+// * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
+// * @param[in] dev           : Structure instance of bmp3_dev.
+// *
+// * @return Result of API execution status
+// * @retval 0  -> Success
+// * @retval >0 -> Warning
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_get_fifo_data bmp3_get_fifo_data
+// * \code
+// * int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
+// *                         const struct bmp3_fifo_settings *fifo_settings,
+// *                         struct bmp3_dev *dev);
+// * \endcode
+// * @details This API gets the fifo data from the sensor.
+// *
+// * @param[in,out] fifo      : Structure instance of bmp3_fifo_data
+// * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
+// * @param[in] dev           : Structure instance of bmp3_dev
+// *
+// * @return Result of API execution status.
+// * @retval 0  -> Success
+// * @retval >0 -> Warning
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
+//                          const struct bmp3_fifo_settings *fifo_settings,
+//                          struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_get_fifo_length bmp3_get_fifo_length
+// * \code
+// * int8_t bmp3_get_fifo_length(uint16_t *fifo_length, struct bmp3_dev *dev);
+// * \endcode
+// * @details This API gets the fifo length from the sensor.
+// *
+// * @param[out] fifo_length : Variable used to store the fifo length.
+// * @param[in] dev          : Structure instance of bmp3_dev.
+// *
+// * @return Result of API execution status.
+// * @retval 0  -> Success
+// * @retval >0 -> Warning
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_get_fifo_length(uint16_t *fifo_length, struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_extract_fifo_data bmp3_extract_fifo_data
+// * \code
+// * int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev);
+// * \endcode
+// * @details This API extracts the temperature and/or pressure data from the FIFO
+// * data which is already read from the fifo.
+// *
+// * @param[out] data : Array of bmp3_data structures where the temperature
+// *                    and pressure frames will be stored.
+// * @param[in] fifo  : Structure instance of bmp3_fifo_data
+// * @param[in] dev   : Structure instance of bmp3_dev
+// *
+// * @return Result of API execution status.
+// * @retval 0  -> Success
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_set_fifo_watermark bmp3_set_fifo_watermark
+// * \code
+// * int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
+// *                              const struct bmp3_fifo_settings *fifo_settings,
+// *                              struct bmp3_dev *dev);
+// * \endcode
+// * @details This API sets the fifo watermark length according to the frames count
+// * set by the user in the device structure. Refer below for usage.
+// *
+// * @note: fifo.req_frames = 50;
+// *
+// * @param[in] fifo          : Structure instance of bmp3_fifo_data
+// * @param[in] fifo_settings : Structure instance of bmp3_fifo_settings
+// * @param[in] dev           : Structure instance of bmp3_dev
+// *
+// * @return Result of API execution status.
+// * @retval 0  -> Success
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
+//                               const struct bmp3_fifo_settings *fifo_settings,
+//                               struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_get_fifo_watermark bmp3_get_fifo_watermark
+// * \code
+// * int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev);
+// * \endcode
+// * @details This API gets the fifo watermark length according to the frames count
+// * set by the user in the device structure
+// *
+// * @param[in] watermark_len : Watermark level value
+// * @param[in] dev           : Structure instance of bmp3_dev
+// *
+// * @return Result of API execution status.
+// * @retval 0  -> Success
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev);
+//
+///*!
+// * \ingroup bmp3ApiFIFO
+// * \page bmp3_api_bmp3_fifo_flush bmp3_fifo_flush
+// * \code
+// * int8_t bmp3_fifo_flush(const struct bmp3_dev *dev);
+// * \endcode
+// * @details This API performs fifo flush
+// *
+// * @param[in] dev : Structure instance of bmp3_dev.
+// *
+// * @return Result of API execution status
+// * @retval 0  -> Success
+// * @retval >0 -> Warning
+// * @retval <0 -> Error
+// */
+//int8_t bmp3_fifo_flush(struct bmp3_dev *dev);
 
 /**
  * \ingroup bmp3

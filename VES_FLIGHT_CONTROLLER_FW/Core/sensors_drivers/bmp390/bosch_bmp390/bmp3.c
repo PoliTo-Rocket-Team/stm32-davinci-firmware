@@ -522,155 +522,155 @@ static int8_t write_power_mode(const struct bmp3_settings *settings, struct bmp3
  * @param[in] fifo_settings    : Structure instance of bmp3_fifo_settings
  * @param[in] dev              : Structure instance of bmp3_dev
  */
-static int8_t fill_fifo_config_1(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev);
-
-/*!
- * @brief This internal API fills the fifo_config_2(fifo_sub_sampling,
- * data_select) settings in the reg_data variable so as to burst write
- * in the sensor.
- *
- * @param[in] desired_settings : Variable which specifies the settings which
- *                               are to be set in the sensor.
- * @param[in] fifo_settings    : Structure instance of bmp3_fifo_settings
- * @param[in] dev              : Structure instance of bmp3_dev
- */
-static int8_t fill_fifo_config_2(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev);
-
-/*!
- * @brief This internal API fills the fifo interrupt control(fwtm_en, ffull_en)
- * settings in the reg_data variable so as to burst write in the sensor.
- *
- * @param[in] desired_settings : Variable which specifies the settings which
- *                               are to be set in the sensor.
- * @param[in] fifo_settings    : Structure instance of bmp3_fifo_settings
- * @param[in] dev              : Structure instance of bmp3_dev
- */
-static int8_t fill_fifo_int_ctrl(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev);
-
-/*!
- * @brief This internal API is used to parse the fifo_config_1(fifo_mode,
- * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
- * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
- * settings and store it in device structure
- *
- * @param[in] reg_data       : Pointer variable which stores the fifo settings data
- *                             read from the sensor.
- * @param[out] fifo_settings : Structure instance of bmp3_fifo_settings which
- *                              contains the fifo settings after parsing.
- */
-static void parse_fifo_settings(const uint8_t *reg_data, struct bmp3_fifo_settings *fifo_settings);
-
-/*!
- * @brief This internal API parse the FIFO data frame from the fifo buffer and
- * fills the byte count, uncompensated pressure and/or temperature data and no
- * of parsed frames.
- *
- * @param[in] header         : Pointer variable which stores the fifo settings data
- *                             read from the sensor.
- * @param[in,out] fifo       : Structure instance of bmp3_fifo
- * @param[out] byte_index    : Byte count which is incremented according to the
- *                             of data.
- * @param[out] uncomp_data   : Uncompensated pressure and/or temperature data
- *                             which is stored after parsing fifo buffer data.
- * @param[out] parsed_frames : Total number of parsed frames.
- *
- * @return Result of API execution status.
- * @retval 0 -> Success
- * @retval <0 -> Fail
- */
-static uint8_t parse_fifo_data_frame(uint8_t header,
-                                     struct bmp3_fifo_data *fifo,
-                                     uint16_t *byte_index,
-                                     struct bmp3_uncomp_data *uncomp_data,
-                                     uint8_t *parsed_frames);
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count, uncompensated pressure and/or temperature data.
- *
- * @param[out] byte_index : Byte count of fifo buffer.
- * @param[in] fifo_buffer : FIFO buffer from where the temperature and pressure
- * frames are unpacked.
- * @param[out] uncomp_data : Uncompensated temperature and pressure data after
- * unpacking from fifo buffer.
- */
-static void unpack_temp_press_frame(uint16_t *byte_index,
-                                    const uint8_t *fifo_buffer,
-                                    struct bmp3_uncomp_data *uncomp_data);
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count and uncompensated pressure data.
- *
- * @param[out] byte_index : Byte count of fifo buffer.
- * @param[in] fifo_buffer : FIFO buffer from where the pressure frames are
- * unpacked.
- * @param[out] uncomp_data : Uncompensated pressure data after unpacking from
- * fifo buffer.
- */
-static void unpack_press_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data);
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count and uncompensated temperature data.
- *
- * @param[out] byte_index : Byte count of fifo buffer.
- * @param[in] fifo_buffer : FIFO buffer from where the temperature frames
- * are unpacked.
- * @param[out] uncomp_data : Uncompensated temperature data after unpacking from
- * fifo buffer.
- */
-static void unpack_temp_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data);
-
-/*!
- * @brief This internal API unpacks the time frame from the fifo data buffer and
- * fills the byte count and update the sensor time variable.
- *
- * @param[out] byte_index : Byte count of fifo buffer.
- * @param[in] fifo_buffer : FIFO buffer from where the sensor time frames
- * are unpacked.
- * @param[out] sensor_time : Variable used to store the sensor time.
- */
-static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time);
-
-/*!
- * @brief This internal API parses the FIFO buffer and gets the header info.
- *
- * @param[out] header : Variable used to store the fifo header data.
- * @param[in] fifo_buffer : FIFO buffer from where the header data is retrieved.
- * @param[out] byte_index : Byte count of fifo buffer.
- */
-static void get_header_info(uint8_t *header, const uint8_t *fifo_buffer, uint16_t *byte_index);
-
-/*!
- * @brief This internal API parses the FIFO data frame from the fifo buffer and
- * fills uncompensated temperature and/or pressure data.
- *
- * @param[in] sensor_comp : Variable used to select either temperature or
- * pressure or both while parsing the fifo frames.
- * @param[in] fifo_buffer : FIFO buffer where the temperature or pressure or
- * both the data to be parsed.
- * @param[out] uncomp_data : Uncompensated temperature or pressure or both the
- * data after unpacking from fifo buffer.
- */
-static void parse_fifo_sensor_data(uint8_t sensor_comp, const uint8_t *fifo_buffer,
-                                   struct bmp3_uncomp_data *uncomp_data);
-
-/*!
- * @brief This internal API resets the FIFO buffer, start index,
- * parsed frame count, configuration change, configuration error and
- * frame_not_available variables.
- *
- * @param[out] fifo : FIFO structure instance where the fifo related variables
- * are reset.
- */
-static void reset_fifo_index(struct bmp3_fifo_data *fifo);
+//static int8_t fill_fifo_config_1(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev);
+//
+///*!
+// * @brief This internal API fills the fifo_config_2(fifo_sub_sampling,
+// * data_select) settings in the reg_data variable so as to burst write
+// * in the sensor.
+// *
+// * @param[in] desired_settings : Variable which specifies the settings which
+// *                               are to be set in the sensor.
+// * @param[in] fifo_settings    : Structure instance of bmp3_fifo_settings
+// * @param[in] dev              : Structure instance of bmp3_dev
+// */
+//static int8_t fill_fifo_config_2(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev);
+//
+///*!
+// * @brief This internal API fills the fifo interrupt control(fwtm_en, ffull_en)
+// * settings in the reg_data variable so as to burst write in the sensor.
+// *
+// * @param[in] desired_settings : Variable which specifies the settings which
+// *                               are to be set in the sensor.
+// * @param[in] fifo_settings    : Structure instance of bmp3_fifo_settings
+// * @param[in] dev              : Structure instance of bmp3_dev
+// */
+//static int8_t fill_fifo_int_ctrl(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev);
+//
+///*!
+// * @brief This internal API is used to parse the fifo_config_1(fifo_mode,
+// * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
+// * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
+// * settings and store it in device structure
+// *
+// * @param[in] reg_data       : Pointer variable which stores the fifo settings data
+// *                             read from the sensor.
+// * @param[out] fifo_settings : Structure instance of bmp3_fifo_settings which
+// *                              contains the fifo settings after parsing.
+// */
+//static void parse_fifo_settings(const uint8_t *reg_data, struct bmp3_fifo_settings *fifo_settings);
+//
+///*!
+// * @brief This internal API parse the FIFO data frame from the fifo buffer and
+// * fills the byte count, uncompensated pressure and/or temperature data and no
+// * of parsed frames.
+// *
+// * @param[in] header         : Pointer variable which stores the fifo settings data
+// *                             read from the sensor.
+// * @param[in,out] fifo       : Structure instance of bmp3_fifo
+// * @param[out] byte_index    : Byte count which is incremented according to the
+// *                             of data.
+// * @param[out] uncomp_data   : Uncompensated pressure and/or temperature data
+// *                             which is stored after parsing fifo buffer data.
+// * @param[out] parsed_frames : Total number of parsed frames.
+// *
+// * @return Result of API execution status.
+// * @retval 0 -> Success
+// * @retval <0 -> Fail
+// */
+//static uint8_t parse_fifo_data_frame(uint8_t header,
+//                                     struct bmp3_fifo_data *fifo,
+//                                     uint16_t *byte_index,
+//                                     struct bmp3_uncomp_data *uncomp_data,
+//                                     uint8_t *parsed_frames);
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count, uncompensated pressure and/or temperature data.
+// *
+// * @param[out] byte_index : Byte count of fifo buffer.
+// * @param[in] fifo_buffer : FIFO buffer from where the temperature and pressure
+// * frames are unpacked.
+// * @param[out] uncomp_data : Uncompensated temperature and pressure data after
+// * unpacking from fifo buffer.
+// */
+//static void unpack_temp_press_frame(uint16_t *byte_index,
+//                                    const uint8_t *fifo_buffer,
+//                                    struct bmp3_uncomp_data *uncomp_data);
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count and uncompensated pressure data.
+// *
+// * @param[out] byte_index : Byte count of fifo buffer.
+// * @param[in] fifo_buffer : FIFO buffer from where the pressure frames are
+// * unpacked.
+// * @param[out] uncomp_data : Uncompensated pressure data after unpacking from
+// * fifo buffer.
+// */
+//static void unpack_press_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data);
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count and uncompensated temperature data.
+// *
+// * @param[out] byte_index : Byte count of fifo buffer.
+// * @param[in] fifo_buffer : FIFO buffer from where the temperature frames
+// * are unpacked.
+// * @param[out] uncomp_data : Uncompensated temperature data after unpacking from
+// * fifo buffer.
+// */
+//static void unpack_temp_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data);
+//
+///*!
+// * @brief This internal API unpacks the time frame from the fifo data buffer and
+// * fills the byte count and update the sensor time variable.
+// *
+// * @param[out] byte_index : Byte count of fifo buffer.
+// * @param[in] fifo_buffer : FIFO buffer from where the sensor time frames
+// * are unpacked.
+// * @param[out] sensor_time : Variable used to store the sensor time.
+// */
+//static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time);
+//
+///*!
+// * @brief This internal API parses the FIFO buffer and gets the header info.
+// *
+// * @param[out] header : Variable used to store the fifo header data.
+// * @param[in] fifo_buffer : FIFO buffer from where the header data is retrieved.
+// * @param[out] byte_index : Byte count of fifo buffer.
+// */
+//static void get_header_info(uint8_t *header, const uint8_t *fifo_buffer, uint16_t *byte_index);
+//
+///*!
+// * @brief This internal API parses the FIFO data frame from the fifo buffer and
+// * fills uncompensated temperature and/or pressure data.
+// *
+// * @param[in] sensor_comp : Variable used to select either temperature or
+// * pressure or both while parsing the fifo frames.
+// * @param[in] fifo_buffer : FIFO buffer where the temperature or pressure or
+// * both the data to be parsed.
+// * @param[out] uncomp_data : Uncompensated temperature or pressure or both the
+// * data after unpacking from fifo buffer.
+// */
+//static void parse_fifo_sensor_data(uint8_t sensor_comp, const uint8_t *fifo_buffer,
+//                                   struct bmp3_uncomp_data *uncomp_data);
+//
+///*!
+// * @brief This internal API resets the FIFO buffer, start index,
+// * parsed frame count, configuration change, configuration error and
+// * frame_not_available variables.
+// *
+// * @param[out] fifo : FIFO structure instance where the fifo related variables
+// * are reset.
+// */
+//static void reset_fifo_index(struct bmp3_fifo_data *fifo);
 
 /*!
  * @brief This API gets the command ready, data ready for pressure and
@@ -724,9 +724,9 @@ static int8_t get_err_status(struct bmp3_status *status, struct bmp3_dev *dev);
  * @retval 0 -> Success
  * @retval <0 -> Fail
  */
-static int8_t convert_frames_to_bytes(uint16_t *watermark_len,
-                                      const struct bmp3_fifo_data *fifo,
-                                      const struct bmp3_fifo_settings *fifo_settings);
+//static int8_t convert_frames_to_bytes(uint16_t *watermark_len,
+//                                      const struct bmp3_fifo_data *fifo,
+//                                      const struct bmp3_fifo_settings *fifo_settings);
 
 /****************** Global Function Definitions *******************************/
 
@@ -979,222 +979,222 @@ int8_t bmp3_get_sensor_settings(struct bmp3_settings *settings, struct bmp3_dev 
  * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
  * settings in the sensor.
  */
-int8_t bmp3_set_fifo_settings(uint16_t desired_settings,
-                              const struct bmp3_fifo_settings *fifo_settings,
-                              struct bmp3_dev *dev)
-{
-    int8_t rslt;
-
-    /* Check for null pointer in the device structure */
-    rslt = null_ptr_check(dev);
-
-    /* Proceed if null check is fine */
-    if ((rslt == BMP3_OK) && (fifo_settings != NULL))
-    {
-        if (are_settings_changed(BMP3_FIFO_CONFIG_1, desired_settings))
-        {
-            /* Fill the FIFO config 1 register data */
-            rslt = fill_fifo_config_1(desired_settings, fifo_settings, dev);
-        }
-
-        if (are_settings_changed(desired_settings, BMP3_FIFO_CONFIG_2))
-        {
-            /* Fill the FIFO config 2 register data */
-            rslt = fill_fifo_config_2(desired_settings, fifo_settings, dev);
-        }
-
-        if (are_settings_changed(desired_settings, BMP3_FIFO_INT_CTRL))
-        {
-            /* Fill the FIFO interrupt ctrl register data */
-            rslt = fill_fifo_int_ctrl(desired_settings, fifo_settings, dev);
-        }
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API gets the fifo_config_1(fifo_mode,
- * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
- * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
- * settings from the sensor.
- */
-int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t fifo_sett[3];
-    uint8_t len = 3;
-
-    /* Proceed if null check is fine */
-    if (fifo_settings != NULL)
-    {
-        rslt = bmp3_get_regs(BMP3_REG_FIFO_CONFIG_1, fifo_sett, len, dev);
-
-        /* Parse the fifo settings */
-        parse_fifo_settings(fifo_sett, fifo_settings);
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API gets the fifo data from the sensor.
- */
-int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
-                          const struct bmp3_fifo_settings *fifo_settings,
-                          struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint16_t fifo_len;
-
-    if ((fifo != NULL) && (fifo_settings != NULL))
-    {
-        reset_fifo_index(fifo);
-
-        /* Get the total number of bytes available in FIFO */
-        rslt = bmp3_get_fifo_length(&fifo_len, dev);
-
-        if (rslt == BMP3_OK)
-        {
-            /* For sensor time frame , add additional overhead bytes */
-            if (fifo_settings->time_en == TRUE)
-            {
-                fifo_len = fifo_len + BMP3_SENSORTIME_OVERHEAD_BYTES;
-            }
-
-            /* Update the fifo length in the fifo structure */
-            fifo->byte_count = fifo_len;
-
-            /* Read the fifo data */
-            rslt = bmp3_get_regs(BMP3_REG_FIFO_DATA, fifo->buffer, fifo_len, dev);
-        }
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API sets the fifo watermark length according to the frames count
- * set by the user in the device structure. Refer below for usage.
- */
-int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
-                               const struct bmp3_fifo_settings *fifo_settings,
-                               struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t reg_data[2];
-    uint8_t reg_addr[2] = { BMP3_REG_FIFO_WM, BMP3_REG_FIFO_WM + 1 };
-    uint16_t watermark_len;
-
-    if ((fifo != NULL) && (fifo_settings != NULL))
-    {
-        rslt = convert_frames_to_bytes(&watermark_len, fifo, fifo_settings);
-
-        if (rslt == BMP3_OK)
-        {
-            reg_data[0] = BMP3_GET_LSB(watermark_len);
-            reg_data[1] = BMP3_GET_MSB(watermark_len) & 0x01;
-            rslt = bmp3_set_regs(reg_addr, reg_data, 2, dev);
-        }
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API sets the fifo watermark length according to the frames count
- * set by the user in the device structure. Refer below for usage.
- */
-int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t reg_data[2];
-    uint8_t reg_addr = BMP3_REG_FIFO_WM;
-
-    if (watermark_len != NULL)
-    {
-        rslt = bmp3_get_regs(reg_addr, reg_data, 2, dev);
-        if (rslt == BMP3_OK)
-        {
-            *watermark_len = (reg_data[0]) + (reg_data[1] << 8);
-        }
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This API extracts the temperature and/or pressure data from the FIFO
- * data which is already read from the fifo.
- */
-int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t header;
-    uint8_t parsed_frames = 0;
-    uint8_t t_p_frame;
-    struct bmp3_uncomp_data uncomp_data = { 0 };
-
-    rslt = null_ptr_check(dev);
-
-    if ((rslt == BMP3_OK) && (fifo != NULL) && (data != NULL))
-    {
-        uint16_t byte_index = fifo->start_idx;
-
-        while (byte_index < fifo->byte_count)
-        {
-            get_header_info(&header, fifo->buffer, &byte_index);
-            t_p_frame = parse_fifo_data_frame(header, fifo, &byte_index, &uncomp_data, &parsed_frames);
-
-            /* If the frame is pressure and/or temperature data */
-            if (t_p_frame != FALSE)
-            {
-                /* Compensate temperature and pressure data */
-                rslt = compensate_data(t_p_frame, &uncomp_data, &data[parsed_frames - 1], &dev->calib_data);
-            }
-        }
-
-        /* Check if any frames are parsed in FIFO */
-        if (parsed_frames != 0)
-        {
-            /* Update the bytes parsed in the device structure */
-            fifo->start_idx = byte_index;
-            fifo->parsed_frames += parsed_frames;
-        }
-        else
-        {
-            /* No frames are there to parse. It is time to
-             * read the FIFO, if more frames are needed */
-            fifo->frame_not_available = TRUE;
-        }
-    }
-    else
-    {
-        rslt = BMP3_E_NULL_PTR;
-    }
-
-    return rslt;
-}
+//int8_t bmp3_set_fifo_settings(uint16_t desired_settings,
+//                              const struct bmp3_fifo_settings *fifo_settings,
+//                              struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//
+//    /* Check for null pointer in the device structure */
+//    rslt = null_ptr_check(dev);
+//
+//    /* Proceed if null check is fine */
+//    if ((rslt == BMP3_OK) && (fifo_settings != NULL))
+//    {
+//        if (are_settings_changed(BMP3_FIFO_CONFIG_1, desired_settings))
+//        {
+//            /* Fill the FIFO config 1 register data */
+//            rslt = fill_fifo_config_1(desired_settings, fifo_settings, dev);
+//        }
+//
+//        if (are_settings_changed(desired_settings, BMP3_FIFO_CONFIG_2))
+//        {
+//            /* Fill the FIFO config 2 register data */
+//            rslt = fill_fifo_config_2(desired_settings, fifo_settings, dev);
+//        }
+//
+//        if (are_settings_changed(desired_settings, BMP3_FIFO_INT_CTRL))
+//        {
+//            /* Fill the FIFO interrupt ctrl register data */
+//            rslt = fill_fifo_int_ctrl(desired_settings, fifo_settings, dev);
+//        }
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This API gets the fifo_config_1(fifo_mode,
+// * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en),
+// * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
+// * settings from the sensor.
+// */
+//int8_t bmp3_get_fifo_settings(struct bmp3_fifo_settings *fifo_settings, struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t fifo_sett[3];
+//    uint8_t len = 3;
+//
+//    /* Proceed if null check is fine */
+//    if (fifo_settings != NULL)
+//    {
+//        rslt = bmp3_get_regs(BMP3_REG_FIFO_CONFIG_1, fifo_sett, len, dev);
+//
+//        /* Parse the fifo settings */
+//        parse_fifo_settings(fifo_sett, fifo_settings);
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This API gets the fifo data from the sensor.
+// */
+//int8_t bmp3_get_fifo_data(struct bmp3_fifo_data *fifo,
+//                          const struct bmp3_fifo_settings *fifo_settings,
+//                          struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint16_t fifo_len;
+//
+//    if ((fifo != NULL) && (fifo_settings != NULL))
+//    {
+//        reset_fifo_index(fifo);
+//
+//        /* Get the total number of bytes available in FIFO */
+//        rslt = bmp3_get_fifo_length(&fifo_len, dev);
+//
+//        if (rslt == BMP3_OK)
+//        {
+//            /* For sensor time frame , add additional overhead bytes */
+//            if (fifo_settings->time_en == TRUE)
+//            {
+//                fifo_len = fifo_len + BMP3_SENSORTIME_OVERHEAD_BYTES;
+//            }
+//
+//            /* Update the fifo length in the fifo structure */
+//            fifo->byte_count = fifo_len;
+//
+//            /* Read the fifo data */
+//            rslt = bmp3_get_regs(BMP3_REG_FIFO_DATA, fifo->buffer, fifo_len, dev);
+//        }
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This API sets the fifo watermark length according to the frames count
+// * set by the user in the device structure. Refer below for usage.
+// */
+//int8_t bmp3_set_fifo_watermark(const struct bmp3_fifo_data *fifo,
+//                               const struct bmp3_fifo_settings *fifo_settings,
+//                               struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t reg_data[2];
+//    uint8_t reg_addr[2] = { BMP3_REG_FIFO_WM, BMP3_REG_FIFO_WM + 1 };
+//    uint16_t watermark_len;
+//
+//    if ((fifo != NULL) && (fifo_settings != NULL))
+//    {
+//        rslt = convert_frames_to_bytes(&watermark_len, fifo, fifo_settings);
+//
+//        if (rslt == BMP3_OK)
+//        {
+//            reg_data[0] = BMP3_GET_LSB(watermark_len);
+//            reg_data[1] = BMP3_GET_MSB(watermark_len) & 0x01;
+//            rslt = bmp3_set_regs(reg_addr, reg_data, 2, dev);
+//        }
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This API sets the fifo watermark length according to the frames count
+// * set by the user in the device structure. Refer below for usage.
+// */
+//int8_t bmp3_get_fifo_watermark(uint16_t *watermark_len, struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t reg_data[2];
+//    uint8_t reg_addr = BMP3_REG_FIFO_WM;
+//
+//    if (watermark_len != NULL)
+//    {
+//        rslt = bmp3_get_regs(reg_addr, reg_data, 2, dev);
+//        if (rslt == BMP3_OK)
+//        {
+//            *watermark_len = (reg_data[0]) + (reg_data[1] << 8);
+//        }
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This API extracts the temperature and/or pressure data from the FIFO
+// * data which is already read from the fifo.
+// */
+//int8_t bmp3_extract_fifo_data(struct bmp3_data *data, struct bmp3_fifo_data *fifo, struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t header;
+//    uint8_t parsed_frames = 0;
+//    uint8_t t_p_frame;
+//    struct bmp3_uncomp_data uncomp_data = { 0 };
+//
+//    rslt = null_ptr_check(dev);
+//
+//    if ((rslt == BMP3_OK) && (fifo != NULL) && (data != NULL))
+//    {
+//        uint16_t byte_index = fifo->start_idx;
+//
+//        while (byte_index < fifo->byte_count)
+//        {
+//            get_header_info(&header, fifo->buffer, &byte_index);
+//            t_p_frame = parse_fifo_data_frame(header, fifo, &byte_index, &uncomp_data, &parsed_frames);
+//
+//            /* If the frame is pressure and/or temperature data */
+//            if (t_p_frame != FALSE)
+//            {
+//                /* Compensate temperature and pressure data */
+//                rslt = compensate_data(t_p_frame, &uncomp_data, &data[parsed_frames - 1], &dev->calib_data);
+//            }
+//        }
+//
+//        /* Check if any frames are parsed in FIFO */
+//        if (parsed_frames != 0)
+//        {
+//            /* Update the bytes parsed in the device structure */
+//            fifo->start_idx = byte_index;
+//            fifo->parsed_frames += parsed_frames;
+//        }
+//        else
+//        {
+//            /* No frames are there to parse. It is time to
+//             * read the FIFO, if more frames are needed */
+//            fifo->frame_not_available = TRUE;
+//        }
+//    }
+//    else
+//    {
+//        rslt = BMP3_E_NULL_PTR;
+//    }
+//
+//    return rslt;
+//}
 
 /*!
  * @brief This API gets the command ready, data ready for pressure and
@@ -1463,216 +1463,216 @@ int8_t bmp3_get_sensor_data(uint8_t sensor_comp, struct bmp3_data *comp_data, st
  * @brief This internal API converts the no. of frames required by the user to
  * bytes so as to write in the watermark length register.
  */
-static int8_t convert_frames_to_bytes(uint16_t *watermark_len,
-                                      const struct bmp3_fifo_data *fifo,
-                                      const struct bmp3_fifo_settings *fifo_settings)
-{
-    int8_t rslt = BMP3_OK;
-
-    if ((fifo->req_frames > 0) && (fifo->req_frames <= BMP3_FIFO_MAX_FRAMES))
-    {
-        if (fifo_settings->press_en && fifo_settings->temp_en)
-        {
-            /* Multiply with pressure and temperature header len */
-            *watermark_len = fifo->req_frames * BMP3_LEN_P_AND_T_HEADER_DATA;
-        }
-        else if (fifo_settings->temp_en || fifo_settings->press_en)
-        {
-            /* Multiply with pressure or temperature header len */
-            *watermark_len = fifo->req_frames * BMP3_LEN_P_OR_T_HEADER_DATA;
-        }
-        else
-        {
-            /* No sensor is enabled */
-            rslt = BMP3_W_SENSOR_NOT_ENABLED;
-        }
-    }
-    else
-    {
-        /* Required frame count is zero, which is invalid */
-        rslt = BMP3_W_INVALID_FIFO_REQ_FRAME_CNT;
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This internal API resets the FIFO buffer, start index,
- * parsed frame count, configuration change, configuration error and
- * frame_not_available variables.
- */
-static void reset_fifo_index(struct bmp3_fifo_data *fifo)
-{
-    /* Loop variable */
-    uint16_t index;
-
-    /* Variable for FIFO size */
-    uint16_t fifo_size = 512;
-
-    /* The size of FIFO in BMP3 is 512 bytes */
-    for (index = 0; index < fifo_size; index++)
-    {
-        /* Initialize data buffer to zero */
-        fifo->buffer[index] = 0;
-    }
-
-    fifo->byte_count = 0;
-    fifo->start_idx = 0;
-    fifo->parsed_frames = 0;
-    fifo->config_change = 0;
-    fifo->config_err = 0;
-    fifo->frame_not_available = 0;
-}
-
-/*!
- * @brief This internal API parse the FIFO data frame from the fifo buffer and
- * fills the byte count, uncompensated pressure and/or temperature data and no
- * of parsed frames.
- */
-static uint8_t parse_fifo_data_frame(uint8_t header,
-                                     struct bmp3_fifo_data *fifo,
-                                     uint16_t *byte_index,
-                                     struct bmp3_uncomp_data *uncomp_data,
-                                     uint8_t *parsed_frames)
-{
-    uint8_t t_p_frame = FALSE;
-
-    switch (header)
-    {
-        case BMP3_FIFO_TEMP_PRESS_FRAME:
-            unpack_temp_press_frame(byte_index, fifo->buffer, uncomp_data);
-            *parsed_frames = *parsed_frames + 1;
-            t_p_frame = BMP3_PRESS_TEMP;
-            break;
-        case BMP3_FIFO_TEMP_FRAME:
-            unpack_temp_frame(byte_index, fifo->buffer, uncomp_data);
-            *parsed_frames = *parsed_frames + 1;
-            t_p_frame = BMP3_TEMP;
-            break;
-        case BMP3_FIFO_PRESS_FRAME:
-            unpack_press_frame(byte_index, fifo->buffer, uncomp_data);
-            *parsed_frames = *parsed_frames + 1;
-            t_p_frame = BMP3_PRESS;
-            break;
-        case BMP3_FIFO_TIME_FRAME:
-            unpack_time_frame(byte_index, fifo->buffer, &fifo->sensor_time);
-            break;
-        case BMP3_FIFO_CONFIG_CHANGE:
-            fifo->config_change = 1;
-            *byte_index = *byte_index + 1;
-            break;
-        case BMP3_FIFO_ERROR_FRAME:
-            fifo->config_err = 1;
-            *byte_index = *byte_index + 1;
-            break;
-        case BMP3_FIFO_EMPTY_FRAME:
-            *byte_index = fifo->byte_count;
-            break;
-        default:
-            fifo->config_err = 1;
-            *byte_index = *byte_index + 1;
-            break;
-    }
-
-    return t_p_frame;
-}
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count, uncompensated pressure and/or temperature data.
- */
-static void unpack_temp_press_frame(uint16_t *byte_index,
-                                    const uint8_t *fifo_buffer,
-                                    struct bmp3_uncomp_data *uncomp_data)
-{
-    parse_fifo_sensor_data((BMP3_PRESS_TEMP), &fifo_buffer[*byte_index], uncomp_data);
-    *byte_index = *byte_index + BMP3_LEN_P_T_DATA;
-}
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count and uncompensated temperature data.
- */
-static void unpack_temp_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data)
-{
-    parse_fifo_sensor_data(BMP3_TEMP, &fifo_buffer[*byte_index], uncomp_data);
-    *byte_index = *byte_index + BMP3_LEN_T_DATA;
-}
-
-/*!
- * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
- * fills the byte count and uncompensated pressure data.
- */
-static void unpack_press_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data)
-{
-    parse_fifo_sensor_data(BMP3_PRESS, &fifo_buffer[*byte_index], uncomp_data);
-    *byte_index = *byte_index + BMP3_LEN_P_DATA;
-}
-
-/*!
- * @brief This internal API unpacks the time frame from the fifo data buffer and
- * fills the byte count and update the sensor time variable.
- */
-static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time)
-{
-    uint16_t index = *byte_index;
-    uint32_t xlsb = fifo_buffer[index];
-    uint32_t lsb = ((uint32_t)fifo_buffer[index + 1]) << 8;
-    uint32_t msb = ((uint32_t)fifo_buffer[index + 2]) << 16;
-
-    *sensor_time = msb | lsb | xlsb;
-    *byte_index = *byte_index + BMP3_LEN_SENSOR_TIME;
-}
-
-/*!
- * @brief This internal API parses the FIFO data frame from the fifo buffer and
- * fills uncompensated temperature and/or pressure data.
- */
-static void parse_fifo_sensor_data(uint8_t sensor_comp, const uint8_t *fifo_buffer,
-                                   struct bmp3_uncomp_data *uncomp_data)
-{
-    /* Temporary variables to store the sensor data */
-    uint32_t data_xlsb;
-    uint32_t data_lsb;
-    uint32_t data_msb;
-
-    /* Store the parsed register values for temperature data */
-    data_xlsb = (uint32_t)fifo_buffer[0];
-    data_lsb = (uint32_t)fifo_buffer[1] << 8;
-    data_msb = (uint32_t)fifo_buffer[2] << 16;
-
-    if (sensor_comp == BMP3_TEMP)
-    {
-        /* Update uncompensated temperature */
-        uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
-    }
-
-    if (sensor_comp == BMP3_PRESS)
-    {
-        /* Update uncompensated pressure */
-        uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
-    }
-
-    if (sensor_comp == (BMP3_PRESS_TEMP))
-    {
-        uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
-
-        /* Store the parsed register values for pressure data */
-        data_xlsb = (uint32_t)fifo_buffer[3];
-        data_lsb = (uint32_t)fifo_buffer[4] << 8;
-        data_msb = (uint32_t)fifo_buffer[5] << 16;
-        uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
-    }
-}
+//static int8_t convert_frames_to_bytes(uint16_t *watermark_len,
+//                                      const struct bmp3_fifo_data *fifo,
+//                                      const struct bmp3_fifo_settings *fifo_settings)
+//{
+//    int8_t rslt = BMP3_OK;
+//
+//    if ((fifo->req_frames > 0) && (fifo->req_frames <= BMP3_FIFO_MAX_FRAMES))
+//    {
+//        if (fifo_settings->press_en && fifo_settings->temp_en)
+//        {
+//            /* Multiply with pressure and temperature header len */
+//            *watermark_len = fifo->req_frames * BMP3_LEN_P_AND_T_HEADER_DATA;
+//        }
+//        else if (fifo_settings->temp_en || fifo_settings->press_en)
+//        {
+//            /* Multiply with pressure or temperature header len */
+//            *watermark_len = fifo->req_frames * BMP3_LEN_P_OR_T_HEADER_DATA;
+//        }
+//        else
+//        {
+//            /* No sensor is enabled */
+//            rslt = BMP3_W_SENSOR_NOT_ENABLED;
+//        }
+//    }
+//    else
+//    {
+//        /* Required frame count is zero, which is invalid */
+//        rslt = BMP3_W_INVALID_FIFO_REQ_FRAME_CNT;
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This internal API resets the FIFO buffer, start index,
+// * parsed frame count, configuration change, configuration error and
+// * frame_not_available variables.
+// */
+////static void reset_fifo_index(struct bmp3_fifo_data *fifo)
+////{
+////    /* Loop variable */
+////    uint16_t index;
+////
+////    /* Variable for FIFO size */
+////    uint16_t fifo_size = 512;
+////
+////    /* The size of FIFO in BMP3 is 512 bytes */
+////    for (index = 0; index < fifo_size; index++)
+////    {
+////        /* Initialize data buffer to zero */
+////        fifo->buffer[index] = 0;
+////    }
+////
+////    fifo->byte_count = 0;
+////    fifo->start_idx = 0;
+////    fifo->parsed_frames = 0;
+////    fifo->config_change = 0;
+////    fifo->config_err = 0;
+////    fifo->frame_not_available = 0;
+////}
+////
+/////*!
+//// * @brief This internal API parse the FIFO data frame from the fifo buffer and
+//// * fills the byte count, uncompensated pressure and/or temperature data and no
+//// * of parsed frames.
+//// */
+////static uint8_t parse_fifo_data_frame(uint8_t header,
+////                                     struct bmp3_fifo_data *fifo,
+////                                     uint16_t *byte_index,
+////                                     struct bmp3_uncomp_data *uncomp_data,
+////                                     uint8_t *parsed_frames)
+////{
+////    uint8_t t_p_frame = FALSE;
+////
+////    switch (header)
+////    {
+////        case BMP3_FIFO_TEMP_PRESS_FRAME:
+////            unpack_temp_press_frame(byte_index, fifo->buffer, uncomp_data);
+////            *parsed_frames = *parsed_frames + 1;
+////            t_p_frame = BMP3_PRESS_TEMP;
+////            break;
+////        case BMP3_FIFO_TEMP_FRAME:
+////            unpack_temp_frame(byte_index, fifo->buffer, uncomp_data);
+////            *parsed_frames = *parsed_frames + 1;
+////            t_p_frame = BMP3_TEMP;
+////            break;
+////        case BMP3_FIFO_PRESS_FRAME:
+////            unpack_press_frame(byte_index, fifo->buffer, uncomp_data);
+////            *parsed_frames = *parsed_frames + 1;
+////            t_p_frame = BMP3_PRESS;
+////            break;
+////        case BMP3_FIFO_TIME_FRAME:
+////            unpack_time_frame(byte_index, fifo->buffer, &fifo->sensor_time);
+////            break;
+////        case BMP3_FIFO_CONFIG_CHANGE:
+////            fifo->config_change = 1;
+////            *byte_index = *byte_index + 1;
+////            break;
+////        case BMP3_FIFO_ERROR_FRAME:
+////            fifo->config_err = 1;
+////            *byte_index = *byte_index + 1;
+////            break;
+////        case BMP3_FIFO_EMPTY_FRAME:
+////            *byte_index = fifo->byte_count;
+////            break;
+////        default:
+////            fifo->config_err = 1;
+////            *byte_index = *byte_index + 1;
+////            break;
+////    }
+////
+////    return t_p_frame;
+////}
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count, uncompensated pressure and/or temperature data.
+// */
+//static void unpack_temp_press_frame(uint16_t *byte_index,
+//                                    const uint8_t *fifo_buffer,
+//                                    struct bmp3_uncomp_data *uncomp_data)
+//{
+//    parse_fifo_sensor_data((BMP3_PRESS_TEMP), &fifo_buffer[*byte_index], uncomp_data);
+//    *byte_index = *byte_index + BMP3_LEN_P_T_DATA;
+//}
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count and uncompensated temperature data.
+// */
+//static void unpack_temp_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data)
+//{
+//    parse_fifo_sensor_data(BMP3_TEMP, &fifo_buffer[*byte_index], uncomp_data);
+//    *byte_index = *byte_index + BMP3_LEN_T_DATA;
+//}
+//
+///*!
+// * @brief This internal API unpacks the FIFO data frame from the fifo buffer and
+// * fills the byte count and uncompensated pressure data.
+// */
+//static void unpack_press_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, struct bmp3_uncomp_data *uncomp_data)
+//{
+//    parse_fifo_sensor_data(BMP3_PRESS, &fifo_buffer[*byte_index], uncomp_data);
+//    *byte_index = *byte_index + BMP3_LEN_P_DATA;
+//}
+//
+///*!
+// * @brief This internal API unpacks the time frame from the fifo data buffer and
+// * fills the byte count and update the sensor time variable.
+// */
+//static void unpack_time_frame(uint16_t *byte_index, const uint8_t *fifo_buffer, uint32_t *sensor_time)
+//{
+//    uint16_t index = *byte_index;
+//    uint32_t xlsb = fifo_buffer[index];
+//    uint32_t lsb = ((uint32_t)fifo_buffer[index + 1]) << 8;
+//    uint32_t msb = ((uint32_t)fifo_buffer[index + 2]) << 16;
+//
+//    *sensor_time = msb | lsb | xlsb;
+//    *byte_index = *byte_index + BMP3_LEN_SENSOR_TIME;
+//}
+//
+///*!
+// * @brief This internal API parses the FIFO data frame from the fifo buffer and
+// * fills uncompensated temperature and/or pressure data.
+// */
+//static void parse_fifo_sensor_data(uint8_t sensor_comp, const uint8_t *fifo_buffer,
+//                                   struct bmp3_uncomp_data *uncomp_data)
+//{
+//    /* Temporary variables to store the sensor data */
+//    uint32_t data_xlsb;
+//    uint32_t data_lsb;
+//    uint32_t data_msb;
+//
+//    /* Store the parsed register values for temperature data */
+//    data_xlsb = (uint32_t)fifo_buffer[0];
+//    data_lsb = (uint32_t)fifo_buffer[1] << 8;
+//    data_msb = (uint32_t)fifo_buffer[2] << 16;
+//
+//    if (sensor_comp == BMP3_TEMP)
+//    {
+//        /* Update uncompensated temperature */
+//        uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
+//    }
+//
+//    if (sensor_comp == BMP3_PRESS)
+//    {
+//        /* Update uncompensated pressure */
+//        uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
+//    }
+//
+//    if (sensor_comp == (BMP3_PRESS_TEMP))
+//    {
+//        uncomp_data->temperature = data_msb | data_lsb | data_xlsb;
+//
+//        /* Store the parsed register values for pressure data */
+//        data_xlsb = (uint32_t)fifo_buffer[3];
+//        data_lsb = (uint32_t)fifo_buffer[4] << 8;
+//        data_msb = (uint32_t)fifo_buffer[5] << 16;
+//        uncomp_data->pressure = data_msb | data_lsb | data_xlsb;
+//    }
+//}
 
 /*!
  * @brief This internal API parses the FIFO buffer and gets the header info.
  */
-static void get_header_info(uint8_t *header, const uint8_t *fifo_buffer, uint16_t *byte_index)
-{
-    *header = fifo_buffer[*byte_index];
-    *byte_index = *byte_index + 1;
-}
+//static void get_header_info(uint8_t *header, const uint8_t *fifo_buffer, uint16_t *byte_index)
+//{
+//    *header = fifo_buffer[*byte_index];
+//    *byte_index = *byte_index + 1;
+//}
 
 /*!
  * @brief This internal API sets the normal mode in the sensor.
@@ -2746,150 +2746,150 @@ static int8_t null_ptr_check(const struct bmp3_dev *dev)
  * fifo_config_2(fifo_subsampling, data_select) and int_ctrl(fwtm_en, ffull_en)
  * settings and store it in device structure
  */
-static void parse_fifo_settings(const uint8_t *reg_data, struct bmp3_fifo_settings *fifo_settings)
-{
-    uint8_t fifo_config_1_data = reg_data[0];
-    uint8_t fifo_config_2_data = reg_data[1];
-    uint8_t fifo_int_ctrl_data = reg_data[2];
-
-    /* Parse fifo config 1 register data */
-    fifo_settings->mode = BMP3_GET_BITS_POS_0(fifo_config_1_data, BMP3_FIFO_MODE);
-    fifo_settings->stop_on_full_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_STOP_ON_FULL);
-    fifo_settings->time_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_TIME_EN);
-    fifo_settings->press_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_PRESS_EN);
-    fifo_settings->temp_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_TEMP_EN);
-
-    /* Parse fifo config 2 register data */
-    fifo_settings->down_sampling = BMP3_GET_BITS_POS_0(fifo_config_2_data, BMP3_FIFO_DOWN_SAMPLING);
-    fifo_settings->filter_en = BMP3_GET_BITS(fifo_config_2_data, BMP3_FIFO_FILTER_EN);
-
-    /* Parse fifo related interrupt control data */
-    fifo_settings->ffull_en = BMP3_GET_BITS(fifo_int_ctrl_data, BMP3_FIFO_FULL_EN);
-    fifo_settings->fwtm_en = BMP3_GET_BITS(fifo_int_ctrl_data, BMP3_FIFO_FWTM_EN);
-}
-
-/*!
- * @brief This internal API fills the fifo_config_1(fifo_mode,
- * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en) settings in the
- * reg_data variable so as to burst write in the sensor.
- */
-static int8_t fill_fifo_config_1(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t reg_addr = BMP3_REG_FIFO_CONFIG_1;
-    uint8_t reg_data;
-
-    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
-
-    if (rslt == BMP3_OK)
-    {
-        if (desired_settings & BMP3_SEL_FIFO_MODE)
-        {
-            /* Fill the FIFO mode register data */
-            reg_data = BMP3_SET_BITS_POS_0(reg_data, BMP3_FIFO_MODE, fifo_settings->mode);
-        }
-
-        if (desired_settings & BMP3_SEL_FIFO_STOP_ON_FULL_EN)
-        {
-            /* Fill the stop on full data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_STOP_ON_FULL, fifo_settings->stop_on_full_en);
-        }
-
-        if (desired_settings & BMP3_SEL_FIFO_TIME_EN)
-        {
-            /* Fill the time enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_TIME_EN, fifo_settings->time_en);
-        }
-
-        if (desired_settings & (BMP3_SEL_FIFO_PRESS_EN | BMP3_SEL_FIFO_TEMP_EN))
-        {
-            /* Fill the pressure enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_PRESS_EN, fifo_settings->press_en);
-
-            /* Fill the temperature enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_TEMP_EN, fifo_settings->temp_en);
-        }
-
-        /* Write the power control settings in the register */
-        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This internal API fills the fifo_config_2(fifo_subsampling,
- * data_select) settings in the reg_data variable so as to burst write
- * in the sensor.
- */
-static int8_t fill_fifo_config_2(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t reg_addr = BMP3_REG_FIFO_CONFIG_2;
-    uint8_t reg_data;
-
-    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
-
-    if (rslt == BMP3_OK)
-    {
-        if (desired_settings & BMP3_SEL_FIFO_DOWN_SAMPLING)
-        {
-            /* To do check Normal mode */
-            /* Fill the down-sampling data */
-            reg_data = BMP3_SET_BITS_POS_0(reg_data, BMP3_FIFO_DOWN_SAMPLING, fifo_settings->down_sampling);
-        }
-
-        if (desired_settings & BMP3_SEL_FIFO_FILTER_EN)
-        {
-            /* Fill the filter enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FILTER_EN, fifo_settings->filter_en);
-        }
-
-        /* Write the power control settings in the register */
-        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
-    }
-
-    return rslt;
-}
-
-/*!
- * @brief This internal API fills the fifo interrupt control(fwtm_en, ffull_en)
- * settings in the reg_data variable so as to burst write in the sensor.
- */
-static int8_t fill_fifo_int_ctrl(uint16_t desired_settings,
-                                 const struct bmp3_fifo_settings *fifo_settings,
-                                 struct bmp3_dev *dev)
-{
-    int8_t rslt;
-    uint8_t reg_addr = BMP3_REG_INT_CTRL;
-    uint8_t reg_data;
-
-    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
-
-    if (rslt == BMP3_OK)
-    {
-        if (desired_settings & BMP3_SEL_FIFO_FWTM_EN)
-        {
-            /* Fill the FIFO watermark interrupt enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FWTM_EN, fifo_settings->fwtm_en);
-        }
-
-        if (desired_settings & BMP3_SEL_FIFO_FULL_EN)
-        {
-            /* Fill the FIFO full interrupt enable data */
-            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FULL_EN, fifo_settings->ffull_en);
-        }
-
-        /* Write the power control settings in the register */
-        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
-    }
-
-    return rslt;
-}
+//static void parse_fifo_settings(const uint8_t *reg_data, struct bmp3_fifo_settings *fifo_settings)
+//{
+//    uint8_t fifo_config_1_data = reg_data[0];
+//    uint8_t fifo_config_2_data = reg_data[1];
+//    uint8_t fifo_int_ctrl_data = reg_data[2];
+//
+//    /* Parse fifo config 1 register data */
+//    fifo_settings->mode = BMP3_GET_BITS_POS_0(fifo_config_1_data, BMP3_FIFO_MODE);
+//    fifo_settings->stop_on_full_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_STOP_ON_FULL);
+//    fifo_settings->time_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_TIME_EN);
+//    fifo_settings->press_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_PRESS_EN);
+//    fifo_settings->temp_en = BMP3_GET_BITS(fifo_config_1_data, BMP3_FIFO_TEMP_EN);
+//
+//    /* Parse fifo config 2 register data */
+//    fifo_settings->down_sampling = BMP3_GET_BITS_POS_0(fifo_config_2_data, BMP3_FIFO_DOWN_SAMPLING);
+//    fifo_settings->filter_en = BMP3_GET_BITS(fifo_config_2_data, BMP3_FIFO_FILTER_EN);
+//
+//    /* Parse fifo related interrupt control data */
+//    fifo_settings->ffull_en = BMP3_GET_BITS(fifo_int_ctrl_data, BMP3_FIFO_FULL_EN);
+//    fifo_settings->fwtm_en = BMP3_GET_BITS(fifo_int_ctrl_data, BMP3_FIFO_FWTM_EN);
+//}
+//
+///*!
+// * @brief This internal API fills the fifo_config_1(fifo_mode,
+// * fifo_stop_on_full, fifo_time_en, fifo_press_en, fifo_temp_en) settings in the
+// * reg_data variable so as to burst write in the sensor.
+// */
+//static int8_t fill_fifo_config_1(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t reg_addr = BMP3_REG_FIFO_CONFIG_1;
+//    uint8_t reg_data;
+//
+//    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
+//
+//    if (rslt == BMP3_OK)
+//    {
+//        if (desired_settings & BMP3_SEL_FIFO_MODE)
+//        {
+//            /* Fill the FIFO mode register data */
+//            reg_data = BMP3_SET_BITS_POS_0(reg_data, BMP3_FIFO_MODE, fifo_settings->mode);
+//        }
+//
+//        if (desired_settings & BMP3_SEL_FIFO_STOP_ON_FULL_EN)
+//        {
+//            /* Fill the stop on full data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_STOP_ON_FULL, fifo_settings->stop_on_full_en);
+//        }
+//
+//        if (desired_settings & BMP3_SEL_FIFO_TIME_EN)
+//        {
+//            /* Fill the time enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_TIME_EN, fifo_settings->time_en);
+//        }
+//
+//        if (desired_settings & (BMP3_SEL_FIFO_PRESS_EN | BMP3_SEL_FIFO_TEMP_EN))
+//        {
+//            /* Fill the pressure enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_PRESS_EN, fifo_settings->press_en);
+//
+//            /* Fill the temperature enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_TEMP_EN, fifo_settings->temp_en);
+//        }
+//
+//        /* Write the power control settings in the register */
+//        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This internal API fills the fifo_config_2(fifo_subsampling,
+// * data_select) settings in the reg_data variable so as to burst write
+// * in the sensor.
+// */
+//static int8_t fill_fifo_config_2(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t reg_addr = BMP3_REG_FIFO_CONFIG_2;
+//    uint8_t reg_data;
+//
+//    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
+//
+//    if (rslt == BMP3_OK)
+//    {
+//        if (desired_settings & BMP3_SEL_FIFO_DOWN_SAMPLING)
+//        {
+//            /* To do check Normal mode */
+//            /* Fill the down-sampling data */
+//            reg_data = BMP3_SET_BITS_POS_0(reg_data, BMP3_FIFO_DOWN_SAMPLING, fifo_settings->down_sampling);
+//        }
+//
+//        if (desired_settings & BMP3_SEL_FIFO_FILTER_EN)
+//        {
+//            /* Fill the filter enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FILTER_EN, fifo_settings->filter_en);
+//        }
+//
+//        /* Write the power control settings in the register */
+//        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
+//    }
+//
+//    return rslt;
+//}
+//
+///*!
+// * @brief This internal API fills the fifo interrupt control(fwtm_en, ffull_en)
+// * settings in the reg_data variable so as to burst write in the sensor.
+// */
+//static int8_t fill_fifo_int_ctrl(uint16_t desired_settings,
+//                                 const struct bmp3_fifo_settings *fifo_settings,
+//                                 struct bmp3_dev *dev)
+//{
+//    int8_t rslt;
+//    uint8_t reg_addr = BMP3_REG_INT_CTRL;
+//    uint8_t reg_data;
+//
+//    rslt = bmp3_get_regs(reg_addr, &reg_data, 1, dev);
+//
+//    if (rslt == BMP3_OK)
+//    {
+//        if (desired_settings & BMP3_SEL_FIFO_FWTM_EN)
+//        {
+//            /* Fill the FIFO watermark interrupt enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FWTM_EN, fifo_settings->fwtm_en);
+//        }
+//
+//        if (desired_settings & BMP3_SEL_FIFO_FULL_EN)
+//        {
+//            /* Fill the FIFO full interrupt enable data */
+//            reg_data = BMP3_SET_BITS(reg_data, BMP3_FIFO_FULL_EN, fifo_settings->ffull_en);
+//        }
+//
+//        /* Write the power control settings in the register */
+//        rslt = bmp3_set_regs(&reg_addr, &reg_data, 1, dev);
+//    }
+//
+//    return rslt;
+//}
 
 /*!
  * @brief This API gets the command ready, data ready for pressure and
