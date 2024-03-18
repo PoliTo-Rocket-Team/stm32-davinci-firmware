@@ -34,6 +34,8 @@ extern "C" {
 #include "W25Q128.h"
 #include "servo.h"
 #include "test.h"
+#include "bmp3.h"
+#include "lsm6dso32_reg.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
