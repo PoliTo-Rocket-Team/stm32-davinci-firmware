@@ -11,6 +11,7 @@
 #include "stm32f4xx.h"
 #include <stdio.h>
 #include <string.h>
+#include "imu_test.h"
 
 #ifdef __cplusplus
 extern "C" {

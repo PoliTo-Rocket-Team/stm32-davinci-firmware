@@ -36,6 +36,7 @@ extern "C" {
 #include "test.h"
 #include "bmp3.h"
 #include "lsm6dso32_reg.h"
+#include "imu_test.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
