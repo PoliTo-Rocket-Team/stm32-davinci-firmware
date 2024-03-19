@@ -38,6 +38,7 @@
 #define PITOT_TUBE_TASK_PERIOD 0
 #define FLASH_WRITE_TASK_PERIOD 0
 #define PARACHUTES_DEPLOY_TASK_PERIOD 0
+#define SLAVE_COMMUNICATION_TASK_PERIOD 0
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -101,6 +102,7 @@ const osThreadAttr_t PitotSensorTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 W25Q128 flash;
+struct bmp3_dev bmp390;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -166,7 +168,17 @@ int main(void)
   MX_ADC1_Init();
   /* USER CODE BEGIN 2 */
 
-  test_w25q128(&flash);
+
+
+
+
+
+//  test_w25q128(&flash);
+
+//  lsm6dso32_read_data_polling_mode();
+
+  test_bmp390(&bmp390);
+
 
   /* USER CODE END 2 */
 

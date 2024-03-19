@@ -7,22 +7,71 @@
 
 #include "test.h"
 
+#define BMP390_CS_LOW	HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_RESET)
+#define BMP390_CS_HIGH	HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_SET)
+#define IMU_CS_LOW		HAL_GPIO_WritePin(IMU_1_nCS_GPIO_Port, IMU_1_nCS_Pin, GPIO_PIN_RESET);
+#define IMU_CS_HIGH		HAL_GPIO_WritePin(IMU_1_nCS_GPIO_Port, IMU_1_nCS_Pin, GPIO_PIN_SET);
+
 //FIXME DECLARE TRANSMIT AND RECEIVE FUNCTIONS TO BE USED IN BMP3_SPI_INIT
+
+static uint8_t dev_addr = 0;
+
+void bmp390_delay_us(uint32_t period, void *intf_ptr) {
+	uint32_t i;
+
+	while (period--) {
+		for (i = 0; i < 98; i++) {
+			;
+		}
+	}
+}
+
+static int8_t bmp390_write(uint8_t reg_addr, uint8_t *buf, uint32_t len, void *intf_ptr) {
+
+    uint8_t result = HAL_ERROR;
+
+	BMP390_CS_LOW;
+
+    if (HAL_SPI_Transmit(&hspi1, buf, len, 100) == HAL_OK) {
+    	result = HAL_OK;
+    }
+
+	BMP390_CS_HIGH;
+
+    return result;
+}
+
+static int8_t bmp390_read(uint8_t reg_addr, uint8_t *buf, uint32_t len, void *intf_ptr) {
+
+	uint8_t result = HAL_ERROR;
+
+	BMP390_CS_LOW;
+
+	if (HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 100) == HAL_OK) {
+		if (HAL_SPI_Receive(&hspi1, buf, len, 100) == HAL_OK) {
+			result = HAL_OK;
+		}
+	}
+
+	BMP390_CS_HIGH;
+
+    return result;
+}
 
 static int8_t bmp3_spi_init(struct bmp3_dev *dev) {
 	int8_t result = BMP3_OK;
 
-//	if (dev != NULL) {
-//		dev_addr = 0;
-//		dev->read = transmit();
-//		dev->write = receive();
-//		dev->intf = BMP3_SPI_INTF;
-//
-//		//dev->delay_us = bmp3_delay_us;
-//		dev->intf_ptr = &dev_addr;
-//	} else {
-//		rslt = -1;
-//	}
+	if (dev != NULL) {
+		dev_addr = 0;
+		dev -> read = bmp390_read;
+		dev -> write = bmp390_write;
+		dev -> intf = BMP3_SPI_INTF;
+
+		dev -> delay_us = bmp390_delay_us;
+		dev -> intf_ptr = &dev_addr;
+	} else {
+		result = -1;
+	}
 
 	return result;
 }
@@ -35,13 +84,18 @@ void test_bmp390(struct bmp3_dev *dev) {
 
 	struct bmp3_settings settings = { 0 };
 
+	IMU_CS_HIGH;
+
 	result = bmp3_spi_init(dev);
 
 	if (result != BMP3_OK)	return;
 
 	result = bmp3_init(dev);
 
+	BMP390_CS_HIGH;
+
 	if (result != BMP3_OK)	return;
+
 	settings.press_en = BMP3_ENABLE;
 	settings.temp_en = BMP3_ENABLE;
 
@@ -80,6 +134,8 @@ void test_bmp390(struct bmp3_dev *dev) {
 		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &data, dev);
 
 		//XXX print data, or do something like that
+
+		HAL_Delay(2000);
 	}
 
 }
