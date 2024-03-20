@@ -26,15 +26,17 @@ void bmp390_delay_us(uint32_t period, void *intf_ptr) {
 	}
 }
 
-static int8_t bmp390_write(uint8_t reg_addr, uint8_t *buf, uint32_t len, void *intf_ptr) {
+static int8_t bmp390_write(uint8_t reg_addr, const uint8_t *buf, uint32_t len, void *intf_ptr) {
 
     uint8_t result = HAL_ERROR;
 
 	BMP390_CS_LOW;
 
-    if (HAL_SPI_Transmit(&hspi1, buf, len, 100) == HAL_OK) {
-    	result = HAL_OK;
-    }
+	if (HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 100) == HAL_OK) {
+		if (HAL_SPI_Transmit(&hspi1, (uint8_t *)buf, len, 100) == HAL_OK) {
+			result = HAL_OK;
+		}
+	}
 
 	BMP390_CS_HIGH;
 
