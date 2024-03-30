@@ -175,10 +175,9 @@ int main(void)
 
 //  test_w25q128(&flash);
 
-//  lsm6dso32_read_data_polling_mode();
+  lsm6dso32_read_data_polling_mode();
 
-  test_bmp390(&bmp390);
-
+//  test_bmp390(&bmp390);
 
   /* USER CODE END 2 */
 
@@ -694,6 +693,7 @@ void ParachutesDeploy(void *argument)
   /* Infinite loop */
   for(;;)
   {
+
     osDelay(1);
   }
   /* USER CODE END ParachutesDeploy */

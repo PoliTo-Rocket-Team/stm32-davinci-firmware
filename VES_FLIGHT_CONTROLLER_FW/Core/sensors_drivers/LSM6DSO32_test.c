@@ -70,11 +70,11 @@ void lsm6dso32_read_data_polling_mode() {
 	/* Enable Block Data Update */
 	lsm6dso32_block_data_update_set(&dev_ctx, PROPERTY_ENABLE);
 	/* Set full scale */
-	lsm6dso32_xl_full_scale_set(&dev_ctx, LSM6DSO32_4g);
+	lsm6dso32_xl_full_scale_set(&dev_ctx, LSM6DSO32_16g);
 	lsm6dso32_gy_full_scale_set(&dev_ctx, LSM6DSO32_2000dps);
 	/* Set ODR (Output Data Rate) and power mode*/
-	lsm6dso32_xl_data_rate_set(&dev_ctx, LSM6DSO32_XL_ODR_12Hz5_LOW_PW);
-	lsm6dso32_gy_data_rate_set(&dev_ctx, LSM6DSO32_GY_ODR_12Hz5_HIGH_PERF);
+	lsm6dso32_xl_data_rate_set(&dev_ctx, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD);
+	lsm6dso32_gy_data_rate_set(&dev_ctx, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
 
 	/* Read samples in polling mode (no int) */
 	while (1) {
@@ -86,9 +86,9 @@ void lsm6dso32_read_data_polling_mode() {
 			/* Read acceleration data */
 			memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
 			lsm6dso32_acceleration_raw_get(&dev_ctx, data_raw_acceleration);
-			acceleration_mg[0] = lsm6dso32_from_fs4_to_mg(data_raw_acceleration[0]);
-			acceleration_mg[1] = lsm6dso32_from_fs4_to_mg(data_raw_acceleration[1]);
-			acceleration_mg[2] = lsm6dso32_from_fs4_to_mg(data_raw_acceleration[2]);
+			acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
+			acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
+			acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
 			sprintf((char *)tx_buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n", acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
 			tx_com(tx_buffer, strlen((char const *)tx_buffer));
 		}
