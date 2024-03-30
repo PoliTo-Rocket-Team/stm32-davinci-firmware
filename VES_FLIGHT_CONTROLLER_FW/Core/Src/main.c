@@ -33,12 +33,11 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SENSORS_TASK_PERIOD 10	/* Period of Sensors Task Period in TICKS */
-#define AIR_BRAKES_HANDLING_TASK_PERIOD 0
-#define PITOT_TUBE_TASK_PERIOD 0
-#define FLASH_WRITE_TASK_PERIOD 0
-#define PARACHUTES_DEPLOY_TASK_PERIOD 0
-#define SLAVE_COMMUNICATION_TASK_PERIOD 0
+#define SENSORS_TASK_PERIOD 10U	/* Period of Sensors Task Period in TICKS */
+#define FLASH_WRITE_TASK_PERIOD 0U
+#define DROGUE_PARACHUTE_DEPLOY_TASK_PERIOD
+#define MAIN_PARACHUTE_DEPLOY_TASK_PERIOD
+#define COM_BOARD_COMMUNICATION_TASK_PERIOD
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -65,10 +64,10 @@ const osThreadAttr_t StartupTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for ParachutesDply */
-osThreadId_t ParachutesDplyHandle;
-const osThreadAttr_t ParachutesDply_attributes = {
-  .name = "ParachutesDply",
+/* Definitions for DrogueParachute */
+osThreadId_t DrogueParachuteHandle;
+const osThreadAttr_t DrogueParachute_attributes = {
+  .name = "DrogueParachute",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -86,17 +85,17 @@ const osThreadAttr_t SensorsReadTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for AirBrakesTask */
-osThreadId_t AirBrakesTaskHandle;
-const osThreadAttr_t AirBrakesTask_attributes = {
-  .name = "AirBrakesTask",
+/* Definitions for MainParachute */
+osThreadId_t MainParachuteHandle;
+const osThreadAttr_t MainParachute_attributes = {
+  .name = "MainParachute",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for PitotSensorTask */
-osThreadId_t PitotSensorTaskHandle;
-const osThreadAttr_t PitotSensorTask_attributes = {
-  .name = "PitotSensorTask",
+/* Definitions for COMBoardTask */
+osThreadId_t COMBoardTaskHandle;
+const osThreadAttr_t COMBoardTask_attributes = {
+  .name = "COMBoardTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -116,11 +115,11 @@ static void MX_USART2_UART_Init(void);
 static void MX_USART1_Init(void);
 static void MX_ADC1_Init(void);
 void Startup(void *argument);
-void ParachutesDeploy(void *argument);
+void DrogueParachuteDeploy(void *argument);
 void FlashWrite(void *argument);
 void SensorsRead(void *argument);
-void AirBrakesHandling(void *argument);
-void PitotTube(void *argument);
+void MainParachuteDeploy(void *argument);
+void CommunicationBoard(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -137,6 +136,7 @@ void PitotTube(void *argument);
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
@@ -204,8 +204,8 @@ int main(void)
   /* creation of StartupTask */
   StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
 
-  /* creation of ParachutesDply */
-  ParachutesDplyHandle = osThreadNew(ParachutesDeploy, NULL, &ParachutesDply_attributes);
+  /* creation of DrogueParachute */
+  DrogueParachuteHandle = osThreadNew(DrogueParachuteDeploy, NULL, &DrogueParachute_attributes);
 
   /* creation of FlashWriteTask */
   FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
@@ -213,11 +213,11 @@ int main(void)
   /* creation of SensorsReadTask */
   SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
 
-  /* creation of AirBrakesTask */
-  AirBrakesTaskHandle = osThreadNew(AirBrakesHandling, NULL, &AirBrakesTask_attributes);
+  /* creation of MainParachute */
+  MainParachuteHandle = osThreadNew(MainParachuteDeploy, NULL, &MainParachute_attributes);
 
-  /* creation of PitotSensorTask */
-  PitotSensorTaskHandle = osThreadNew(PitotTube, NULL, &PitotSensorTask_attributes);
+  /* creation of COMBoardTask */
+  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -231,6 +231,7 @@ int main(void)
   osKernelStart();
 
   /* We should never get here as control is now taken by the scheduler */
+
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
@@ -680,23 +681,26 @@ void Startup(void *argument)
   /* USER CODE END 5 */
 }
 
-/* USER CODE BEGIN Header_ParachutesDeploy */
+/* USER CODE BEGIN Header_DrogueParachuteDeploy */
 /**
-* @brief Function implementing the ParachutesDply thread.
+* @brief Function implementing the DrogueParachute thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_ParachutesDeploy */
-void ParachutesDeploy(void *argument)
+/* USER CODE END Header_DrogueParachuteDeploy */
+void DrogueParachuteDeploy(void *argument)
 {
-  /* USER CODE BEGIN ParachutesDeploy */
-  /* Infinite loop */
-  for(;;)
-  {
-
-    osDelay(1);
-  }
-  /* USER CODE END ParachutesDeploy */
+  /* USER CODE BEGIN DrogueParachuteDeploy */
+//	uint32_t tick;
+//
+//	tick = osKernelGetTickCount();
+//	  /* Infinite loop */
+//	for(;;)
+//	{
+//		tick += ;
+//		osDelayUntil(tick);
+//	}
+  /* USER CODE END DrogueParachuteDeploy */
 }
 
 /* USER CODE BEGIN Header_FlashWrite */
@@ -709,11 +713,15 @@ void ParachutesDeploy(void *argument)
 void FlashWrite(void *argument)
 {
   /* USER CODE BEGIN FlashWrite */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+//	uint32_t tick;
+//
+//	tick = osKernelGetTickCount();
+//  /* Infinite loop */
+//  for(;;)
+//  {
+//	  tick += ;
+//	  osDelayUntil(tick);
+//  }
   /* USER CODE END FlashWrite */
 }
 
@@ -727,48 +735,64 @@ void FlashWrite(void *argument)
 void SensorsRead(void *argument)
 {
   /* USER CODE BEGIN SensorsRead */
+	uint32_t tick;
+
+	tick = osKernelGetTickCount();
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+
+
+
+
+	  tick += SENSORS_TASK_PERIOD;
+	  osDelayUntil(tick);
   }
   /* USER CODE END SensorsRead */
 }
 
-/* USER CODE BEGIN Header_AirBrakesHandling */
+/* USER CODE BEGIN Header_MainParachuteDeploy */
 /**
-* @brief Function implementing the AirBrakesTask thread.
+* @brief Function implementing the MainParachute thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_AirBrakesHandling */
-void AirBrakesHandling(void *argument)
+/* USER CODE END Header_MainParachuteDeploy */
+void MainParachuteDeploy(void *argument)
 {
-  /* USER CODE BEGIN AirBrakesHandling */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END AirBrakesHandling */
+  /* USER CODE BEGIN MainParachuteDeploy */
+//	uint32_t tick;
+//
+//	tick = osKernelGetTickCount();
+//	  /* Infinite loop */
+//	for(;;)
+//	{
+//		tick += ;
+//		osDelayUntil(tick);
+//	}
+  /* USER CODE END MainParachuteDeploy */
 }
 
-/* USER CODE BEGIN Header_PitotTube */
+/* USER CODE BEGIN Header_CommunicationBoard */
 /**
-* @brief Function implementing the PitotSensorTask thread.
+* @brief Function implementing the COMBoardTask thread.
 * @param argument: Not used
 * @retval None
 */
-/* USER CODE END Header_PitotTube */
-void PitotTube(void *argument)
+/* USER CODE END Header_CommunicationBoard */
+void CommunicationBoard(void *argument)
 {
-  /* USER CODE BEGIN PitotTube */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END PitotTube */
+  /* USER CODE BEGIN CommunicationBoard */
+//	uint32_t tick;
+//
+//	tick = osKernelGetTickCount();
+//	  /* Infinite loop */
+//	for(;;)
+//	{
+//		tick += ;
+//		osDelayUntil(tick);
+//	}
+  /* USER CODE END CommunicationBoard */
 }
 
 /**
