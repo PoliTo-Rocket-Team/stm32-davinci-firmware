@@ -1,0 +1,5 @@
+# These owners will be the default owners for everything in
+# the repo and, as such, will be requested for
+# review when someone opens a pull request.
+*    @SamMartello
+*    @tommy-tg
