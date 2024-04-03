@@ -35,19 +35,57 @@ static float acceleration_mg[3];
 static float angular_rate_mdps[3];
 static float temperature_degC;
 static uint8_t whoamI, rst;
-static uint8_t tx_buffer[1000];
+//static uint8_t tx_buffer[1000];
 
-static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
-static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
-static void tx_com( uint8_t *tx_buffer, uint16_t len );
+//static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len);
+//static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len);
+//static void tx_com( uint8_t *tx_buffer, uint16_t len );
 static void platform_delay(uint32_t ms);
+
+static int8_t imu_write(void *handle, uint8_t reg_addr, const uint8_t *buf, uint16_t len) {
+
+    uint8_t result = HAL_ERROR;
+
+    IMU_CS_LOW;
+
+	if (HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 100) == HAL_OK) {
+		if (HAL_SPI_Transmit(&hspi1, (uint8_t *)buf, len, 100) == HAL_OK) {
+			result = HAL_OK;
+		}
+	}
+
+	IMU_CS_HIGH;
+
+    return result;
+}
+
+static int8_t imu_read(void *handle, uint8_t reg_addr, uint8_t *buf, uint16_t len) {
+
+	uint8_t result = HAL_ERROR;
+
+	reg_addr |= 0x80;
+
+	IMU_CS_LOW;
+
+	if (HAL_SPI_Transmit(&hspi1, &reg_addr, 1, 100) == HAL_OK) {
+		if (HAL_SPI_Receive(&hspi1, buf, len, 100) == HAL_OK) {
+			result = HAL_OK;
+		}
+	}
+
+	IMU_CS_HIGH;
+
+    return result;
+}
 
 void lsm6dso32_read_data_polling_mode() {
 
 	stmdev_ctx_t dev_ctx;
 
-	dev_ctx.write_reg = platform_write;
-	dev_ctx.read_reg = platform_read;
+	HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_SET);
+
+	dev_ctx.write_reg = imu_write;
+	dev_ctx.read_reg = imu_read;
 	dev_ctx.handle = &hspi1;
 
 	platform_delay(BOOT_TIME);
@@ -76,8 +114,36 @@ void lsm6dso32_read_data_polling_mode() {
 	lsm6dso32_xl_data_rate_set(&dev_ctx, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD);
 	lsm6dso32_gy_data_rate_set(&dev_ctx, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
 
+	float mean_acceleration_mg[3] = {0};
+	float mean_angular_rate_mdps[3] = {0};
+	float mean_temperature_degC = {0};
+
+	memset(data_raw_acceleration, 0x00, 3 * sizeof(int16_t));
+	lsm6dso32_acceleration_raw_get(&dev_ctx, data_raw_acceleration);
+	acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
+	acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
+	acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
+	mean_acceleration_mg[0] += acceleration_mg[0];
+	mean_acceleration_mg[1] += acceleration_mg[1];
+	mean_acceleration_mg[2] += acceleration_mg[2];
+
+	memset(data_raw_angular_rate, 0x00, 3 * sizeof(int16_t));
+	lsm6dso32_angular_rate_raw_get(&dev_ctx, data_raw_angular_rate);
+	angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
+	angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
+	angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
+	mean_angular_rate_mdps[0] += angular_rate_mdps[0];
+	mean_angular_rate_mdps[1] += angular_rate_mdps[1];
+	mean_angular_rate_mdps[2] += angular_rate_mdps[2];
+
+	memset(&data_raw_temperature, 0x00, sizeof(int16_t));
+	lsm6dso32_temperature_raw_get(&dev_ctx, &data_raw_temperature);
+	temperature_degC = lsm6dso32_from_lsb_to_celsius(data_raw_temperature);
+	mean_temperature_degC += temperature_degC;
+
 	/* Read samples in polling mode (no int) */
-	while (1) {
+	//while (1) {
+	for (int i = 0; i < 100; i++) {
 		lsm6dso32_reg_t reg;
 		/* Read output only if new data is available */
 		lsm6dso32_status_reg_get(&dev_ctx, &reg.status_reg);
@@ -89,8 +155,14 @@ void lsm6dso32_read_data_polling_mode() {
 			acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
 			acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
 			acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
-			sprintf((char *)tx_buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n", acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
-			tx_com(tx_buffer, strlen((char const *)tx_buffer));
+			mean_acceleration_mg[0] += acceleration_mg[0];
+			mean_acceleration_mg[0] /= 2;
+			mean_acceleration_mg[1] += acceleration_mg[1];
+			mean_acceleration_mg[1] /= 2;
+			mean_acceleration_mg[2] += acceleration_mg[2];
+			mean_acceleration_mg[2] /= 2;
+//			sprintf((char *)tx_buffer, "Acceleration [mg]:%4.2f\t%4.2f\t%4.2f\r\n", acceleration_mg[0], acceleration_mg[1], acceleration_mg[2]);
+//			tx_com(tx_buffer, strlen((char const *)tx_buffer));
 		}
 
 		if (reg.status_reg.gda) {
@@ -100,8 +172,14 @@ void lsm6dso32_read_data_polling_mode() {
 			angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
 			angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
 			angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
-			sprintf((char *)tx_buffer, "Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n", angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
-			tx_com(tx_buffer, strlen((char const *)tx_buffer));
+			mean_angular_rate_mdps[0] += angular_rate_mdps[0];
+			mean_angular_rate_mdps[0] /= 2;
+			mean_angular_rate_mdps[1] += angular_rate_mdps[1];
+			mean_angular_rate_mdps[1] /= 2;
+			mean_angular_rate_mdps[2] += angular_rate_mdps[2];
+			mean_angular_rate_mdps[2] /= 2;
+//			sprintf((char *)tx_buffer, "Angular rate [mdps]:%4.2f\t%4.2f\t%4.2f\r\n", angular_rate_mdps[0], angular_rate_mdps[1], angular_rate_mdps[2]);
+//			tx_com(tx_buffer, strlen((char const *)tx_buffer));
 		}
 
 		if (reg.status_reg.tda) {
@@ -109,37 +187,39 @@ void lsm6dso32_read_data_polling_mode() {
 			memset(&data_raw_temperature, 0x00, sizeof(int16_t));
 			lsm6dso32_temperature_raw_get(&dev_ctx, &data_raw_temperature);
 			temperature_degC = lsm6dso32_from_lsb_to_celsius(data_raw_temperature);
-			sprintf((char *)tx_buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC);
-			tx_com(tx_buffer, strlen((char const *)tx_buffer));
+			mean_temperature_degC += temperature_degC;
+			mean_temperature_degC /= 2;
+//			sprintf((char *)tx_buffer, "Temperature [degC]:%6.2f\r\n", temperature_degC);
+//			tx_com(tx_buffer, strlen((char const *)tx_buffer));
 		}
 	}
 }
 
-static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) {
-
-	IMU_CS_LOW;
-	HAL_SPI_Transmit(&hspi1, &reg, 1, 1000);
-	HAL_SPI_Transmit(&hspi1, (uint8_t*) bufp, len, 1000);
-	IMU_CS_HIGH;
-
-	return 0;
-}
-
-static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
-
-	reg |= 0x80;
-	IMU_CS_LOW;
-	HAL_SPI_Transmit(&hspi1, &reg, 1, 1000);
-	HAL_SPI_Receive(&hspi1, bufp, len, 1000);
-	IMU_CS_HIGH;
-
-  return 0;
-}
-
-static void tx_com(uint8_t *tx_buffer, uint16_t len)
-{
-	HAL_UART_Transmit(&huart2, tx_buffer, len, 1000);
-}
+//static int32_t platform_write(void *handle, uint8_t reg, const uint8_t *bufp, uint16_t len) {
+//
+//	IMU_CS_LOW;
+//	HAL_SPI_Transmit(&hspi1, &reg, 1, 1000);
+//	HAL_SPI_Transmit(&hspi1, (uint8_t*) bufp, len, 1000);
+//	IMU_CS_HIGH;
+//
+//	return 0;
+//}
+//
+//static int32_t platform_read(void *handle, uint8_t reg, uint8_t *bufp, uint16_t len) {
+//
+//	reg |= 0x80;
+//	IMU_CS_LOW;
+//	HAL_SPI_Transmit(&hspi1, &reg, 1, 1000);
+//	HAL_SPI_Receive(&hspi1, bufp, len, 1000);
+//	IMU_CS_HIGH;
+//
+//  return 0;
+//}
+//
+//static void tx_com(uint8_t *tx_buffer, uint16_t len)
+//{
+//	HAL_UART_Transmit(&huart2, tx_buffer, len, 1000);
+//}
 
 static void platform_delay(uint32_t ms)
 {
