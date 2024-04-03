@@ -31,6 +31,9 @@ extern "C" {
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
+#include <stdint.h>
+#include "string.h"
+
 #include "W25Q128.h"
 #include "servo.h"
 #include "test.h"
