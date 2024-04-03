@@ -8,7 +8,7 @@
 #ifndef SENSORS_DRIVERS_UTILS_H_
 #define SENSORS_DRIVERS_UTILS_H_
 
-#define DEBUG_EN
+//#define DEBUG_EN
 
 #ifdef DEBUG_EN
 
@@ -16,5 +16,7 @@
 
 HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data);
 #endif
+
+float computeAltitude(double pressurePa, double temperature);
 
 #endif /* SENSORS_DRIVERS_UTILS_H_ */
