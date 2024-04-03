@@ -64,10 +64,10 @@ const osThreadAttr_t StartupTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for DrogueParachute */
-osThreadId_t DrogueParachuteHandle;
-const osThreadAttr_t DrogueParachute_attributes = {
-  .name = "DrogueParachute",
+/* Definitions for DrogueParachuteTask */
+osThreadId_t DrogueParachuteTaskHandle;
+const osThreadAttr_t DrogueParachuteTask_attributes = {
+  .name = "DrogueParachuteTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -85,10 +85,10 @@ const osThreadAttr_t SensorsReadTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for MainParachute */
-osThreadId_t MainParachuteHandle;
-const osThreadAttr_t MainParachute_attributes = {
-  .name = "MainParachute",
+/* Definitions for MainParachuteTask */
+osThreadId_t MainParachuteTaskHandle;
+const osThreadAttr_t MainParachuteTask_attributes = {
+  .name = "MainParachuteTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -98,6 +98,20 @@ const osThreadAttr_t COMBoardTask_attributes = {
   .name = "COMBoardTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for FlightFSMTask */
+osThreadId_t FlightFSMTaskHandle;
+const osThreadAttr_t FlightFSMTask_attributes = {
+  .name = "FlightFSMTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for SystemHealthCheckTask */
+osThreadId_t SystemHealthCheckTaskHandle;
+const osThreadAttr_t SystemHealthCheckTask_attributes = {
+  .name = "SystemHealthCheckTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
 W25Q128 flash;
@@ -120,6 +134,8 @@ void FlashWrite(void *argument);
 void SensorsRead(void *argument);
 void MainParachuteDeploy(void *argument);
 void CommunicationBoard(void *argument);
+void FlightFSM(void *argument);
+void SystemHealthCheck(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -204,8 +220,8 @@ int main(void)
   /* creation of StartupTask */
   StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
 
-  /* creation of DrogueParachute */
-  DrogueParachuteHandle = osThreadNew(DrogueParachuteDeploy, NULL, &DrogueParachute_attributes);
+  /* creation of DrogueParachuteTask */
+  DrogueParachuteTaskHandle = osThreadNew(DrogueParachuteDeploy, NULL, &DrogueParachuteTask_attributes);
 
   /* creation of FlashWriteTask */
   FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
@@ -213,11 +229,17 @@ int main(void)
   /* creation of SensorsReadTask */
   SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
 
-  /* creation of MainParachute */
-  MainParachuteHandle = osThreadNew(MainParachuteDeploy, NULL, &MainParachute_attributes);
+  /* creation of MainParachuteTask */
+  MainParachuteTaskHandle = osThreadNew(MainParachuteDeploy, NULL, &MainParachuteTask_attributes);
 
   /* creation of COMBoardTask */
   COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
+
+  /* creation of FlightFSMTask */
+  FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
+
+  /* creation of SystemHealthCheckTask */
+  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
@@ -793,6 +815,42 @@ void CommunicationBoard(void *argument)
 //		osDelayUntil(tick);
 //	}
   /* USER CODE END CommunicationBoard */
+}
+
+/* USER CODE BEGIN Header_FlightFSM */
+/**
+* @brief Function implementing the FlightFSMTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_FlightFSM */
+void FlightFSM(void *argument)
+{
+  /* USER CODE BEGIN FlightFSM */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END FlightFSM */
+}
+
+/* USER CODE BEGIN Header_SystemHealthCheck */
+/**
+* @brief Function implementing the SystemHealthCheckTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_SystemHealthCheck */
+void SystemHealthCheck(void *argument)
+{
+  /* USER CODE BEGIN SystemHealthCheck */
+  /* Infinite loop */
+  for(;;)
+  {
+    osDelay(1);
+  }
+  /* USER CODE END SystemHealthCheck */
 }
 
 /**
