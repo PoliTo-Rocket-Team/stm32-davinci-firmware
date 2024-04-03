@@ -6,6 +6,8 @@
  */
 
 #include "test.h"
+#include "utils.h"
+
 
 #define BMP390_CS_LOW	HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_RESET)
 #define BMP390_CS_HIGH	HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_SET)
@@ -123,6 +125,14 @@ void test_bmp390(struct bmp3_dev *dev) {
 
 	if (result != BMP3_OK)	return;
 
+	struct bmp3_data temp = { -1, -1 };
+
+	result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &temp, dev);
+
+	double mean_pressure = temp.pressure;
+	double mean_temperature = temp.temperature;
+	double mean_altitude = computeAltitude(mean_pressure, mean_temperature);
+
 	//XXX read data for 100 times
 
 	for (int i = 0; i < 100; i++) {
@@ -137,8 +147,19 @@ void test_bmp390(struct bmp3_dev *dev) {
 
 		//XXX print data, or do something like that
 
-		HAL_Delay(2000);
+		//HAL_Delay(2000);
+
+		mean_pressure += data.pressure;
+		mean_pressure /= 2;
+
+		mean_temperature += data.temperature;
+		mean_temperature /= 2;
+
+		mean_altitude += computeAltitude(mean_pressure, mean_temperature);
+		mean_altitude /= 2;
 	}
+
+//	HAL_Delay(100);
 
 }
 
