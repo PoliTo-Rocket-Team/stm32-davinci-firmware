@@ -192,8 +192,8 @@ int main(void)
 //  test_w25q128(&flash);
 
   lsm6dso32_read_data_polling_mode();
-
-//  test_bmp390(&bmp390);
+  //why testing imu before barometer does not work. Specifically SPI is not working in this case.
+  test_bmp390(&bmp390);
 
   /* USER CODE END 2 */
 
