@@ -8,6 +8,8 @@
 #ifndef SENSORS_DRIVERS_IMU_TEST_H_
 #define SENSORS_DRIVERS_IMU_TEST_H_
 
+#include "main.h"
+
 void lsm6dso32_read_data_polling_mode();
 
 #endif /* SENSORS_DRIVERS_IMU_TEST_H_ */
