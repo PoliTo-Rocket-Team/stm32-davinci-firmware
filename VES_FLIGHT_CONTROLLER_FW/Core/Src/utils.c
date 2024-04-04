@@ -21,6 +21,8 @@ HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data) {
 
 float computeAltitude(double pressurePa, double temperature) {
 
+	//FIXME temperature will become a constant defined in flight parameters
+
 	double pressurehPa = pressurePa / 100;	// pressure from Pascal to Hectopascal
 
 	double temp1 = (273.15 + temperature) / 0.0065;
