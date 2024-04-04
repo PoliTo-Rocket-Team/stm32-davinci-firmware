@@ -10,6 +10,8 @@
 
 #include "stm32f4xx_hal.h"
 
+extern TIM_HandleTypeDef htim3;
+
 #define DEBUG_MODE 1
 
 #define SERVO_GPIO_PORT GPIOB
@@ -26,7 +28,7 @@
 #else
 #define SERVO_MIN_MS	0.5f
 #define SERVO_MAX_MS	2.5f
-#define SERVO_DEGREES	270.0f
+#define SERVO_DEGREES	180.0f
 #endif
 
 typedef struct {

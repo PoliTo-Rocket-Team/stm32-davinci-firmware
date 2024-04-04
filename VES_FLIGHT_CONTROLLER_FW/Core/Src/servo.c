@@ -15,7 +15,8 @@ void servo_init(servo_t *servo) {
 //	TIM_ClockConfigTypeDef sClockSourceConfig = {0};
 	TIM_MasterConfigTypeDef sMasterConfig = {0};
 	TIM_OC_InitTypeDef sConfigOC = {0};
-    TIM_HandleTypeDef htim;
+    //TIM_HandleTypeDef htim = htim3;
+	TIM_HandleTypeDef htim; //FIXME it is not initialized
 
 	uint32_t PSC = 0;
 	uint32_t ARR = 0;
