@@ -45,7 +45,9 @@ int8_t calibrateBMP390(struct bmp3_dev *dev, uint16_t iterationNum) {
 	return 0;
 }
 
-int8_t calibrateIMU(stmdev_ctx_t *dev, uint16_t iterationNum) {
+//FIXME remember that when on the rocket the gravity acceleration will be along the X axis
+
+int8_t calibrateIMU(stmdev_ctx_t *dev, uint16_t iterationNum, uint8_t offsetType) {
 
 	float mean_acceleration_mg[3] = {0};
 	int16_t data_raw_acceleration[3] = {0};
@@ -77,7 +79,7 @@ int8_t calibrateIMU(stmdev_ctx_t *dev, uint16_t iterationNum) {
 	temperature_degC = lsm6dso32_from_lsb_to_celsius(data_raw_temperature);
 	mean_temperature_degC += temperature_degC;
 
-	for (int i = 0; i < 100; i++) {
+	for (int i = 0; i < iterationNum; i++) {
 		lsm6dso32_reg_t reg;
 		/* Read output only if new data is available */
 		lsm6dso32_status_reg_get(dev, &reg.status_reg);
@@ -122,7 +124,78 @@ int8_t calibrateIMU(stmdev_ctx_t *dev, uint16_t iterationNum) {
 		}
 	}
 
-	// add code to set a possible hardware offset in the IMU, if needed
+	switch(offsetType) {
+			case SWOFFSET:
+
+				acceleration_mg_swoffset[0] = mean_acceleration_mg[0];
+				acceleration_mg_swoffset[1] = mean_acceleration_mg[1];
+				acceleration_mg_swoffset[2] = mean_acceleration_mg[2];
+
+				angular_rate_mdps_swoffset[0] = mean_angular_rate_mdps[0];
+				angular_rate_mdps_swoffset[1] = mean_angular_rate_mdps[1];
+				angular_rate_mdps_swoffset[2] = mean_angular_rate_mdps[2];
+
+				break;
+			case HWOFFSET:
+					/* FIXME handle a possible sw offset type, store offset values somewhere and use
+					 * them to calibrate measurements. */
+
+					// add code to set a possible hardware offset in the IMU, if needed
+
+					/*
+						LSM6DSO32_X_OFS_USR
+						LSM6DSO32_Y_OFS_USR
+						LSM6DSO32_Z_OFS_USR
+
+						are the registers used to set an hardware offset to accelerometer measurements
+
+						To enable offset USR_OFF_ON_OUT bit of the CTRL7_G register must be set.
+
+						The value of the offset is expressed on 8 bits 2's complement.
+
+						The weight [g/LSB] to be applied to the offset register values is independent of the accelerometer selected full
+						scale and can be configured using the USR_OFF_W bit of the CTRL6_C register:
+						• 2^-10 g/LSB if the USR_OFF_W bit is set to 0
+						• 2^-6  g/LSB if the USR_OFF_W bit is set to 1
+					 */
+
+					if (offsetType == HWOFFSET) {
+
+						int16_t offsetValX = mean_acceleration_mg[0] / OFFSET_2_10;
+						int16_t offsetValY = mean_acceleration_mg[1] / OFFSET_2_10;
+						int16_t offsetValZ = (1 - mean_acceleration_mg[2]) / OFFSET_2_10;
+
+						if (offsetValX > -128 && offsetValX < 128 && offsetValY > -128 && offsetValY < 128
+								&& offsetValZ > -128 && offsetValZ < 128) {
+							lsm6dso32_xl_offset_weight_set(dev, LSM6DSO32_LSb_1mg);
+						} else {
+							lsm6dso32_xl_offset_weight_set(dev, LSM6DSO32_LSb_16mg);
+							offsetValX = mean_acceleration_mg[0] / OFFSET_2_6;
+							offsetValY = mean_acceleration_mg[1] / OFFSET_2_6;
+							offsetValZ = (1 - mean_acceleration_mg[2]) / OFFSET_2_6;
+						}
+
+				//		int32_t lsm6dso32_xl_offset_weight_get(stmdev_ctx_t *ctx,lsm6dso32_usr_off_w_t *val);
+
+						lsm6dso32_xl_usr_offset_x_set(dev, (uint8_t *) &offsetValX);
+				//		int32_t lsm6dso32_xl_usr_offset_x_get(stmdev_ctx_t *ctx,uint8_t *buff);
+
+						lsm6dso32_xl_usr_offset_y_set(dev, (uint8_t *) &offsetValY);
+				//		int32_t lsm6dso32_xl_usr_offset_y_get(stmdev_ctx_t *ctx,uint8_t *buff);
+
+						lsm6dso32_xl_usr_offset_z_set(dev, (uint8_t *) &offsetValZ);
+				//		int32_t lsm6dso32_xl_usr_offset_z_get(stmdev_ctx_t *ctx,uint8_t *buff);
+
+						lsm6dso32_xl_usr_offset_set(dev, 1);
+				//		int32_t lsm6dso32_xl_usr_offset_get(stmdev_ctx_t *ctx, uint8_t *val);
+					}
+				break;
+			default:
+
+				break;
+		}
+
+	//TODO STILL TO TEST
 
 	return 0;
 }
