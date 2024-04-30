@@ -115,6 +115,7 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 /* USER CODE BEGIN PV */
 W25Q128 flash;
 struct bmp3_dev bmp390;
+pitot_sensor_t pitot;
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -186,14 +187,26 @@ int main(void)
   /* USER CODE BEGIN 2 */
 
 
-
-
-
+//  uint16_t diff_pressure = 0;
+//
+//  uint8_t result = init_pitot_sensor(&pitot, &hadc1);
+//
+//  for (int i = 0; i < 100; i++) {
+//
+//	  result = read_diff_pressure(&pitot);
+//
+//	  diff_pressure = pitot.diff_pressure > diff_pressure ? pitot.diff_pressure : diff_pressure;
+//
+//	  HAL_Delay(10);
+//
+//  }
+//
+//  uint16_t velocity = compute_velocity(diff_pressure);
 
 //  test_w25q128(&flash);
 
   lsm6dso32_read_data_polling_mode();
-  //why testing imu before barometer does not work. Specifically SPI is not working in this case.
+
   test_bmp390(&bmp390);
 
   /* USER CODE END 2 */
@@ -202,19 +215,19 @@ int main(void)
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  /* add mutexes, ... */
+//  /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  /* add semaphores, ... */
+//  /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  /* start timers, add new ones, ... */
+//  /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  /* add queues, ... */
+//  /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
@@ -243,11 +256,11 @@ int main(void)
   SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  /* add threads, ... */
+//  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
-  /* add events, ... */
+//  /* add events, ... */
   /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
