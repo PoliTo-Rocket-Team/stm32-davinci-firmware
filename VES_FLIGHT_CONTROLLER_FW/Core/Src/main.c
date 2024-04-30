@@ -115,7 +115,33 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 /* USER CODE BEGIN PV */
 W25Q128 flash;
 struct bmp3_dev bmp390;
+<<<<<<< HEAD
 pitot_sensor_t pitot;
+=======
+stmdev_ctx_t dev_ctx;
+struct bmp3_data Barometer_Data ={-1,-1};
+static int16_t data_raw_angular_rate[3];
+static int16_t data_raw_acceleration[3];
+static float acceleration_mg[3];
+static float angular_rate_mdps[3];
+
+typedef struct{
+	float_t acc1;
+	float_t acc2;
+	float_t acc3;
+} Acc;
+
+
+typedef struct {
+	struct bmp3_data bardata;
+    Acc accelerazione_ang;
+    Acc accelerazione;
+} Mole;
+
+int numStored = 0;
+char buffer[100];
+
+>>>>>>> refs/remotes/origin/develop
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -795,18 +821,21 @@ void DrogueParachuteDeploy(void *argument)
 * @retval None
 */
 /* USER CODE END Header_FlashWrite */
-void FlashWrite(void *argument)
+void FlashWrite(void* arguments)
 {
+
   /* USER CODE BEGIN FlashWrite */
-//	uint32_t tick;
+	uint32_t tick;
 //
-//	tick = osKernelGetTickCount();
+	tick = osKernelGetTickCount();
 //  /* Infinite loop */
-//  for(;;)
-//  {
-//	  tick += ;
-//	  osDelayUntil(tick);
-//  }
+  for(;;)
+  {
+
+
+	  tick += FLASH_WRITE_TASK_PERIOD;
+	  osDelayUntil(tick);
+  }
   /* USER CODE END FlashWrite */
 }
 
@@ -826,6 +855,28 @@ void SensorsRead(void *argument)
   /* Infinite loop */
   for(;;)
   {
+
+	  bmp3_get_sensor_data(BMP3_PRESS_TEMP,&Barometer_Data, &bmp390);
+	  lsm6dso32_angular_rate_raw_get(&dev_ctx, data_raw_angular_rate);
+	  angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
+	  angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
+	  angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
+	  lsm6dso32_acceleration_raw_get(&dev_ctx, data_raw_acceleration);
+	  acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
+	  acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
+	  acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
+	  Mole obj;
+	  obj.accelerazione.acc1 = acceleration_mg[0];
+	  obj.accelerazione.acc2 = acceleration_mg[1];
+	  obj.accelerazione.acc3 = acceleration_mg[2];
+	  obj.accelerazione_ang.acc1 = angular_rate_mdps[0];
+	  obj.accelerazione_ang.acc2 = angular_rate_mdps[1];
+	  obj.accelerazione_ang.acc3 = angular_rate_mdps[2];
+	  obj.bardata = Barometer_Data;
+	  int offset = numStored * sizeof(Mole);
+	  memcpy(buffer + offset, &obj, sizeof(Mole));
+
+	  numStored ++;
 
 
 
