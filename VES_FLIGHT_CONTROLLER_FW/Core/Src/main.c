@@ -115,9 +115,7 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 /* USER CODE BEGIN PV */
 W25Q128 flash;
 struct bmp3_dev bmp390;
-<<<<<<< HEAD
 pitot_sensor_t pitot;
-=======
 stmdev_ctx_t dev_ctx;
 struct bmp3_data Barometer_Data ={-1,-1};
 static int16_t data_raw_angular_rate[3];
@@ -141,7 +139,6 @@ typedef struct {
 int numStored = 0;
 char buffer[100];
 
->>>>>>> refs/remotes/origin/develop
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
