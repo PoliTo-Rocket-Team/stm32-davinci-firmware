@@ -14,6 +14,10 @@
 
 #define PITOT_SENSOR_TIMEOUT_MS 1
 
+#define MAX_DIFF_PRESSURE 7e5
+#define UNIT_DIFF_PRESSURE	MAX_DIFF_PRESSURE / 0xFFF // 0XFFF because the resolution of the ADC is 12 bits
+
+//FIXME insert a function to get the estimated air density from the altitude
 #define AIR_DENSITY_KG_M3 1.293f
 
 typedef struct {
