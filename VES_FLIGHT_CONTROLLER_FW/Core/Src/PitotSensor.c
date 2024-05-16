@@ -11,7 +11,15 @@
 
 uint8_t init_pitot_sensor(pitot_sensor_t *dev, ADC_HandleTypeDef *ADC_handler) {
 
-	dev -> hadc = ADC_handler;
+	uint8_t result = HAL_ERROR;
+
+	if (dev != NULL && ADC_handler != NULL) {
+		result = HAL_OK;
+
+		dev -> hadc = ADC_handler;
+	}
+
+	return result;
 }
 
 uint8_t read_diff_pressure(pitot_sensor_t *dev) {
