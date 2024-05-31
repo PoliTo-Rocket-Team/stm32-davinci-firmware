@@ -114,6 +114,11 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 };
 /* USER CODE BEGIN PV */
 W25Q128 flash;
+Phase phase=0;
+uint16_t memoryBit=0;
+char num_acc_modify[]={0,0,0};
+char num_gyro_modify[]={0,0,0};
+
 struct bmp3_dev bmp390;
 pitot_sensor_t pitot;
 stmdev_ctx_t dev_ctx;
@@ -135,6 +140,11 @@ typedef struct {
     Acc accelerazione_ang;
     Acc accelerazione;
 } Mole;
+
+extern Acc old_acc_data;
+extern Acc new_acc_data;
+extern Acc old_gyro_data;
+extern Acc new_gyro_data;
 
 int numStored = 0;
 int numStored_Flash = 0;
