@@ -42,6 +42,7 @@ extern "C" {
 #include "lsm6dso32_reg.h"
 #include "imu_test.h"
 #include "PitotSensor.h"
+#include "FlightControl.h"
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
