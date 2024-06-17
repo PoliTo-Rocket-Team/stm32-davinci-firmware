@@ -1,0 +1,2 @@
+../Core/Src/SensorCalibration.c:12:8:calibrateBMP390	4
+../Core/Src/SensorCalibration.c:50:8:calibrateIMU	10

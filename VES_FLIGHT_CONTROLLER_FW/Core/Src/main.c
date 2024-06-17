@@ -167,7 +167,7 @@ static void MX_ADC1_Init(void);
 static void MX_TIM4_Init(void);
 void Startup(void *argument);
 void DrogueParachuteDeploy(void *argument);
-void FlashWrite(Mole *data);
+void FlashWrite(void *argument);
 void SensorsRead(void *argument);
 void MainParachuteDeploy(void *argument);
 void CommunicationBoard(void *argument);
@@ -831,7 +831,7 @@ void DrogueParachuteDeploy(void *argument)
 * @retval None
 */
 /* USER CODE END Header_FlashWrite */
-void FlashWrite(Mole *data)
+void FlashWrite(void *argument)
 {
 
   /* USER CODE BEGIN FlashWrite */
@@ -841,22 +841,31 @@ void FlashWrite(Mole *data)
 //  /* Infinite loop */
   for(;;)
   {
-	  // Define an array of DataTypeInfo
-	  DataTypeInfo dataTypes[] = {
-	      {sizeof(double), &(data->bardata.pressure)},
-	      {sizeof(double), &(data->bardata.temperature)},
-	      {sizeof(float_t), &(data->accelerazione.acc1)},
-	      {sizeof(float_t), &(data->accelerazione.acc2)},
-	      {sizeof(float_t), &(data->accelerazione.acc3)},
-	      {sizeof(float_t), &(data->accelerazione_ang.acc1)},
-	      {sizeof(float_t), &(data->accelerazione_ang.acc2)},
-	      {sizeof(float_t), &(data->accelerazione_ang.acc3)}
-	  };
+	  if (numStored > 0){
+		  Mole data;
 
-	  for (int i = 0; i < sizeof(dataTypes) / sizeof(dataTypes[0]); i++) {
-	      uint8_t offset = numStored_Flash * dataTypes[i].size;
-	      W25Q128_write_data(&flash, &offset, dataTypes[i].ptr, dataTypes[i].size);
-	      numStored_Flash++;
+		  int offset = (numStored - 1) * sizeof(Mole);
+
+				// Copy data from buffer to local variable
+		  memcpy(&data, buffer + offset, sizeof(Mole));
+		  // Define an array of DataTypeInfo
+		  DataTypeInfo dataTypes[] = {
+			  {sizeof(double), &(data.bardata.pressure)},
+			  {sizeof(double), &(data.bardata.temperature)},
+			  {sizeof(float_t), &(data.accelerazione.acc1)},
+			  {sizeof(float_t), &(data.accelerazione.acc2)},
+			  {sizeof(float_t), &(data.accelerazione.acc3)},
+			  {sizeof(float_t), &(data.accelerazione_ang.acc1)},
+			  {sizeof(float_t), &(data.accelerazione_ang.acc2)},
+	      	  {sizeof(float_t), &(data.accelerazione_ang.acc3)}
+	  	  };
+
+	  	  for (int i = 0; i < sizeof(dataTypes) / sizeof(dataTypes[0]); i++) {
+	      	  uint8_t offset = numStored_Flash * dataTypes[i].size;
+	      	  W25Q128_write_data(&flash, &offset, dataTypes[i].ptr, dataTypes[i].size);
+	      	  numStored_Flash++;
+	  	  }
+	  	  numStored--;
 	  }
 	  tick += FLASH_WRITE_TASK_PERIOD;
 	  osDelayUntil(tick);

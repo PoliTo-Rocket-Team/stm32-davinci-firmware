@@ -1,0 +1,5 @@
+../Core/Src/servo.c:12:6:servo_init	1
+../Core/Src/servo.c:67:6:servo_moveto_deg	1
+../Core/Src/servo.c:76:6:servo_rawmove	3
+../Core/Src/servo.c:83:10:servo_get_maxpulse	1
+../Core/Src/servo.c:88:10:servo_get_minpulse	1
