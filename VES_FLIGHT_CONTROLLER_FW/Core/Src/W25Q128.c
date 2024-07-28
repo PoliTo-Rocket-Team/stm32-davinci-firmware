@@ -52,6 +52,7 @@ uint8_t W25Q128_read_id(W25Q128* memory) {
 		if (receive(memory, rxbuffer, 8) == HAL_OK) {
 			result = HAL_OK;
 			//id = 0xE4620C90D7124B42
+			//id = 0xE4620C90D7124B2A
 		}
 	}
 

@@ -17,6 +17,11 @@
 
 #define W25Q128_CMSIS_RTOS      W25Q128_CMSIS_RTOS_V2
 
+typedef enum {
+	BYPASS = 0,
+	ERASE = 1
+} chip_erasing;
+
 #if W25Q128_CMSIS_RTOS == W25Q128_CMSIS_RTOS_DISABLE
 #define Delay(x) HAL_Delay(x)
 #elif W25Q128_CMSIS_RTOS == W25Q128_CMSIS_RTOS_V1
