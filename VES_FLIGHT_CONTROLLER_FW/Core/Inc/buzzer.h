@@ -10,22 +10,24 @@
 
 #include "main.h"
 
-#define A4 	400
-#define Bb4	466
-#define B4	494
-#define C5	523
-#define Db5	554
-#define D5	587
-#define Eb5	622
-#define E5	659
-#define F5	699
-#define Gb5	740
-#define G5	784
-#define Ab5	831
-#define A5	880
-#define Bb5	932
-#define B5	988
-#define C6	1047
+typedef enum {
+	A4 = 400,
+	Bb4 = 466,
+	B4 = 494,
+	C5 = 523,
+	Db5 = 554,
+	D5 = 587,
+	Eb5 = 622,
+	E5 = 659,
+	F5 = 699,
+	Gb5 = 740,
+	G5 = 784,
+	Ab5 = 831,
+	A5 = 880,
+	Bb5 = 932,
+	B5 = 988,
+	C6 = 1047
+} note_t;
 
 extern TIM_HandleTypeDef htim4;
 #define TIMER4_CLK	96000000
@@ -42,7 +44,7 @@ void buzzerInit(buzzer_t *dev);
 
 void setVolume(buzzer_t *dev, uint8_t volume);
 
-void setNote(char* note);
+void setNote(note_t note);
 
 void beepBuzzer(uint32_t duration);
 

@@ -30,11 +30,63 @@ void setVolume(buzzer_t *dev, uint8_t volume) {
 	*(dev -> TIM_CCR) = volume < 100 ? volume : 100;
 }
 
-void setNote(char* note) {
+void setNote(note_t note) {
 
 	uint16_t freq = 0;
 
-	//lookup to the correct frequency from the note parameter
+	switch(note) {
+	case A4:
+		freq = 400;
+		break;
+	case Bb4:
+		freq = 466;
+		break;
+	case B4:
+		freq = 494;
+		break;
+	case C5:
+		freq = 523;
+		break;
+	case Db5:
+		freq = 554;
+		break;
+	case D5:
+		freq = 587;
+		break;
+	case Eb5:
+		freq = 622;
+		break;
+	case E5:
+		freq = 659;
+		break;
+	case F5:
+		freq = 699;
+		break;
+	case Gb5:
+		freq = 740;
+		break;
+	case G5:
+		freq = 784;
+		break;
+	case Ab5:
+		freq = 831;
+		break;
+	case A5:
+		freq = 880;
+		break;
+	case Bb5:
+		freq = 932;
+		break;
+	case B5:
+		freq = 988;
+		break;
+	case C6:
+		freq = 1047;
+		break;
+	default:
+		freq = 523;
+		break;
+	}
 
 	setFrequency(freq);
 }
