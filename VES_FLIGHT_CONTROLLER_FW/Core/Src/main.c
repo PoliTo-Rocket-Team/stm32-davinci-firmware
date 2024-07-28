@@ -33,9 +33,6 @@
 
 /* Private define ------------------------------------------------------------*/
 /* USER CODE BEGIN PD */
-#define SENSORS_TASK_PERIOD 10U	/* Period of Sensors Task Period in TICKS */
-#define FLASH_WRITE_TASK_PERIOD 0U
-#define COM_BOARD_COMMUNICATION_TASK_PERIOD
 /* USER CODE END PD */
 
 /* Private macro -------------------------------------------------------------*/
@@ -63,13 +60,6 @@ const osThreadAttr_t StartupTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for DrogueParachuteTask */
-osThreadId_t DrogueParachuteTaskHandle;
-const osThreadAttr_t DrogueParachuteTask_attributes = {
-  .name = "DrogueParachuteTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
 /* Definitions for FlashWriteTask */
 osThreadId_t FlashWriteTaskHandle;
 const osThreadAttr_t FlashWriteTask_attributes = {
@@ -81,13 +71,6 @@ const osThreadAttr_t FlashWriteTask_attributes = {
 osThreadId_t SensorsReadTaskHandle;
 const osThreadAttr_t SensorsReadTask_attributes = {
   .name = "SensorsReadTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for MainParachuteTask */
-osThreadId_t MainParachuteTaskHandle;
-const osThreadAttr_t MainParachuteTask_attributes = {
-  .name = "MainParachuteTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
@@ -113,43 +96,48 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
-W25Q128 flash;
-Phase phase=0;
-char num_acc_modify[]={0,0,0};
-char num_gyro_modify[]={0,0,0};
+/* SENSOR AND DEVICES DECLARATION */
+W25Q128 flash = {0};
+struct bmp3_dev bmp390_1 = {0}, bmp390_2 = {0};
+stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
+pitot_sensor_t pitot = {0};
 
-struct bmp3_dev bmp390;
-pitot_sensor_t pitot;
-stmdev_ctx_t dev_ctx;
-struct bmp3_data Barometer_Data ={-1,-1};
-static int16_t data_raw_angular_rate[3];
-static int16_t data_raw_acceleration[3];
-static float acceleration_mg[3];
-static float angular_rate_mdps[3];
+/* GLOBAL VARIABLES FOR THE FLIGHT DECLARATION AND DEFINITION */
 
+flight_phase_t flight_phase = CALIBRATING;
 
+//char num_acc_modify[]={0,0,0};
+//char num_gyro_modify[]={0,0,0};
 
-typedef struct {
-	struct bmp3_data bardata;
-    Acc accelerazione_ang;
-    Acc accelerazione;
-} Mole;
+struct bmp3_data barometer_data = {-1, -1};
 
-//extern Acc old_acc_data;
-//extern Acc new_acc_data;
-//extern Acc old_gyro_data;
-//extern Acc new_gyro_data;
+static int16_t data_raw_angular_rate[3] = {0};
+static int16_t data_raw_acceleration[3] = {0};
 
-int numStored = 0;
-int numStored_Flash = 0;
-char buffer[100];
+static float_t acceleration_mg[3] = {0};
+static float_t angular_rate_mdps[3] = {0};
 
+linear_acceleration_t curr_acc = {0};
+linear_acceleration_t prev_acc = {0};
 
 typedef struct {
-    size_t size;
-    void *ptr;
-} DataTypeInfo;
+	float_t acc_x;
+	float_t acc_y;
+	float_t acc_z;
 
+	float_t dps_x;
+	float_t dps_y;
+	float_t dps_z;
+
+	float_t temperature;
+	float_t pressure;
+} sensor_data;
+
+uint16_t num_meas_stored_in_buffer = 0;
+uint16_t num_meas_stored_in_flash = 0;
+
+uint8_t measurements_buffer[sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2)];
+uint8_t flash_address[3] = {0};
 
 
 /* USER CODE END PV */
@@ -166,16 +154,124 @@ static void MX_USART1_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM4_Init(void);
 void Startup(void *argument);
-void DrogueParachuteDeploy(void *argument);
 void FlashWrite(void *argument);
 void SensorsRead(void *argument);
-void MainParachuteDeploy(void *argument);
 void CommunicationBoard(void *argument);
 void FlightFSM(void *argument);
 void SystemHealthCheck(void *argument);
 
 /* USER CODE BEGIN PFP */
 
+//static uint32_t GetSector(uint32_t Address)
+//{
+//  uint32_t sector = 0;
+//
+//  if((Address < 0x08003FFF) && (Address >= 0x08000000))
+//  {
+//    sector = FLASH_SECTOR_0;
+//  }
+//  else if((Address < 0x08007FFF) && (Address >= 0x08004000))
+//  {
+//    sector = FLASH_SECTOR_1;
+//  }
+//  else if((Address < 0x0800BFFF) && (Address >= 0x08008000))
+//  {
+//    sector = FLASH_SECTOR_2;
+//  }
+//  else if((Address < 0x0800FFFF) && (Address >= 0x0800C000))
+//  {
+//    sector = FLASH_SECTOR_3;
+//  }
+//  else if((Address < 0x0801FFFF) && (Address >= 0x08010000))
+//  {
+//    sector = FLASH_SECTOR_4;
+//  }
+//  else if((Address < 0x0803FFFF) && (Address >= 0x08020000))
+//  {
+//    sector = FLASH_SECTOR_5;
+//  }
+//  else if((Address < 0x0805FFFF) && (Address >= 0x08040000))
+//  {
+//    sector = FLASH_SECTOR_6;
+//  }
+//  else if((Address < 0x0807FFFF) && (Address >= 0x08060000))
+//  {
+//    sector = FLASH_SECTOR_7;
+//  }
+//
+//  return sector;
+//}
+//
+//
+//uint32_t Flash_Write_Data (uint32_t StartSectorAddress, uint32_t *Data, uint16_t numberofwords)
+//{
+//
+//	static FLASH_EraseInitTypeDef EraseInitStruct;
+//	uint32_t SECTORError;
+//	int sofar=0;
+//
+//
+//	 /* Unlock the Flash to enable the flash control register access *************/
+//	  HAL_FLASH_Unlock();
+//
+//	  /* Erase the user Flash area */
+//
+//	  /* Get the number of sector to erase from 1st sector */
+//
+//	  uint32_t StartSector = GetSector(StartSectorAddress);
+//	  uint32_t EndSectorAddress = StartSectorAddress + numberofwords*4;
+//	  uint32_t EndSector = GetSector(EndSectorAddress);
+//
+//	  /* Fill EraseInit structure*/
+//	  EraseInitStruct.TypeErase     = FLASH_TYPEERASE_SECTORS;
+//	  EraseInitStruct.VoltageRange  = FLASH_VOLTAGE_RANGE_3;
+//	  EraseInitStruct.Sector        = StartSector;
+//	  EraseInitStruct.NbSectors     = (EndSector - StartSector) + 1;
+//
+//	  /* Note: If an erase operation in Flash memory also concerns data in the data or instruction cache,
+//	     you have to make sure that these data are rewritten before they are accessed during code
+//	     execution. If this cannot be done safely, it is recommended to flush the caches by setting the
+//	     DCRST and ICRST bits in the FLASH_CR register. */
+//	  if (HAL_FLASHEx_Erase(&EraseInitStruct, &SECTORError) != HAL_OK)
+//	  {
+//		  return HAL_FLASH_GetError ();
+//	  }
+//
+//	  /* Program the user Flash area word by word
+//	    (area defined by FLASH_USER_START_ADDR and FLASH_USER_END_ADDR) ***********/
+//
+//	   while (sofar<numberofwords)
+//	   {
+//	     if (HAL_FLASH_Program(FLASH_TYPEPROGRAM_WORD, StartSectorAddress, Data[sofar]) == HAL_OK)
+//	     {
+//	    	 StartSectorAddress += 4;  // use StartPageAddress += 2 for half word and 8 for double word
+//	    	 sofar++;
+//	     }
+//	     else
+//	     {
+//	       /* Error occurred while writing data in Flash memory*/
+//	    	 return HAL_FLASH_GetError ();
+//	     }
+//	   }
+//
+//	  /* Lock the Flash to disable the flash control register access (recommended
+//	     to protect the FLASH memory against possible unwanted operation) *********/
+//	  HAL_FLASH_Lock();
+//
+//	   return 0;
+//}
+//
+//void Flash_Read_Data (uint32_t StartSectorAddress, uint32_t *RxBuf, uint16_t numberofwords)
+//{
+//	while (1)
+//	{
+//
+//		*RxBuf = *(__IO uint32_t *)StartSectorAddress;
+//		StartSectorAddress += 4;
+//		RxBuf++;
+//		if (!(numberofwords--)) break;
+//	}
+//}
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -190,37 +286,102 @@ void SystemHealthCheck(void *argument);
 int main(void)
 {
 
-  /* USER CODE BEGIN 1 */
+	/* USER CODE BEGIN 1 */
 
-  /* USER CODE END 1 */
+	/* USER CODE END 1 */
 
-  /* MCU Configuration--------------------------------------------------------*/
+	/* MCU Configuration--------------------------------------------------------*/
 
-  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+	HAL_Init();
 
-  /* USER CODE BEGIN Init */
+	/* USER CODE BEGIN Init */
 
-  /* USER CODE END Init */
+	/* USER CODE END Init */
 
-  /* Configure the system clock */
-  SystemClock_Config();
+	/* Configure the system clock */
+	SystemClock_Config();
 
-  /* USER CODE BEGIN SysInit */
+	/* USER CODE BEGIN SysInit */
 
-  /* USER CODE END SysInit */
+	/* USER CODE END SysInit */
 
-  /* Initialize all configured peripherals */
-  MX_GPIO_Init();
-  MX_SPI1_Init();
-  MX_SPI2_Init();
-  MX_SPI3_Init();
-  MX_TIM3_Init();
-  MX_USART2_UART_Init();
-  MX_USART1_Init();
-  MX_ADC1_Init();
-  MX_TIM4_Init();
-  /* USER CODE BEGIN 2 */
+	/* Initialize all configured peripherals */
+	MX_GPIO_Init();
+	MX_SPI1_Init();
+	MX_SPI2_Init();
+	MX_SPI3_Init();
+	MX_TIM3_Init();
+	MX_USART2_UART_Init();
+	MX_USART1_Init();
+	MX_ADC1_Init();
+	MX_TIM4_Init();
+	/* USER CODE BEGIN 2 */
+
+	int8_t result = 0;
+
+	/* deactivate chip select of IMU and BMP390 */
+	IMU1_CS_HIGH;
+	IMU2_CS_HIGH;
+	BMP390_1_CS_HIGH;
+	BMP390_2_CS_HIGH;
+
+	LED_ON(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
+
+	result = init_imu1(&imu_1, LSM6DSO32_16g, LSM6DSO32_2000dps, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
+//	result = init_imu2(&imu_2, LSM6DSO32_16g, LSM6DSO32_2000dps, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
+
+	result = init_bmp390_1(&bmp390_1);
+//	result = init_bmp390_2(&bmp390_2);
+
+//	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
+	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
+
+	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
+
+	calibrateIMU(&imu_1, 1000, HWOFFSET);
+//	calibrateIMU(&imu_1, 1, RESET_HWOFFSET);
+
+
+
+
+//
+//	uint8_t buf[32] = {0};
+//
+//	result = W25Q128_read_data(&flash, 32, buf, 32);
+//
+//	float_t temperature = 0;
+//	memcpy(&temperature, buf + 24, sizeof(float_t));
+//
+//	float_t pressure = 0;
+//	memcpy(&pressure, buf + 28, sizeof(float_t));
+
+
+
+
+
+
+
+
+
+
+//	char *data = "internal flash writing test\0";
+//
+//	uint8_t Rx_Data[30] = {0};
+//
+//	int numofwords = (strlen(data)/4)+((strlen(data)%4)!=0);
+//	Flash_Write_Data(0x08008100 , (uint32_t *)data, numofwords);
+//	Flash_Read_Data(0x08008100 , Rx_Data, numofwords);
+
+
+
+
+
+
+
+
+
+
 
 
 //  uint16_t diff_pressure = 0;
@@ -237,13 +398,19 @@ int main(void)
 //
 //  }
 //
-//  uint16_t velocity = compute_velocity(diff_pressure);
+//  uint16_t velocity = compute_velocity(diff_pressure); /* measurement unit m/s */
 
-//  test_w25q128(&flash);
 
-  lsm6dso32_read_data_polling_mode();
 
-  test_bmp390(&bmp390);
+
+
+
+
+
+
+
+
+
 
   /* USER CODE END 2 */
 
@@ -268,10 +435,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of StartupTask */
-  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
-
-  /* creation of DrogueParachuteTask */
-  DrogueParachuteTaskHandle = osThreadNew(DrogueParachuteDeploy, NULL, &DrogueParachuteTask_attributes);
+//  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
 
   /* creation of FlashWriteTask */
   FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
@@ -279,17 +443,14 @@ int main(void)
   /* creation of SensorsReadTask */
   SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
 
-  /* creation of MainParachuteTask */
-  MainParachuteTaskHandle = osThreadNew(MainParachuteDeploy, NULL, &MainParachuteTask_attributes);
-
   /* creation of COMBoardTask */
-  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
+//  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
 
   /* creation of FlightFSMTask */
-  FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
+//  FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
 
   /* creation of SystemHealthCheckTask */
-  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
+//  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 //  /* add threads, ... */
@@ -791,37 +952,16 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_Startup */
 void Startup(void *argument)
 {
-  /* init code for USB_DEVICE */
-  MX_USB_DEVICE_Init();
-  /* USER CODE BEGIN 5 */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END 5 */
-}
+	/* init code for USB_DEVICE */
+	MX_USB_DEVICE_Init();
+	/* USER CODE BEGIN 5 */
 
-/* USER CODE BEGIN Header_DrogueParachuteDeploy */
-/**
-* @brief Function implementing the DrogueParachute thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_DrogueParachuteDeploy */
-void DrogueParachuteDeploy(void *argument)
-{
-  /* USER CODE BEGIN DrogueParachuteDeploy */
-//	uint32_t tick;
-//
-//	tick = osKernelGetTickCount();
-//	  /* Infinite loop */
-//	for(;;)
-//	{
-//		tick += ;
-//		osDelayUntil(tick);
-//	}
-  /* USER CODE END DrogueParachuteDeploy */
+	/* Infinite loop */
+	for(;;)
+	{
+		osDelay(1);
+	}
+	/* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_FlashWrite */
@@ -833,43 +973,47 @@ void DrogueParachuteDeploy(void *argument)
 /* USER CODE END Header_FlashWrite */
 void FlashWrite(void *argument)
 {
-
   /* USER CODE BEGIN FlashWrite */
+	UBaseType_t uxHighWaterMark;
+	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
 	uint32_t tick;
-//
+
 	tick = osKernelGetTickCount();
-//  /* Infinite loop */
-  for(;;)
-  {
-	  if (numStored > 0){
-		  Mole data;
+  /* Infinite loop */
+	for(;;)
+	{
+//		do {
+//		if (num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1) && (flight_phase > READY)) {
+		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)) {
+			/* this value 7 depends on the number of measurements are performed
+			* between each time the flash task is invoked. In this case it is 7
+			* because flash task has a period of 80 ticks while sensor task of
+			* 10 ticks therefore 80/10 = 8 measurements, so > 7, means that when
+			* 8 measurements are performed we can enter. In general the value will
+			* be (flash_task_period / sensor_task_period) - 1
+			*/
 
-		  int offset = (numStored - 1) * sizeof(Mole);
+			size_t addr = (num_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data);
 
-				// Copy data from buffer to local variable
-		  memcpy(&data, buffer + offset, sizeof(Mole));
-		  // Define an array of DataTypeInfo
-		  DataTypeInfo dataTypes[] = {
-			  {sizeof(double), &(data.bardata.pressure)},
-			  {sizeof(double), &(data.bardata.temperature)},
-			  {sizeof(float_t), &(data.accelerazione.acc1)},
-			  {sizeof(float_t), &(data.accelerazione.acc2)},
-			  {sizeof(float_t), &(data.accelerazione.acc3)},
-			  {sizeof(float_t), &(data.accelerazione_ang.acc1)},
-			  {sizeof(float_t), &(data.accelerazione_ang.acc2)},
-	      	  {sizeof(float_t), &(data.accelerazione_ang.acc3)}
-	  	  };
+			flash_address[0] = addr;
+			flash_address[1] = addr >> 8;
+			flash_address[2] = addr >> 16;
 
-	  	  for (int i = 0; i < sizeof(dataTypes) / sizeof(dataTypes[0]); i++) {
-	      	  uint8_t offset = numStored_Flash * dataTypes[i].size;
-	      	  W25Q128_write_data(&flash, &offset, dataTypes[i].ptr, dataTypes[i].size);
-	      	  numStored_Flash++;
-	  	  }
-	  	  numStored--;
-	  }
-	  tick += FLASH_WRITE_TASK_PERIOD;
-	  osDelayUntil(tick);
-  }
+			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 256);
+
+			if (result == 0) {
+				num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
+				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
+			}
+
+		}
+//		} while ((num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)));
+
+		tick += FLASH_WRITE_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		osDelayUntil(tick);
+	}
   /* USER CODE END FlashWrite */
 }
 
@@ -883,64 +1027,73 @@ void FlashWrite(void *argument)
 void SensorsRead(void *argument)
 {
   /* USER CODE BEGIN SensorsRead */
+	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
 	uint32_t tick;
 
 	tick = osKernelGetTickCount();
   /* Infinite loop */
-  for(;;)
-  {
+	for(;;)
+	{
+		sensor_data data = {0};
+		uint8_t result = 1;
 
-	  bmp3_get_sensor_data(BMP3_PRESS_TEMP,&Barometer_Data, &bmp390);
-	  lsm6dso32_angular_rate_raw_get(&dev_ctx, data_raw_angular_rate);
-	  angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
-	  angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
-	  angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
-	  lsm6dso32_acceleration_raw_get(&dev_ctx, data_raw_acceleration);
-	  acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
-	  acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
-	  acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
-	  Mole obj;
-	  obj.accelerazione.acc1 = acceleration_mg[0];
-	  obj.accelerazione.acc2 = acceleration_mg[1];
-	  obj.accelerazione.acc3 = acceleration_mg[2];
-	  obj.accelerazione_ang.acc1 = angular_rate_mdps[0];
-	  obj.accelerazione_ang.acc2 = angular_rate_mdps[1];
-	  obj.accelerazione_ang.acc3 = angular_rate_mdps[2];
-	  obj.bardata = Barometer_Data;
-	  int offset = numStored * sizeof(Mole);
-	  memcpy(buffer + offset, &obj, sizeof(Mole));
+		/* retrieving data from a couple of sensor and doing required conversions */
+		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data, &bmp390_1);
 
-	  numStored ++;
+		result = lsm6dso32_angular_rate_raw_get(&imu_1, data_raw_angular_rate);
+		result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration);
+
+		angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
+		angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
+		angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
+
+		acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
+		acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
+		acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
+
+		/* storing measurements to sensor_data variable */
+
+		data.acc_x = acceleration_mg[0];
+		data.acc_y = acceleration_mg[1];
+		data.acc_z = acceleration_mg[2];
+		data.dps_x = angular_rate_mdps[0];
+		data.dps_y = angular_rate_mdps[1];
+		data.dps_z = angular_rate_mdps[2];
+		data.temperature = barometer_data.temperature;
+		data.pressure = barometer_data.pressure;
+
+		prev_acc.accX = curr_acc.accX;
+		prev_acc.accY = curr_acc.accY;
+		prev_acc.accZ = curr_acc.accZ;
+
+		curr_acc.accX = acceleration_mg[0];
+		curr_acc.accY = acceleration_mg[1];
+		curr_acc.accZ = acceleration_mg[2];
+
+		/* computing offset of the buffer and storing the data to the buffer */
+
+		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
+		memcpy(measurements_buffer + offset, &data, sizeof(sensor_data));
+
+		/*
+		 * increment of the number of stored measurements and
+		 * modulo operation to avoid buffer overflow in the offset computation
+		 */
+		/*
+		 * During READY phase data are not saved in the flash, therefore the data
+		 * are always overwritten to the previous ones
+		 */
+		num_meas_stored_in_buffer++;
+		num_meas_stored_in_buffer %= 8;
 
 
 
-
-	  tick += SENSORS_TASK_PERIOD;
-	  osDelayUntil(tick);
-  }
+		tick += SENSORS_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		osDelayUntil(tick);
+	}
   /* USER CODE END SensorsRead */
-}
-
-/* USER CODE BEGIN Header_MainParachuteDeploy */
-/**
-* @brief Function implementing the MainParachute thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_MainParachuteDeploy */
-void MainParachuteDeploy(void *argument)
-{
-  /* USER CODE BEGIN MainParachuteDeploy */
-//	uint32_t tick;
-//
-//	tick = osKernelGetTickCount();
-//	  /* Infinite loop */
-//	for(;;)
-//	{
-//		tick += ;
-//		osDelayUntil(tick);
-//	}
-  /* USER CODE END MainParachuteDeploy */
 }
 
 /* USER CODE BEGIN Header_CommunicationBoard */
@@ -952,17 +1105,22 @@ void MainParachuteDeploy(void *argument)
 /* USER CODE END Header_CommunicationBoard */
 void CommunicationBoard(void *argument)
 {
-  /* USER CODE BEGIN CommunicationBoard */
-//	uint32_t tick;
-//
-//	tick = osKernelGetTickCount();
-//	  /* Infinite loop */
-//	for(;;)
-//	{
-//		tick += ;
-//		osDelayUntil(tick);
-//	}
-  /* USER CODE END CommunicationBoard */
+	/* USER CODE BEGIN CommunicationBoard */
+	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
+	uint32_t tick;
+
+	tick = osKernelGetTickCount();
+	  /* Infinite loop */
+	for(;;)
+	{
+
+
+		tick += COMMUNICATION_BOARD_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		osDelayUntil(tick);
+	}
+	/* USER CODE END CommunicationBoard */
 }
 
 /* USER CODE BEGIN Header_FlightFSM */
@@ -974,12 +1132,21 @@ void CommunicationBoard(void *argument)
 /* USER CODE END Header_FlightFSM */
 void FlightFSM(void *argument)
 {
-  /* USER CODE BEGIN FlightFSM */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
+	/* USER CODE BEGIN FlightFSM */
+	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
+	uint32_t tick;
+
+	tick = osKernelGetTickCount();
+	/* Infinite loop */
+	for(;;)
+	{
+
+
+		tick += FLIGHT_FSM_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		osDelayUntil(tick);
+	}
   /* USER CODE END FlightFSM */
 }
 
@@ -992,13 +1159,22 @@ void FlightFSM(void *argument)
 /* USER CODE END Header_SystemHealthCheck */
 void SystemHealthCheck(void *argument)
 {
-  /* USER CODE BEGIN SystemHealthCheck */
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1);
-  }
-  /* USER CODE END SystemHealthCheck */
+	/* USER CODE BEGIN SystemHealthCheck */
+	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
+	uint32_t tick;
+
+	tick = osKernelGetTickCount();
+	/* Infinite loop */
+	for(;;)
+	{
+
+
+		tick += FLIGHT_HEALTH_CHECK_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		osDelayUntil(tick);
+	}
+	/* USER CODE END SystemHealthCheck */
 }
 
 /**
