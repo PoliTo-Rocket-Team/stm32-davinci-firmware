@@ -1,5 +1,0 @@
-../Core/Src/test.c:21:6:bmp390_delay_us	0	static
-../Core/Src/test.c:31:15:bmp390_write	24	static
-../Core/Src/test.c:48:15:bmp390_read	24	static
-../Core/Src/test.c:83:6:test_bmp390	112	static
-../Core/Src/test.c:166:6:test_w25q128	4144	static

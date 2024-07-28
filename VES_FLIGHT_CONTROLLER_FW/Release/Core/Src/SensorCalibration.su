@@ -1,2 +1,0 @@
-../Core/Src/SensorCalibration.c:12:8:calibrateBMP390	80	static
-../Core/Src/SensorCalibration.c:50:8:calibrateIMU	120	static

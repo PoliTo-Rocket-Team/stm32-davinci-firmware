@@ -1,7 +1,0 @@
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:157:13:bmp3_check_rslt	9
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:17:6:BMP390_Init	1
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:70:18:bmp390_getdata	2
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:101:18:bmp390_data_check	2
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:127:8:convert_Pa_to_meter	3
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:137:8:convert_mhPa_to_meter	3
-../Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.c:147:9:convert_Pa_to_mhPa	2

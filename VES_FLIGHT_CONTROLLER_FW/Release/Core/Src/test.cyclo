@@ -1,5 +1,0 @@
-../Core/Src/test.c:21:6:bmp390_delay_us	1
-../Core/Src/test.c:31:15:bmp390_write	2
-../Core/Src/test.c:48:15:bmp390_read	2
-../Core/Src/test.c:83:6:test_bmp390	7
-../Core/Src/test.c:166:6:test_w25q128	12

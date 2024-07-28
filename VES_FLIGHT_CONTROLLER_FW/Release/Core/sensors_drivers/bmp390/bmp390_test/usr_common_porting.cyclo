@@ -1,4 +1,0 @@
-../Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.c:106:6:DelayUs	1
-../Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.c:116:6:bmp3_delay_us	1
-../Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.c:171:8:SensorAPI_SPIx_Read	2
-../Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.c:186:8:SensorAPI_SPIx_Write	2

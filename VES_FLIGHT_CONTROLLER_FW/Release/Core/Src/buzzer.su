@@ -1,4 +1,0 @@
-../Core/Src/buzzer.c:21:6:buzzerInit	0	static
-../Core/Src/buzzer.c:28:6:setVolume	0	static
-../Core/Src/buzzer.c:33:6:setNote	0	static
-../Core/Src/buzzer.c:42:6:beepBuzzer	16	static
