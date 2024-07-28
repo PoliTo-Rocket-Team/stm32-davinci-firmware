@@ -34,15 +34,43 @@ extern "C" {
 #include <stdint.h>
 #include <string.h>
 #include <stdio.h>
+#include <math.h>
 
-#include "W25Q128.h"
+#ifndef __STM32F4xx_H
+#include "stm32f4xx.h"
+#endif
+
+#ifndef FLIGHT_PARAMETERS_CONFIG_H
+#include "FLIGHT_PARAMETERS_CONFIG.h"
+#endif
+
+#ifndef SERVO_H
 #include "servo.h"
-#include "test.h"
+#endif
+
+#ifndef _BMP3_H
 #include "bmp3.h"
+#endif
+
+#ifndef LSM6DSO32_REGS_H
 #include "lsm6dso32_reg.h"
-#include "imu_test.h"
-#include "PitotSensor.h"
-#include "FlightControl.h"
+#endif
+
+#ifndef W25Q128_H
+#include "W25Q128.h"
+#endif
+
+#ifndef PITOTSENSOR_H
+#include "pitot_sensor.h"
+#endif
+
+#ifndef FLIGHTCONTROL_H
+#include "flight_control.h"
+#endif
+
+#ifndef UTILITIES_H_
+#include "utilities.h"
+#endif
 /* USER CODE END Includes */
 
 /* Exported types ------------------------------------------------------------*/
@@ -127,7 +155,21 @@ void Error_Handler(void);
 #define BUZZER_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
+#define IMU1_CS_HIGH				HAL_GPIO_WritePin(IMU_1_nCS_GPIO_Port, IMU_1_nCS_Pin, GPIO_PIN_SET);
+#define IMU1_CS_LOW					HAL_GPIO_WritePin(IMU_1_nCS_GPIO_Port, IMU_1_nCS_Pin, GPIO_PIN_RESET);
+#define BMP390_1_CS_LOW				HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_RESET);
+#define BMP390_1_CS_HIGH			HAL_GPIO_WritePin(BARO_1_nCS_GPIO_Port, BARO_1_nCS_Pin, GPIO_PIN_SET);
 
+#define IMU2_CS_HIGH				HAL_GPIO_WritePin(IMU_2_nCS_GPIO_Port, IMU_2_nCS_Pin, GPIO_PIN_SET);
+#define IMU2_CS_LOW					HAL_GPIO_WritePin(IMU_2_nCS_GPIO_Port, IMU_2_nCS_Pin, GPIO_PIN_RESET);
+#define BMP390_2_CS_LOW				HAL_GPIO_WritePin(BARO_2_nCS_GPIO_Port, BARO_2_nCS_Pin, GPIO_PIN_RESET);
+#define BMP390_2_CS_HIGH			HAL_GPIO_WritePin(BARO_2_nCS_GPIO_Port, BARO_2_nCS_Pin, GPIO_PIN_SET);
+
+#define W25Q128_CS_HIGH(memory)		HAL_GPIO_WritePin(memory -> CS_Port, memory -> CS_Pin, GPIO_PIN_SET)
+#define W25Q128_CS_LOW(memory)		HAL_GPIO_WritePin(memory -> CS_Port, memory -> CS_Pin, GPIO_PIN_RESET)
+
+#define LED_ON(port, pin)			HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET)
+#define LED_OFF(port, pin)			HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET)
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
