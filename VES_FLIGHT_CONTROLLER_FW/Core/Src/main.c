@@ -114,13 +114,18 @@ flight_phase_t flight_phase = CALIBRATING;
 //char num_acc_modify[]={0,0,0};
 //char num_gyro_modify[]={0,0,0};
 
-struct bmp3_data barometer_data = {-1, -1};
+struct bmp3_data barometer_data_1 = {-1, -1};
+struct bmp3_data barometer_data_2 = {-1, -1};
 
-static int16_t data_raw_angular_rate[3] = {0};
-static int16_t data_raw_acceleration[3] = {0};
+static int16_t data_raw_angular_rate_1[3] = {0};
+static int16_t data_raw_acceleration_1[3] = {0};
+static int16_t data_raw_angular_rate_2[3] = {0};
+static int16_t data_raw_acceleration_2[3] = {0};
 
-static float_t acceleration_mg[3] = {0};
-static float_t angular_rate_mdps[3] = {0};
+static float_t acceleration_mg_1[3] = {0};
+static float_t angular_rate_mdps_1[3] = {0};
+static float_t acceleration_mg_2[3] = {0};
+static float_t angular_rate_mdps_2[3] = {0};
 
 linear_acceleration_t curr_acc = {0};
 linear_acceleration_t prev_acc = {0};
@@ -333,10 +338,10 @@ int main(void)
 	LED_ON(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
 
 	result = init_imu1(&imu_1, LSM6DSO32_16g, LSM6DSO32_2000dps, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
-//	result = init_imu2(&imu_2, LSM6DSO32_16g, LSM6DSO32_2000dps, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
+	result = init_imu2(&imu_2, LSM6DSO32_16g, LSM6DSO32_2000dps, LSM6DSO32_XL_ODR_208Hz_NORMAL_MD, LSM6DSO32_GY_ODR_208Hz_HIGH_PERF);
 
 	result = init_bmp390_1(&bmp390_1);
-//	result = init_bmp390_2(&bmp390_2);
+	result = init_bmp390_2(&bmp390_2);
 
 //	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
 	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
@@ -1131,46 +1136,64 @@ void SensorsRead(void *argument)
   /* Infinite loop */
 	for(;;)
 	{
-		sensor_data data = {0};
+		sensor_data data_1 = {0}, data_2 = {0};
 		uint8_t result = 1;
 
 		/* retrieving data from a couple of sensor and doing required conversions */
-		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data, &bmp390_1);
+		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_1, &bmp390_1);
+		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_2, &bmp390_2);
 
-		result = lsm6dso32_angular_rate_raw_get(&imu_1, data_raw_angular_rate);
-		result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration);
+		result = lsm6dso32_angular_rate_raw_get(&imu_1, data_raw_angular_rate_1);
+		result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration_1);
+		result = lsm6dso32_angular_rate_raw_get(&imu_2, data_raw_angular_rate_2);
+		result = lsm6dso32_acceleration_raw_get(&imu_2, data_raw_acceleration_2);
 
-		angular_rate_mdps[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[0]);
-		angular_rate_mdps[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[1]);
-		angular_rate_mdps[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate[2]);
+		angular_rate_mdps_1[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[0]);
+		angular_rate_mdps_1[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[1]);
+		angular_rate_mdps_1[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[2]);
+		angular_rate_mdps_2[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[0]);
+		angular_rate_mdps_2[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[1]);
+		angular_rate_mdps_2[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[2]);
 
-		acceleration_mg[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[0]);
-		acceleration_mg[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[1]);
-		acceleration_mg[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration[2]);
+		acceleration_mg_1[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[0]);
+		acceleration_mg_1[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[1]);
+		acceleration_mg_1[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[2]);
+		acceleration_mg_2[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[0]);
+		acceleration_mg_2[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[1]);
+		acceleration_mg_2[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[2]);
 
 		/* storing measurements to sensor_data variable */
 
-		data.acc_x = acceleration_mg[0];
-		data.acc_y = acceleration_mg[1];
-		data.acc_z = acceleration_mg[2];
-		data.dps_x = angular_rate_mdps[0];
-		data.dps_y = angular_rate_mdps[1];
-		data.dps_z = angular_rate_mdps[2];
-		data.temperature = barometer_data.temperature;
-		data.pressure = barometer_data.pressure;
+		data_1.acc_x = acceleration_mg_1[0];
+		data_1.acc_y = acceleration_mg_1[1];
+		data_1.acc_z = acceleration_mg_1[2];
+		data_1.dps_x = angular_rate_mdps_1[0];
+		data_1.dps_y = angular_rate_mdps_1[1];
+		data_1.dps_z = angular_rate_mdps_1[2];
+		data_1.temperature = barometer_data_1.temperature;
+		data_1.pressure = barometer_data_1.pressure;
+
+		data_2.acc_x = acceleration_mg_2[0];
+		data_2.acc_y = acceleration_mg_2[1];
+		data_2.acc_z = acceleration_mg_2[2];
+		data_2.dps_x = angular_rate_mdps_2[0];
+		data_2.dps_y = angular_rate_mdps_2[1];
+		data_2.dps_z = angular_rate_mdps_2[2];
+		data_2.temperature = barometer_data_2.temperature;
+		data_2.pressure = barometer_data_2.pressure;
 
 		prev_acc.accX = curr_acc.accX;
 		prev_acc.accY = curr_acc.accY;
 		prev_acc.accZ = curr_acc.accZ;
 
-		curr_acc.accX = acceleration_mg[0];
-		curr_acc.accY = acceleration_mg[1];
-		curr_acc.accZ = acceleration_mg[2];
+		curr_acc.accX = acceleration_mg_1[0];
+		curr_acc.accY = acceleration_mg_1[1];
+		curr_acc.accZ = acceleration_mg_1[2];
 
 		/* computing offset of the buffer and storing the data to the buffer */
 
 		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
-		memcpy(measurements_buffer + offset, &data, sizeof(sensor_data));
+		memcpy(measurements_buffer + offset, &data_1, sizeof(sensor_data));
 
 		/*
 		 * increment of the number of stored measurements and
