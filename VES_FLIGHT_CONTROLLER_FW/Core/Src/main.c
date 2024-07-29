@@ -290,37 +290,37 @@ void SystemHealthCheck(void *argument);
 int main(void)
 {
 
-	/* USER CODE BEGIN 1 */
+  /* USER CODE BEGIN 1 */
 
-	/* USER CODE END 1 */
+  /* USER CODE END 1 */
 
-	/* MCU Configuration--------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
-	/* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-	HAL_Init();
+  /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
+  HAL_Init();
 
-	/* USER CODE BEGIN Init */
+  /* USER CODE BEGIN Init */
 
-	/* USER CODE END Init */
+  /* USER CODE END Init */
 
-	/* Configure the system clock */
-	SystemClock_Config();
+  /* Configure the system clock */
+  SystemClock_Config();
 
-	/* USER CODE BEGIN SysInit */
+  /* USER CODE BEGIN SysInit */
 
-	/* USER CODE END SysInit */
+  /* USER CODE END SysInit */
 
-	/* Initialize all configured peripherals */
-	MX_GPIO_Init();
-	MX_SPI1_Init();
-	MX_SPI2_Init();
-	MX_SPI3_Init();
-	MX_TIM3_Init();
-	MX_USART2_UART_Init();
-	MX_USART1_Init();
-	MX_ADC1_Init();
-	MX_TIM4_Init();
-	/* USER CODE BEGIN 2 */
+  /* Initialize all configured peripherals */
+  MX_GPIO_Init();
+  MX_SPI1_Init();
+  MX_SPI2_Init();
+  MX_SPI3_Init();
+  MX_TIM3_Init();
+  MX_USART2_UART_Init();
+  MX_USART1_Init();
+  MX_ADC1_Init();
+  MX_TIM4_Init();
+  /* USER CODE BEGIN 2 */
 
 	int8_t result = 0;
 
@@ -348,16 +348,14 @@ int main(void)
 
 
 	buzzerInit(&buzzer);
-	setVolume(&buzzer, 80);
 
-	setNote(C5);
-	beepBuzzer(2000);
+	beepBuzzer(&buzzer, 2000, 100, C5);
 	HAL_Delay(500);
-	beepBuzzer(2000);
+	beepBuzzer(&buzzer, 2000, 100, C5);
 	HAL_Delay(500);
-	beepBuzzer(2000);
+	beepBuzzer(&buzzer, 2000, 100, C5);
 	HAL_Delay(500);
-	beepBuzzer(2000);
+	beepBuzzer(&buzzer, 2000, 100, C5);
 	HAL_Delay(500);
 
 
@@ -463,7 +461,7 @@ int main(void)
 //  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
 
   /* creation of FlightFSMTask */
-//  FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
+  FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
 
   /* creation of SystemHealthCheckTask */
 //  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
@@ -513,10 +511,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
   RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSE;
-  RCC_OscInitStruct.PLL.PLLM = 7;
-  RCC_OscInitStruct.PLL.PLLN = 336;
-  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV4;
-  RCC_OscInitStruct.PLL.PLLQ = 8;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 96;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -773,7 +771,7 @@ static void MX_TIM4_Init(void)
   htim4.Instance = TIM4;
   htim4.Init.Prescaler = 0;
   htim4.Init.CounterMode = TIM_COUNTERMODE_UP;
-  htim4.Init.Period = 200;
+  htim4.Init.Period = 0;
   htim4.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim4.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
   if (HAL_TIM_PWM_Init(&htim4) != HAL_OK)
@@ -968,16 +966,16 @@ static void MX_GPIO_Init(void)
 /* USER CODE END Header_Startup */
 void Startup(void *argument)
 {
-	/* init code for USB_DEVICE */
-	MX_USB_DEVICE_Init();
-	/* USER CODE BEGIN 5 */
+  /* init code for USB_DEVICE */
+  MX_USB_DEVICE_Init();
+  /* USER CODE BEGIN 5 */
 
 	/* Infinite loop */
 	for(;;)
 	{
 		osDelay(1);
 	}
-	/* USER CODE END 5 */
+  /* USER CODE END 5 */
 }
 
 /* USER CODE BEGIN Header_FlashWrite */
@@ -1121,7 +1119,7 @@ void SensorsRead(void *argument)
 /* USER CODE END Header_CommunicationBoard */
 void CommunicationBoard(void *argument)
 {
-	/* USER CODE BEGIN CommunicationBoard */
+  /* USER CODE BEGIN CommunicationBoard */
 	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
 	uint32_t tick;
@@ -1136,7 +1134,7 @@ void CommunicationBoard(void *argument)
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 		osDelayUntil(tick);
 	}
-	/* USER CODE END CommunicationBoard */
+  /* USER CODE END CommunicationBoard */
 }
 
 /* USER CODE BEGIN Header_FlightFSM */
@@ -1148,7 +1146,7 @@ void CommunicationBoard(void *argument)
 /* USER CODE END Header_FlightFSM */
 void FlightFSM(void *argument)
 {
-	/* USER CODE BEGIN FlightFSM */
+  /* USER CODE BEGIN FlightFSM */
 	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
 	uint32_t tick;
@@ -1175,7 +1173,7 @@ void FlightFSM(void *argument)
 /* USER CODE END Header_SystemHealthCheck */
 void SystemHealthCheck(void *argument)
 {
-	/* USER CODE BEGIN SystemHealthCheck */
+  /* USER CODE BEGIN SystemHealthCheck */
 	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
 	uint32_t tick;
@@ -1190,7 +1188,7 @@ void SystemHealthCheck(void *argument)
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 		osDelayUntil(tick);
 	}
-	/* USER CODE END SystemHealthCheck */
+  /* USER CODE END SystemHealthCheck */
 }
 
 /**

@@ -45,16 +45,13 @@ extern TIM_HandleTypeDef htim4;
 typedef struct {
 
 	volatile uint32_t *TIM_CCR;
+	volatile uint32_t *TIM_ARR;
 	TIM_TypeDef *TIM_Instance;
 
 } buzzer_t;
 
 void buzzerInit(buzzer_t *dev);
 
-void setVolume(buzzer_t *dev, uint8_t volume);
-
-void setNote(note_t note);
-
-void beepBuzzer(uint32_t duration);
+void beepBuzzer(buzzer_t *dev, uint32_t duration, uint8_t volume, note_t note);
 
 #endif /* INC_BUZZER_H_ */
