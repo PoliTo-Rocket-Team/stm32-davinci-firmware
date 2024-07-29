@@ -17,7 +17,7 @@ extern SPI_HandleTypeDef hspi3;
 
 //extern SPI_HandleTypeDef hspi1;
 
-void test_w25q128(W25Q128*);
+void test_w25q128(W25Q128_t*);
 
 //void test_bmp390(struct bmp3_dev *);
 

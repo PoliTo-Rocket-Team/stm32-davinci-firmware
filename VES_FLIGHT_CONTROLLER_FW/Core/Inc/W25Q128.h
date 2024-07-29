@@ -84,32 +84,32 @@ typedef struct {
 	uint16_t CS_Pin;
 	uint8_t ID[8];
 	SPI_HandleTypeDef *spi_handle;
-} W25Q128;
+} W25Q128_t;
 
-uint8_t W25Q128_init(W25Q128*, GPIO_TypeDef*, uint16_t, SPI_HandleTypeDef*);
-uint8_t W25Q128_read_id(W25Q128*);
-uint8_t W25Q128_read_manufacturer_dev_id(W25Q128*);
-uint8_t W25Q128_read_JEDEC_id(W25Q128*);
-uint8_t W25Q128_power_up(W25Q128*);
-uint8_t W25Q128_power_down(W25Q128*);
+uint8_t W25Q128_init(W25Q128_t*, GPIO_TypeDef*, uint16_t, SPI_HandleTypeDef*);
+uint8_t W25Q128_read_id(W25Q128_t*);
+uint8_t W25Q128_read_manufacturer_dev_id(W25Q128_t*);
+uint8_t W25Q128_read_JEDEC_id(W25Q128_t*);
+uint8_t W25Q128_power_up(W25Q128_t*);
+uint8_t W25Q128_power_down(W25Q128_t*);
 
-uint8_t W25Q128_read_statusreg1(W25Q128*, uint8_t*);
-uint8_t W25Q128_write_statusreg1(W25Q128*, uint8_t);
-uint8_t W25Q128_read_statusreg2(W25Q128*, uint8_t*);
-uint8_t W25Q128_write_statusreg2(W25Q128*, uint8_t);
-uint8_t W25Q128_read_statusreg3(W25Q128*, uint8_t*);
-uint8_t W25Q128_write_statusreg3(W25Q128*, uint8_t);
-uint8_t W25Q128_write_enable(W25Q128*);
-uint8_t W25Q128_write_disable(W25Q128*);
-uint8_t W25Q128_write_volatile_enable(W25Q128*);
+uint8_t W25Q128_read_statusreg1(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_write_statusreg1(W25Q128_t*, uint8_t);
+uint8_t W25Q128_read_statusreg2(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_write_statusreg2(W25Q128_t*, uint8_t);
+uint8_t W25Q128_read_statusreg3(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_write_statusreg3(W25Q128_t*, uint8_t);
+uint8_t W25Q128_write_enable(W25Q128_t*);
+uint8_t W25Q128_write_disable(W25Q128_t*);
+uint8_t W25Q128_write_volatile_enable(W25Q128_t*);
 
-uint8_t W25Q128_read_data(W25Q128*, uint8_t*, uint8_t*, uint16_t);
-uint8_t W25Q128_write_data(W25Q128*, uint8_t*, uint8_t*, uint16_t);
-uint8_t W25Q128_erase_sector(W25Q128*, uint8_t*);
-uint8_t W25Q128_global_block_lock(W25Q128*);
-uint8_t W25Q128_global_block_unlock(W25Q128*);
-uint8_t W25Q128_individual_block_lock(W25Q128*, uint8_t*);
-uint8_t W25Q128_individual_block_unlock(W25Q128*, uint8_t*);
-uint8_t W25Q128_chip_erase(W25Q128*);
+uint8_t W25Q128_read_data(W25Q128_t*, uint8_t*, uint8_t*, uint16_t);
+uint8_t W25Q128_write_data(W25Q128_t*, uint8_t*, uint8_t*, uint16_t);
+uint8_t W25Q128_erase_sector(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_global_block_lock(W25Q128_t*);
+uint8_t W25Q128_global_block_unlock(W25Q128_t*);
+uint8_t W25Q128_individual_block_lock(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_individual_block_unlock(W25Q128_t*, uint8_t*);
+uint8_t W25Q128_chip_erase(W25Q128_t*);
 
 #endif /* INC_W25Q128_H_ */

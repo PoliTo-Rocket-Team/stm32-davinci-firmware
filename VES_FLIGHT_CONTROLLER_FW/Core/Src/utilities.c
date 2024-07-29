@@ -464,7 +464,7 @@ int8_t init_bmp390_2(struct bmp3_dev *bmp390) {
 	return HAL_OK;
 }
 
-int8_t init_flash(W25Q128 *flash, chip_erasing erase) {
+int8_t init_flash(W25Q128_t *flash, chip_erasing erase) {
 
 	int8_t result = HAL_ERROR;
 

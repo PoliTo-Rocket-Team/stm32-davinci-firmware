@@ -124,7 +124,7 @@
 //
 //}
 
-void test_w25q128(W25Q128* flash) {
+void test_w25q128(W25Q128_t* flash) {
 	int8_t result = HAL_ERROR;
 	uint8_t read_data[4] = {0};
 	uint8_t read_page[4096] = {0};

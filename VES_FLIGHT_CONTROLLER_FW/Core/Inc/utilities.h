@@ -71,7 +71,7 @@ int8_t init_imu2(stmdev_ctx_t *imu, lsm6dso32_fs_xl_t acc_full_scale, lsm6dso32_
 
 int8_t init_bmp390_2(struct bmp3_dev *bmp390);
 
-int8_t init_flash(W25Q128 *flash, chip_erasing erase);
+int8_t init_flash(W25Q128_t *flash, chip_erasing erase);
 
 uint16_t compute_velocity(uint16_t diff_pressure);
 
