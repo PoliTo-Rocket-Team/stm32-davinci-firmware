@@ -68,6 +68,10 @@ extern "C" {
 #include "flight_control.h"
 #endif
 
+#ifndef BUZZER_H
+#include "buzzer.h"
+#endif
+
 #ifndef UTILITIES_H_
 #include "utilities.h"
 #endif

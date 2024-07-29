@@ -94,6 +94,6 @@ void setNote(note_t note) {
 void beepBuzzer(uint32_t duration) {
 
 	HAL_TIM_PWM_Start(&htim4, TIM_CHANNEL);
-	osDelay(duration);
+	delay(duration);
 	HAL_TIM_PWM_Stop(&htim4, TIM_CHANNEL);
 }

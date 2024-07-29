@@ -10,6 +10,8 @@
 
 #include "main.h"
 
+#define BUZZER_CMSIS_RTOS BUZZER_CMSIS_RTOS_DISABLE
+
 typedef enum {
 	A4 = 400,
 	Bb4 = 466,
@@ -28,6 +30,13 @@ typedef enum {
 	B5 = 988,
 	C6 = 1047
 } note_t;
+
+#if BUZZER_CMSIS_RTOS == BUZZER_CMSIS_RTOS_DISABLE
+#define delay(x) HAL_Delay(x)
+#else
+#include "cmsis_os2.h"
+#define delay(x) osDelay(x)
+#endif
 
 extern TIM_HandleTypeDef htim4;
 #define TIMER4_CLK	96000000

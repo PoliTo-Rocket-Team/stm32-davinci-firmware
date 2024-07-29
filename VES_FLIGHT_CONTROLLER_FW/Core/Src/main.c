@@ -96,13 +96,18 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
   .priority = (osPriority_t) osPriorityLow,
 };
 /* USER CODE BEGIN PV */
-/* SENSOR AND DEVICES DECLARATION */
-W25Q128 flash = {0};
+/* SENSORS AND DEVICES DECLARATION */
+W25Q128_t flash = {0};
+
 struct bmp3_dev bmp390_1 = {0}, bmp390_2 = {0};
 stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
-pitot_sensor_t pitot = {0};
 
-/* GLOBAL VARIABLES FOR THE FLIGHT DECLARATION AND DEFINITION */
+pitot_sensor_t pitot = {0};
+servo_t servo = {0};
+
+buzzer_t buzzer = {0};
+
+/* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
 
 flight_phase_t flight_phase = CALIBRATING;
 
@@ -138,7 +143,6 @@ uint16_t num_meas_stored_in_flash = 0;
 
 uint8_t measurements_buffer[sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2)];
 uint8_t flash_address[3] = {0};
-
 
 /* USER CODE END PV */
 
@@ -343,6 +347,18 @@ int main(void)
 //	calibrateIMU(&imu_1, 1, RESET_HWOFFSET);
 
 
+	buzzerInit(&buzzer);
+	setVolume(&buzzer, 80);
+
+	setNote(C5);
+	beepBuzzer(2000);
+	HAL_Delay(500);
+	beepBuzzer(2000);
+	HAL_Delay(500);
+	beepBuzzer(2000);
+	HAL_Delay(500);
+	beepBuzzer(2000);
+	HAL_Delay(500);
 
 
 //
