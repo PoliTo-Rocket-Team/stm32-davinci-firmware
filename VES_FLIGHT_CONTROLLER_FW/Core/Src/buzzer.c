@@ -32,8 +32,180 @@ static void setNote(buzzer_t *dev, note_t note) {
 	uint16_t freq = 0;
 
 	switch(note) {
+
+	case C0:
+		freq = 16;
+		break;
+	case Db0:
+		freq = 17;
+		break;
+	case D0:
+		freq =  18;
+		break;
+	case Eb0:
+		freq =  19;
+		break;
+	case E0:
+		freq =  20;
+		break;
+	case F0:
+		freq =  21;
+		break;
+	case Gb0:
+		freq =  23;
+		break;
+	case G0:
+		freq = 24;
+		break;
+	case Ab0:
+		freq = 25;
+		break;
+	case A0:
+		freq = 27;
+		break;
+	case Bb0:
+		freq = 29;
+		break;
+	case B0:
+		freq = 30;
+		break;
+	case C1:
+		freq = 32;
+		break;
+	case Db1:
+		freq = 34;
+		break;
+	case D1:
+		freq = 36;
+		break;
+	case Eb1:
+		freq = 38;
+		break;
+	case E1:
+		freq = 41;
+		break;
+	case F1:
+		freq = 43;
+		break;
+	case Gb1:
+		freq = 46;
+		break;
+	case G1:
+		freq = 49;
+		break;
+	case Ab1:
+		freq = 51;
+		break;
+	case A1:
+		freq = 55;
+		break;
+	case Bb1:
+		freq = 58;
+		break;
+	case B1:
+		freq = 61;
+		break;
+	case C2:
+		freq = 65;
+		break;
+	case Db2:
+		freq = 69;
+		break;
+	case D2:
+		freq = 73;
+		break;
+	case Eb2:
+		freq = 77;
+		break;
+	case E2:
+		freq = 82;
+		break;
+	case F2:
+		freq = 87;
+		break;
+	case Gb2:
+		freq = 92;
+		break;
+	case G2:
+		freq = 98;
+		break;
+	case Ab2:
+		freq = 103;
+		break;
+	case A2:
+		freq = 110;
+		break;
+	case Bb2:
+		freq = 116;
+		break;
+	case B2:
+		freq = 123;
+		break;
+	case C3:
+		freq = 130;
+		break;
+	case Db3:
+		freq = 138;
+		break;
+	case D3:
+		freq = 146;
+		break;
+	case Eb3:
+		freq = 155;
+		break;
+	case E3:
+		freq = 164;
+		break;
+	case F3:
+		freq = 174;
+		break;
+	case Gb3:
+		freq = 185;
+		break;
+	case G3:
+		freq = 196;
+		break;
+	case Ab3:
+		freq = 207;
+		break;
+	case A3:
+		freq = 220;
+		break;
+	case Bb3:
+		freq = 233;
+		break;
+	case B3:
+		freq = 246;
+		break;
+	case C4:
+		freq = 261;
+		break;
+	case Db4:
+		freq = 277;
+		break;
+	case D4:
+		freq = 293;
+		break;
+	case Eb4:
+		freq = 311;
+		break;
+	case E4:
+		freq = 329;
+		break;
+	case F4:
+		freq = 349;
+		break;
+	case Gb4:
+		freq = 369;
+		break;
+	case G4:
+		freq = 392;
+		break;
+	case Ab4:
+		freq = 415;
+		break;
 	case A4:
-		freq = 400;
+		freq = 440;
 		break;
 	case Bb4:
 		freq = 466;
