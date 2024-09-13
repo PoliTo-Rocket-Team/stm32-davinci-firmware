@@ -111,5 +111,8 @@ uint8_t W25Q128_global_block_unlock(W25Q128_t*);
 uint8_t W25Q128_individual_block_lock(W25Q128_t*, uint8_t*);
 uint8_t W25Q128_individual_block_unlock(W25Q128_t*, uint8_t*);
 uint8_t W25Q128_chip_erase(W25Q128_t*);
+uint8_t W25Q128_write_flown_flag(W25Q128_t* memory, uint8_t* address, uint8_t* data, uint16_t length,uint8_t flag);
+uint8_t W25Q128_read_flown_flag(W25Q128_t* memory, uint8_t* address, uint8_t* data, uint16_t length);
+
 
 #endif /* INC_W25Q128_H_ */

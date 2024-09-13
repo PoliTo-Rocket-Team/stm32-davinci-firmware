@@ -35,6 +35,9 @@ extern "C" {
 #include <string.h>
 #include <stdio.h>
 #include <math.h>
+#include <stdbool.h>
+#include "W25Q128.h"
+#include "codegen_model.h"
 
 #ifndef __STM32F4xx_H
 #include "stm32f4xx.h"
@@ -79,7 +82,7 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-
+extern bool has_flown;
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/
@@ -174,10 +177,14 @@ void Error_Handler(void);
 
 #define LED_ON(port, pin)			HAL_GPIO_WritePin(port, pin, GPIO_PIN_SET)
 #define LED_OFF(port, pin)			HAL_GPIO_WritePin(port, pin, GPIO_PIN_RESET)
+
+W25Q128_t *get_flash();
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* __MAIN_H */

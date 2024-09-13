@@ -1,0 +1,3 @@
+../Core/Src/codegen_model.c:193:15:look1_binlx.constprop	4
+../Core/Src/codegen_model.c:252:6:codegen_model_step	19
+../Core/Src/codegen_model.c:578:6:codegen_model_initialize	1

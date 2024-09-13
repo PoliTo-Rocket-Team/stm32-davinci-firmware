@@ -337,3 +337,4 @@ VP_USB_DEVICE_VS_USB_DEVICE_MSC_FS.Signal=USB_DEVICE_VS_USB_DEVICE_MSC_FS
 board=custom
 rtos.0.ip=FREERTOS
 isbadioc=false
+isbadioc=false

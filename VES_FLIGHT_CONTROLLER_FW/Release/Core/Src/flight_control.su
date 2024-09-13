@@ -1,0 +1,10 @@
+../Core/Src/flight_control.c:14:12:trigger_event	16	static
+../Core/Src/flight_control.c:74:6:check_system_calibrating_phase	48	static
+../Core/Src/flight_control.c:203:6:check_touch_down_phase	24	static
+../Core/Src/flight_control.c:239:7:change_state_to	16	static
+../Core/Src/flight_control.c:100:6:check_ready_to_takeoff_phase	24	static
+../Core/Src/flight_control.c:124:6:check_burning_phase	16	static
+../Core/Src/flight_control.c:141:6:check_coasting_phase	24	static
+../Core/Src/flight_control.c:162:6:check_drogue_deploy_phase	16	static
+../Core/Src/flight_control.c:183:6:check_main_deploy_phase	16	static
+../Core/Src/flight_control.c:32:6:check_flight_phase	88	static

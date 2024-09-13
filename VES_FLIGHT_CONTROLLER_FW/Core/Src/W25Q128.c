@@ -2,7 +2,7 @@
  * W25Q128.c
  *
  *  Created on: Dec 23, 2023
- *      Author: tomma
+ *      Author: tomma & Francesco
  */
 
 #ifndef W25Q128_H
@@ -328,7 +328,7 @@ uint8_t W25Q128_write_data(W25Q128_t* memory, uint8_t* address, uint8_t* data, u
 
 	W25Q128_CS_HIGH(memory);
 
-	W25Q128_write_disable(memory); //done automatically by the memory (?) (It seems to be)
+	W25Q128_write_disable(memory); //T:done automatically by the memory (?) (It seems to be) F:Yes
 
 	return result;
 }
@@ -354,6 +354,49 @@ uint8_t W25Q128_erase_sector(W25Q128_t* memory, uint8_t* address) {
 	W25Q128_write_disable(memory);
 
 	return result;
+}
+
+uint8_t W25Q128_write_flown_flag(W25Q128_t* memory, uint8_t* address, uint8_t* data, uint16_t length,uint8_t flag) {
+    uint8_t txdata[4] = {W25Q128_PAGE_PROGRAM, address[0], address[1], address[2]};
+    uint8_t result = HAL_ERROR;
+
+    result = W25Q128_write_enable(memory);
+
+    W25Q128_CS_LOW(memory);
+
+    if (result == HAL_OK) {
+        result = HAL_ERROR;
+
+        if (transmit(memory, txdata, 4) == HAL_OK) {
+            data[0] = flag; // Set the first byte to true/1 or false/0
+            if (transmit(memory, data, length) == HAL_OK) {
+                result = HAL_OK;
+            }
+        }
+    }
+
+    W25Q128_CS_HIGH(memory);
+
+    W25Q128_write_disable(memory);
+
+    return result;
+}
+
+uint8_t W25Q128_read_flown_flag(W25Q128_t* memory, uint8_t* address, uint8_t* data, uint16_t length) {
+    uint8_t txdata[4] = {W25Q128_READ_DATA, address[0], address[1], address[2]};
+    uint8_t result = HAL_ERROR;
+
+    W25Q128_CS_LOW(memory);
+
+    if (transmit(memory, txdata, 4) == HAL_OK) {
+        if (receive(memory, data, 1) == HAL_OK) { // Read only 1 byte
+            result = HAL_OK;
+        }
+    }
+
+    W25Q128_CS_HIGH(memory);
+
+    return result;
 }
 
 uint8_t W25Q128_chip_erase(W25Q128_t* memory) {

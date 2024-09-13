@@ -1,0 +1,2 @@
+../Core/Src/buzzer.c:263:6:buzzerInit	1
+../Core/Src/buzzer.c:274:6:beepBuzzer	39

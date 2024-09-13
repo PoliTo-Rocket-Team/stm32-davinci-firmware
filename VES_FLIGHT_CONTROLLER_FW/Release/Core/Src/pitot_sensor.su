@@ -1,0 +1,2 @@
+../Core/Src/pitot_sensor.c:12:9:init_pitot_sensor	0	static
+../Core/Src/pitot_sensor.c:25:9:read_diff_pressure	16	static

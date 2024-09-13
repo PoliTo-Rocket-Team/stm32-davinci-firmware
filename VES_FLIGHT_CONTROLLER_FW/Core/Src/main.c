@@ -53,6 +53,8 @@ TIM_HandleTypeDef htim4;
 USART_HandleTypeDef husart1;
 UART_HandleTypeDef huart2;
 
+bool has_flown;
+
 /* Definitions for StartupTask */
 osThreadId_t StartupTaskHandle;
 const osThreadAttr_t StartupTask_attributes = {
@@ -98,11 +100,14 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 /* USER CODE BEGIN PV */
 /* SENSORS AND DEVICES DECLARATION */
 W25Q128_t flash = {0};
+ExtU rtU = {0};
+ExtY rtY = {0};
 
 struct bmp3_dev bmp390_1 = {0}, bmp390_2 = {0};
 stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
 
 pitot_sensor_t pitot = {0};
+uint8_t output[4000] = {0};
 servo_t servo = {0};
 
 buzzer_t buzzer = {0};
@@ -110,6 +115,9 @@ buzzer_t buzzer = {0};
 /* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
 
 flight_phase_t flight_phase = CALIBRATING;
+
+flight_fsm_t flight_state;
+
 
 //char num_acc_modify[]={0,0,0};
 //char num_gyro_modify[]={0,0,0};
@@ -143,11 +151,17 @@ typedef struct {
 	float_t pressure;
 } sensor_data;
 
+
 uint16_t num_meas_stored_in_buffer = 0;
 uint16_t num_meas_stored_in_flash = 0;
 
-uint8_t measurements_buffer[sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2)];
+uint8_t *measurements_buffer;
 uint8_t flash_address[3] = {0};
+
+float_t altitude;
+bool first_measure = true;
+float_t velocity;
+float_t Pressure_1;
 
 /* USER CODE END PV */
 
@@ -326,8 +340,14 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-
+  	codegen_model_initialize();
+  	rtU.Altitudeinput = (double)0.0;
+  	rtU.Verticalvelocityinput = (double)0.0;
+  	size_t i = 0;
 	int8_t result = 0;
+	int8_t result2 = 0;
+	measurements_buffer =malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
+
 
 	/* deactivate chip select of IMU and BMP390 */
 	IMU1_CS_HIGH;
@@ -347,12 +367,33 @@ int main(void)
 	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
 
 	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
+  	uint8_t angle = 0;
+	uint8_t dataflag[1];
+	uint8_t address[3] = {0, 0, 0};
+	uint8_t result_first_read = W25Q128_read_flown_flag(&flash, address, dataflag, 1);
+
+	if (result_first_read != HAL_OK){
+		return HAL_ERROR;
+	}
+
+	if (dataflag[0]){
+		has_flown = true;
+	}else{
+		has_flown = false;
+		result2 = init_flash(&flash, ERASE);
+		if (result2 == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
+	}
+
+	flight_state.flight_state = flight_phase;
+
 
 	calibrateIMU(&imu_1, 1000, HWOFFSET);
 //	calibrateIMU(&imu_1, 1, RESET_HWOFFSET);
 
 
 	buzzerInit(&buzzer);
+	servo_init(&servo);
+	servo_rawmove(&servo, 2000);
 
 	note_t notes[73] = {
 		C0,
@@ -430,12 +471,17 @@ int main(void)
 		C6
 	};
 
-	for (size_t i = 0; i < 73; i++) {
-		beepBuzzer(&buzzer, 500, 70, notes[i]);
-		HAL_Delay(200);
-	}
+//	for (size_t i = 0; i < 73; i++) {
+//		beepBuzzer(&buzzer, 500, 70, notes[i]);
+//		HAL_Delay(200);
+//	}
+  	HAL_Delay(1000);
 
+  	servo_moveto_deg(&servo, 90);
 
+  	HAL_Delay(1000);
+
+  	servo_moveto_deg(&servo, 135);
 //	beepBuzzer(&buzzer, 500, 100, C5);
 //	HAL_Delay(500);
 //	beepBuzzer(&buzzer, 1000, 100, C5);
@@ -457,13 +503,13 @@ int main(void)
 //	float_t pressure = 0;
 //	memcpy(&pressure, buf + 28, sizeof(float_t));
 
+  	HAL_Delay(1000);
 
+  	servo_moveto_deg(&servo, 90);
 
+  	HAL_Delay(1000);
 
-
-
-
-
+  	servo_moveto_deg(&servo, 0);
 
 
 //	char *data = "internal flash writing test\0";
@@ -499,7 +545,7 @@ int main(void)
 //
 //  }
 //
-//  uint16_t velocity = compute_velocity(diff_pressure); /* measurement unit m/s */
+//  uint16_t velocity = compute_velocity(temperature,pression,diff_pressure); /* measurement unit m/s */
 
 
 
@@ -570,9 +616,18 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  rtU.Altitudeinput += 10.0;
+	  rtU.Verticalvelocityinput = 200.0;
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
+	  codegen_model_step();
+
+	  output[i++] = rtY.Airbrakesextoutput * 100;
+
+	  servo_moveto_deg(&servo, rtY.Airbrakesextoutput * 60);
+
+	  HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }
@@ -602,10 +657,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLN = 96;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
-  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) //ABBOT DEBUG
+//  {
+//    Error_Handler();
+//  }
 
   /** Initializes the CPU, AHB and APB buses clocks
   */
@@ -616,10 +671,10 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-  {
-    Error_Handler();
-  }
+//  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+//  {
+//    Error_Handler();
+//  }
 }
 
 /**
@@ -800,6 +855,7 @@ static void MX_TIM3_Init(void)
 
   /* USER CODE END TIM3_Init 0 */
 
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
   TIM_MasterConfigTypeDef sMasterConfig = {0};
   TIM_OC_InitTypeDef sConfigOC = {0};
 
@@ -812,6 +868,15 @@ static void MX_TIM3_Init(void)
   htim3.Init.Period = 65535;
   htim3.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
   htim3.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim3) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim3, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
   if (HAL_TIM_PWM_Init(&htim3) != HAL_OK)
   {
     Error_Handler();
@@ -1086,7 +1151,8 @@ void FlashWrite(void *argument)
 	{
 //		do {
 //		if (num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1) && (flight_phase > READY)) {
-		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)) {
+		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
+		{
 			/* this value 7 depends on the number of measurements are performed
 			* between each time the flash task is invoked. In this case it is 7
 			* because flash task has a period of 80 ticks while sensor task of
@@ -1103,10 +1169,13 @@ void FlashWrite(void *argument)
 
 			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 256);
 
+
 			if (result == 0) {
 				num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
 				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
 			}
+
+
 
 		}
 //		} while ((num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)));
@@ -1116,6 +1185,15 @@ void FlashWrite(void *argument)
 		osDelayUntil(tick);
 	}
   /* USER CODE END FlashWrite */
+}
+
+
+float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
+  float_t altitude;
+
+  altitude = 44330.0 * (1.0 - pow(currentPa / seaLevelPa, 0.1903));
+
+  return altitude;
 }
 
 /* USER CODE BEGIN Header_SensorsRead */
@@ -1190,10 +1268,22 @@ void SensorsRead(void *argument)
 		curr_acc.accY = acceleration_mg_1[1];
 		curr_acc.accZ = acceleration_mg_1[2];
 
+		if(first_measure){
+			Pressure_1 = data_1.pressure;
+		}
+
+		altitude = readAltitude(Pressure_1,data_1.pressure);
+
 		/* computing offset of the buffer and storing the data to the buffer */
 
 		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
-		memcpy(measurements_buffer + offset, &data_1, sizeof(sensor_data));
+//
+		memcpy(measurements_buffer + offset, &data_2, sizeof(sensor_data));
+//        sensor_data buffer_data;
+//		memcpy(&buffer_data,measurements_buffer+offset,sizeof(sensor_data));
+
+
+
 
 		/*
 		 * increment of the number of stored measurements and
@@ -1252,6 +1342,7 @@ void CommunicationBoard(void *argument)
 void FlightFSM(void *argument)
 {
   /* USER CODE BEGIN FlightFSM */
+
 	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
 	uint32_t tick;
@@ -1260,6 +1351,23 @@ void FlightFSM(void *argument)
 	/* Infinite loop */
 	for(;;)
 	{
+		linear_acceleration_t acc1;
+		acc1.accX = acceleration_mg_1[0];
+		acc1.accY = acceleration_mg_1[1];
+		acc1.accZ = acceleration_mg_1[2];
+
+		linear_acceleration_t acc2;
+		acc2.accX = angular_rate_mdps_1[0];
+		acc2.accY = angular_rate_mdps_1[1];
+		acc2.accZ = angular_rate_mdps_1[2];
+
+		estimation_output_t MotionData;
+		MotionData.acceleration = sqrt(acceleration_mg_1[0]*acceleration_mg_1[0] + acceleration_mg_1[1]*acceleration_mg_1[1] + acceleration_mg_1[2]*acceleration_mg_1[2]);
+		MotionData.height = altitude;
+
+		/* Check Flight Phases */
+		    	check_flight_phase(&flight_state,MotionData, acc1, acc2);
+
 
 
 		tick += FLIGHT_FSM_TASK_PERIOD;
@@ -1317,6 +1425,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 1 */
 }
 
+W25Q128_t* get_flash(){
+	return &flash;
+}
+
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
@@ -1331,6 +1443,8 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
+
+
 
 #ifdef  USE_FULL_ASSERT
 /**

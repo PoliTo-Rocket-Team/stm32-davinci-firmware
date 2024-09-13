@@ -5,12 +5,10 @@
  *      Author: tomma
  */
 
+
+
 #ifndef UTILITIES_H_
 #define UTILITIES_H_
-
-#ifndef __MAIN_H
-#include "main.h"
-#endif
 
 #ifndef _BMP3_H
 #include "bmp3.h"
@@ -33,14 +31,25 @@
 HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data);
 #endif
 
-//FIXME insert a function to get the estimated air density from the altitude
+#include "main.h"
+#include <stdbool.h>
+
+
+
+extern osEventFlagsId_t fsm_flag_id;
+extern osMessageQueueId_t event_queue;
+
+
 #define AIR_DENSITY_KG_M3	1.293f
+#define SPECIFIC_GAS_CONSTANT 287.0f // Joules/Kg*Kelvin
 
 typedef enum {
 	HWOFFSET = 0,
 	SWOFFSET = 1,
 	RESET_HWOFFSET = 2
 } OFFSET_TYPE;
+
+
 
 //float sw_offset_acceleration_mg[3] = {0};
 //float swoffset_angular_rate_mdps[3] = {0};
@@ -73,7 +82,7 @@ int8_t init_bmp390_2(struct bmp3_dev *bmp390);
 
 int8_t init_flash(W25Q128_t *flash, chip_erasing erase);
 
-uint16_t compute_velocity(uint16_t diff_pressure);
+uint16_t compute_velocity(float_t temperature,float_t blessings,uint16_t diff_pressure);
 
 //int8_t calibrateBMP390(struct bmp3_dev *bmp390, uint16_t iterationNum);
 

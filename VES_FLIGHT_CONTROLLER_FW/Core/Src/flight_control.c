@@ -2,89 +2,105 @@
  * FlightControl.c
  *
  *  Created on: Apr 2, 2024
- *      Author: tommaso
- * 		Contributor: Vincenzo Catalano
+ *      Author: Tommaso & Francesco Abate
  */
 
 #ifndef FLIGHTCONTROL_H
 #include "flight_control.h"
 #endif
 
-uint16_t memoryBit = 0;
+static void clear_fsm_memory(flight_fsm_t *fsm_state);
 
-void check_flight_phase(flight_phase_t *phase, linear_acceleration_t acc_data, linear_acceleration_t old_acc_data, linear_acceleration_t gyro_data, linear_acceleration_t old_gyro_data) {
+osStatus_t trigger_event(events_trigger ev, bool event_unique) {
+    static uint32_t event_tracking = 0U;
 
-	 switch (*phase) {
+    if (event_unique) {
+        if (event_tracking & (1U << ev)) {
+            return osOK;
+        }
+
+        if (ev == EV_TOUCHDOWN) {
+            event_tracking = 0xFFFFFFFF;
+        }
+    }
+
+//    log_warn("Event %lu Queued", ev);
+    // TODO: check if timeout should be 0 here
+    return osMessageQueuePut(event_queue, &ev, 0U, 10U);
+}
+
+void check_flight_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data) {
+
+	 const flight_fsm_t old_phase = *phase;
+
+	 switch (phase->flight_state) {
 
 	    case CALIBRATING:
-			  check_system_calibrating_phase(phase, acc_data, old_acc_data, gyro_data, old_gyro_data);
+			  check_system_calibrating_phase(phase, MotionData,acc_data, gyro_data);
 			  break;
 
 	    case READY:
-			  check_ready_to_takeoff_phase(phase, acc_data);
+			  check_ready_to_takeoff_phase(phase, MotionData ,acc_data);
 			  break;
 
 	    case BURNING:
-			  check_burning_phase(phase, acc_data);
+			  check_burning_phase(phase, MotionData);
 			  break;
 
 	    case COASTING:
-			  check_coasting_phase(phase, acc_data);
+			  check_coasting_phase(phase, MotionData);
 			  break;
 
 	    case DROGUE:
-			  check_drogue_deploy_phase(phase, acc_data);
+			  check_drogue_deploy_phase(phase, MotionData);
 			  break;
 
 	    case MAIN:
-			  check_main_deploy_phase(phase, acc_data);
+			  check_main_deploy_phase(phase, MotionData);
 			  break;
 
 	    case TOUCHDOWN:
-	    		check_touchdown_phase(phase, acc_data);
+	    	check_touch_down_phase(phase, MotionData,acc_data);
 	    	break;
 
 	    case INVALID:
 	    	break;
 
 	  }
+
+	 phase->state_changed = old_phase.flight_state != phase->flight_state;
 }
 
-void check_system_calibrating_phase(flight_phase_t *phase, linear_acceleration_t acc_data, linear_acceleration_t old_acc_data, linear_acceleration_t gyro_data, linear_acceleration_t old_gyro_data) {
+void check_system_calibrating_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data) {
 	// if I'm in a higher state I cannot come back
-	if(*phase > CALIBRATING) return;
+	if(phase->flight_state > CALIBRATING) return;
 
-	if ((fabsf(old_acc_data.accX - acc_data.accX) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(old_gyro_data.accX - gyro_data.accX) < GYRO_MEASURE_TOLERANCE_MDPS) &&
-	  (fabsf(old_gyro_data.accY - gyro_data.accY) < GYRO_MEASURE_TOLERANCE_MDPS) &&
-	  (fabsf(old_gyro_data.accZ - gyro_data.accZ) < GYRO_MEASURE_TOLERANCE_MDPS)) {
+	if ((fabsf(phase->old_acc_data.accX - acc_data.accX) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+	  (fabsf(phase->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+	  (fabsf(phase->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+	  (fabsf(phase->old_gyro_data.accX - gyro_data.accX) < GYRO_MEASURE_TOLERANCE_MDPS) &&
+	  (fabsf(phase->old_gyro_data.accY - gyro_data.accY) < GYRO_MEASURE_TOLERANCE_MDPS) &&
+	  (fabsf(phase->old_gyro_data.accZ - gyro_data.accZ) < GYRO_MEASURE_TOLERANCE_MDPS)) {
 
-		memoryBit++;
+		phase->memory[0]++;
 	} else {
 
-		memoryBit = 0;
+		phase->memory[0] = 0;
 	}
 
-    old_acc_data = acc_data;
-  	old_gyro_data = gyro_data;
+    phase->old_acc_data = acc_data;
+    phase->old_gyro_data = gyro_data;
 
-	if(memoryBit > THRESHOLD) {
-		/*
-		 * parameter 1 : phase variable
-		 * parameter 2 : new phase
-		 * parameter 3 : events to trigger
-		 */
+	if(phase->memory[0] > THRESHOLD) {
 		change_state_to(phase, READY, EV_READY);
 	}
 
 }
 
-void check_ready_to_takeoff_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
+void check_ready_to_takeoff_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data) {
 	// if I'm in a higher state I cannot come back
 
-	if(*phase > READY) return;
+	if(phase->flight_state > READY) return;
 
 	const float accel_x = acc_data.accX * acc_data.accX;
 	const float accel_y = acc_data.accY * acc_data.accY;
@@ -94,148 +110,141 @@ void check_ready_to_takeoff_phase(flight_phase_t *phase, linear_acceleration_t a
 	// do we use? or can we use a flag instead?
 	//	state->memory[1] > LIFTOFF_SAFETY_COUNTER
 	if (acceleration >  LIFT_OFF_ACC_THRESHOLD) {
-		memoryBit++;
+		phase->memory[1]++;
 	  } else {
-		memoryBit = 0;
+		  phase->memory[1] = 0;
 	  }
 
-	if (memoryBit > LIFTOFF_SAFETY_COUNTER) {
-		/*
-		 * parameter 1 : phase variable
-		 * parameter 2 : new phase
-		 * parameter 3 : events to trigger
-		 */
+	if (phase->memory[1] > LIFTOFF_SAFETY_COUNTER) {
 		change_state_to(phase, BURNING, EV_LIFTOFF);
 	}
 
 }
 
-void check_burning_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
+void check_burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(*phase > BURNING) return;
+	if(phase->flight_state > BURNING) return;
 
-	memoryBit = 0;
-	 /* When acceleration is below 0, liftoff concludes */
 
-	//XXX
-	//FIXME be sure that the acceleration checked is the right one
-	// remember that when on the rocket the gravity acceleration works on the x axis
-	if (acc_data.accZ > LIFT_OFF_ACC_THRESHOLD) {
-		// LIFT_OFF_ACC_THRESHOLD is not the correct value to check against
-		memoryBit++;
-	} else {
-		memoryBit = 0;
+	if(MotionData.acceleration< 0 ){
+		phase->memory[0]++;
+	}else{
+		phase->memory[0] = 0;
 	}
 
-	if (memoryBit > COASTING_SAFETY_COUNTER) {
+
+	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
 		change_state_to(phase, COASTING, EV_MAX_V);
 	}
 }
 
-void check_coasting_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
+void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(*phase > COASTING) return;
-
-	memoryBit = 0;
+	if(phase->flight_state > COASTING) return;
 	/* When velocity is below 0, coasting concludes */
 	// if we need to check acceleration be sure that accZ is the correct one to check
 	//XXX check the altitude for a specific amount of time
-	if (acc_data.accZ < 0) {
-		memoryBit++;
+	if (MotionData.height>650) {
+		phase->memory[0]++;
 	}
 
-	if (memoryBit > APOGEE_SAFETY_COUNTER) {
+	if (phase->memory[0] > APOGEE_SAFETY_COUNTER) {
 		/* If the duration between BURNING and apogee is smaller than defined, go to touchdown */
-	/*	if ((osKernelGetTickCount() - memoryBitthrust_trigger_time) < MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE) {
-			change_state_to(TOUCHDOWN, EV_TOUCHDOWN, fsm_state);
+		if ((osKernelGetTickCount() - phase->thrust_trigger_time) < MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE) {
+			change_state_to(phase,TOUCHDOWN, EV_TOUCHDOWN);
 		} else {
-			change_state_to(DROGUE, EV_APOGEE, fsm_state);
-		}*/
+			change_state_to(phase,DROGUE, EV_APOGEE);
+		}
 	}
 
 }
 
-void check_drogue_deploy_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
+void check_drogue_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(*phase > DROGUE) return;
-
-	memoryBit = 0;
-
-	if (1) {/* check the current altitude in order to decide whether to deploy the drogue or not */
+	if(phase->flight_state > DROGUE) return;
+	/////////////////////////////////////////////////////////////////////////////
+	if(MotionData.height<MAIN_DEPLOY_HEIGHT){//TO BE CHANGED : Apogee height at which we want to open our parachutes.
+		/* check the current altitude in order to decide whether to deploy the drogue or not */
+	/////////////////////////////////////////////////////////////////////////////
 		/* Achieved Height to deploy Main */
-		memoryBit++;
+
+		phase->memory[0]++;
 	} else {
 		/* Did Not Achieve */
-		memoryBit = 0;
+		phase->memory[0]= 0;
 	}
 
-	if (memoryBit > MAIN_SAFETY_COUNTER) {
-		change_state_to(phase, MAIN, EV_MAIN_DEPLOYMENT);
+	if (phase->memory[0] > MAIN_SAFETY_COUNTER) {//PER ORA 5 MA SI PUO CAMBIARE
+		change_state_to(phase,MAIN, EV_MAIN_DEPLOYMENT);
 	}
 
 }
 
-void check_main_deploy_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
+void check_main_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(*phase > MAIN) return;
-
-	memoryBit = 0;
+	if(phase->flight_state > MAIN) return;
 
 	/* If the velocity is very small we have touchdown */
 	// check the altitude for a specific amount of time
-//	if () {
+	if (fabsf(MotionData.height) < 5) {
 //		/* Touchdown achieved */
-//		memoryBit++;
-//	} else {
-//		/* Touchdown not achieved */
-//		memoryBit = 0;
-//	}
-
-	if (memoryBit > TOUCHDOWN_SAFETY_COUNTER) {
-		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
-	}
-
-}
-
-void check_touch_down_phase(flight_phase_t *phase, linear_acceleration_t acc_data) {
-	// if I'm in a higher state I cannot come back
-	if(*phase > TOUCHDOWN) return;
-
-	memoryBit = 0;
-
-	//XXX
-	//FIXME maybe put a difference check like in check_system_calibrating_phase
-	// using both the last and last - 1 measurements to check the difference
-
-	if ((fabsf(acc_data.accX ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-		(fabsf(acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-		(fabsf(acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG)) {
-		/* Touchdown achieved */
-		memoryBit++;
+		phase->memory[0]++;
 	} else {
 		/* Touchdown not achieved */
-		memoryBit = 0;
+		phase->memory[0] = 0;
 	}
 
-	if (memoryBit > TOUCHDOWN_SAFETY_COUNTER) {
+	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
 		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
 	}
+
 }
 
-void clear_memory_bit(uint16_t *value) {
-	*value = 0;
-}
+void check_touch_down_phase(flight_fsm_t *phase, estimation_output_t MotionData, linear_acceleration_t acc_data) {
+	// if I'm in a higher state I cannot come back
+	if(phase->flight_state > TOUCHDOWN) return;
 
- void change_state_to(flight_phase_t *old_phase, flight_phase_t new_phase, events_trigger event_to_trigger) {
-/*	if (flight_state == BURNING) {
-		thrust_trigger_time = osKernelGetTickCount();
+
+
+	if ((fabsf(phase->old_acc_data.accX - acc_data.accX ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+		(fabsf(phase->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+		(fabsf(phase->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG)) {
+		/* Touchdown achieved */
+		phase->memory[0]++;
+	} else {
+		/* Touchdown not achieved */
+		phase->memory[0] = 0;
 	}
 
-	trigger_event(event_to_trigger);
+	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
+		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
+		W25Q128_t *flash;
+		flash = get_flash();
+		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
+		uint8_t data_flown[1];
+		W25Q128_write_flown_flag(flash, address, data_flown, 1,1);
+
+
+	}
+}
+
+/* Function that needs to be called every time that a state transition is done */
+static void clear_fsm_memory(flight_fsm_t *phase) {
+	phase->clock_memory = 0;
+	phase->memory[0] = 0;
+	phase->memory[1] = 0;
+	phase->memory[2] = 0;
+}
+
+ void change_state_to(flight_fsm_t *phase, flight_phase_t new_phase, events_trigger event_to_trigger) {
+	if (phase->flight_state == BURNING) {
+		phase->thrust_trigger_time = osKernelGetTickCount();
+	}
+
+	trigger_event(event_to_trigger,true);
 	osEventFlagsClear(fsm_flag_id, 0xFF);
-	osEventFlagsSet(fsm_flag_id, new_state);
+	osEventFlagsSet(fsm_flag_id, new_phase);
 	//go to
-	*old_phase=new_phase;
-	clear_memory_bit(&memoryBit);*/
-	int c=1;
+	phase->flight_state=new_phase;
+	clear_fsm_memory(phase);
 }

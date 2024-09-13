@@ -26,6 +26,8 @@ HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data) {
 
 static uint8_t bmp390_1_addr = 0;
 static uint8_t bmp390_2_addr = 0;
+osEventFlagsId_t fsm_flag_id;
+osMessageQueueId_t event_queue;
 
 float computeAltitude(double pressurePa, double temperature) {
 
@@ -464,6 +466,8 @@ int8_t init_bmp390_2(struct bmp3_dev *bmp390) {
 	return HAL_OK;
 }
 
+
+
 int8_t init_flash(W25Q128_t *flash, chip_erasing erase) {
 
 	int8_t result = HAL_ERROR;
@@ -503,15 +507,22 @@ int8_t init_flash(W25Q128_t *flash, chip_erasing erase) {
 	return HAL_OK;
 }
 
+uint16_t compute_air_density(float_t temperature,float_t pressure){
+	uint16_t air_d;
+
+	air_d = (uint16_t) pressure/(temperature*SPECIFIC_GAS_CONSTANT);
+	return air_d;
+}
+
 //FIXME put the function in the correct file and place
-uint16_t compute_velocity(uint16_t diff_pressure) {
+uint16_t compute_velocity(float_t temperature,float_t pressure, uint16_t diff_pressure) {
 
 	uint16_t velocity;	/* V = [m]/[s] */
-	//FIXME uint16_t air_density = get_air_density();
+	uint16_t air_density = compute_air_density(temperature,pressure);
 
 	//FIXME maybe insert a function to estimate air density wrt the altitude
 
-	velocity = sqrt(2 * diff_pressure / AIR_DENSITY_KG_M3);
+	velocity = sqrt(2 * diff_pressure / air_density);
 
 	return velocity;
 }
