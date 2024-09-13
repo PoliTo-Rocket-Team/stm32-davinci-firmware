@@ -515,18 +515,6 @@ uint16_t compute_air_density(float_t temperature,float_t pressure){
 }
 
 //FIXME put the function in the correct file and place
-uint16_t compute_velocity(float_t temperature,float_t pressure, uint16_t diff_pressure) {
-
-	uint16_t velocity;	/* V = [m]/[s] */
-	uint16_t air_density = compute_air_density(temperature,pressure);
-
-	//FIXME maybe insert a function to estimate air density wrt the altitude
-
-	velocity = sqrt(2 * diff_pressure / air_density);
-
-	return velocity;
-}
-
 //int8_t calibrateBMP390(struct bmp3_dev *bmp390, uint16_t iterationNum) {
 //
 //	struct bmp3_data temp = { -1, -1 };

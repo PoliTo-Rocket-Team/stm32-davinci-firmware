@@ -149,6 +149,17 @@ typedef struct {
 
 	float_t temperature;
 	float_t pressure;
+	float_t altitude;
+
+	bool invalid;
+	bool calibrating;
+	bool ready;
+	bool burning;
+	bool coasting;
+	bool drogue;
+	bool main;
+	bool touchdown;
+
 } sensor_data;
 
 
@@ -162,6 +173,7 @@ float_t altitude;
 bool first_measure = true;
 float_t velocity;
 float_t Pressure_1;
+float_t Pressure_2;
 
 /* USER CODE END PV */
 
@@ -376,7 +388,7 @@ int main(void)
 		return HAL_ERROR;
 	}
 
-	if (dataflag[0]){
+	if (dataflag[0]==1){
 		has_flown = true;
 	}else{
 		has_flown = false;
@@ -1167,7 +1179,27 @@ void FlashWrite(void *argument)
 			flash_address[1] = addr >> 8;
 			flash_address[2] = addr >> 16;
 
+			uint8_t *testiamo;
+			testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
+
 			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 256);
+//			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,352);
+//	        sensor_data tesstttt;
+//			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
+//	        sensor_data tesstttt2;
+//			memcpy(&tesstttt2,testiamo+sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt3;
+//			memcpy(&tesstttt3,testiamo+2*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt4;
+//			memcpy(&tesstttt4,testiamo+3*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt5;
+//			memcpy(&tesstttt5,testiamo+4*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt6;
+//			memcpy(&tesstttt6,testiamo+5*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt7;
+//			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt8;
+//			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
 
 
 			if (result == 0) {
@@ -1270,9 +1302,164 @@ void SensorsRead(void *argument)
 
 		if(first_measure){
 			Pressure_1 = data_1.pressure;
+			Pressure_2 = data_2.pressure;
 		}
 
 		altitude = readAltitude(Pressure_1,data_1.pressure);
+		data_1.altitude = altitude;
+		altitude = readAltitude(Pressure_2,data_2.pressure);
+		data_2.altitude = altitude;
+
+
+
+		switch (flight_state.flight_state){
+
+			case INVALID:
+				data_1.invalid = 1;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 1;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case CALIBRATING:
+				data_1.invalid = 0;
+				data_1.calibrating = 1;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 1;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case READY:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 1;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 1;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case BURNING:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 1;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 1;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case COASTING:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 1;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 1;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case DROGUE:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 1;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 1;
+				data_2.main = 0;
+				data_2.touchdown = 0;
+				break;
+			case MAIN:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 1;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 1;
+				data_2.touchdown = 0;
+				break;
+			case TOUCHDOWN:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 1;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 1;
+				break;
+		}
+
 
 		/* computing offset of the buffer and storing the data to the buffer */
 
@@ -1294,7 +1481,7 @@ void SensorsRead(void *argument)
 		 * are always overwritten to the previous ones
 		 */
 		num_meas_stored_in_buffer++;
-		num_meas_stored_in_buffer %= 8;
+		num_meas_stored_in_buffer %= 16;
 
 
 

@@ -33,6 +33,7 @@ HAL_StatusTypeDef COM_port_serial_print(const uint8_t* data);
 
 #include "main.h"
 #include <stdbool.h>
+#include <math.h>
 
 
 

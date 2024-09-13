@@ -14,5 +14,4 @@
 ../Core/Src/utilities.c:410:8:init_bmp390_2	32	static
 ../Core/Src/utilities.c:471:8:init_flash	24	static
 ../Core/Src/utilities.c:510:10:compute_air_density	0	static
-../Core/Src/utilities.c:518:10:compute_velocity	8	static
-../Core/Src/utilities.c:569:8:calibrateIMU	80	static
+../Core/Src/utilities.c:557:8:calibrateIMU	80	static

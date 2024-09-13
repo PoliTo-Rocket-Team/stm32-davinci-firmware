@@ -105,7 +105,7 @@ void check_ready_to_takeoff_phase(flight_fsm_t *phase, estimation_output_t Motio
 	const float accel_x = acc_data.accX * acc_data.accX;
 	const float accel_y = acc_data.accY * acc_data.accY;
 	const float accel_z = acc_data.accZ * acc_data.accZ;
-	const float acceleration = accel_x + accel_y + accel_z;
+	const float acceleration = sqrt(accel_x + accel_y + accel_z);
 
 	// do we use? or can we use a flag instead?
 	//	state->memory[1] > LIFTOFF_SAFETY_COUNTER
@@ -126,7 +126,7 @@ void check_burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	if(phase->flight_state > BURNING) return;
 
 
-	if(MotionData.acceleration< 0 ){
+	if(MotionData.acceleration< 100000){//0 ){ ABBOTT
 		phase->memory[0]++;
 	}else{
 		phase->memory[0] = 0;
@@ -144,7 +144,7 @@ void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	/* When velocity is below 0, coasting concludes */
 	// if we need to check acceleration be sure that accZ is the correct one to check
 	//XXX check the altitude for a specific amount of time
-	if (MotionData.height>650) {
+	if (MotionData.height>-1){//650) {
 		phase->memory[0]++;
 	}
 
@@ -162,10 +162,8 @@ void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 void check_drogue_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
 	if(phase->flight_state > DROGUE) return;
-	/////////////////////////////////////////////////////////////////////////////
-	if(MotionData.height<MAIN_DEPLOY_HEIGHT){//TO BE CHANGED : Apogee height at which we want to open our parachutes.
-		/* check the current altitude in order to decide whether to deploy the drogue or not */
-	/////////////////////////////////////////////////////////////////////////////
+
+	if(MotionData.height<MAIN_DEPLOY_HEIGHT){
 		/* Achieved Height to deploy Main */
 
 		phase->memory[0]++;
@@ -223,6 +221,7 @@ void check_touch_down_phase(flight_fsm_t *phase, estimation_output_t MotionData,
 		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
 		uint8_t data_flown[1];
 		W25Q128_write_flown_flag(flash, address, data_flown, 1,1);
+//		W25Q128_read_flown_flag(flash, address, data_flown, 1);
 
 
 	}
