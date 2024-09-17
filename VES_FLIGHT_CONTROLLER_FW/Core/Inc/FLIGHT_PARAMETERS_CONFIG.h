@@ -16,14 +16,15 @@
 
 #define FLASH_NUMBER_OF_STORE_EACH_TIME (FLASH_WRITE_TASK_PERIOD / SENSORS_TASK_PERIOD)
 
-#define ACCELEROMETER_MEASURE_TOLERANCE_MG	10000//0 ABBOTT
-#define GYRO_MEASURE_TOLERANCE_MDPS			100000 //ABBOT
+#define ACCELEROMETER_MEASURE_TOLERANCE_MG	0
+#define GYRO_MEASURE_TOLERANCE_MDPS			0
 #define ACC_SENSOR_ERROR 0
 #define VELOCITY_BOUND_TOUCHDOWN 3.0F
 #define THRESHOLD 10
 #define LIFT_OFF_ACC_THRESHOLD 1.5F
-#define MAIN_DEPLOY_HEIGHT 100
-
+#define ALTITUDE_AIRBRAKES 650 // GIUSEPPE altezza sopra la quale salire prima di chiudere gli airbrakes
+#define MAIN_DEPLOY_HEIGHT 100 //GIUSEPPE altezza sotto òa quale scendere prima di deployare i main parachute
+#define AIRBRAKES_SAFETY_COUNTER 10 //GIUSEPPE Numero di volte che controlliamo che l'altezza di 650 metri è superata
 #define LIFTOFF_SAFETY_COUNTER 10
 #define COASTING_SAFETY_COUNTER 5
 #define APOGEE_SAFETY_COUNTER 30

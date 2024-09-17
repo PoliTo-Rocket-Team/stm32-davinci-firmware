@@ -9,6 +9,8 @@
 #include "flight_control.h"
 #endif
 
+float_t previous_altitude = 0;
+
 static void clear_fsm_memory(flight_fsm_t *fsm_state);
 
 osStatus_t trigger_event(events_trigger ev, bool event_unique) {
@@ -41,6 +43,10 @@ void check_flight_phase(flight_fsm_t *phase, estimation_output_t MotionData,line
 
 	    case READY:
 			  check_ready_to_takeoff_phase(phase, MotionData ,acc_data);
+			  break;
+
+	    case JELQING:
+	    	  check_jelqing_phase(phase,MotionData);
 			  break;
 
 	    case BURNING:
@@ -115,18 +121,42 @@ void check_ready_to_takeoff_phase(flight_fsm_t *phase, estimation_output_t Motio
 		  phase->memory[1] = 0;
 	  }
 
-	if (phase->memory[1] > LIFTOFF_SAFETY_COUNTER) {
+	if (phase->memory[1] > AIRBRAKES_SAFETY_COUNTER) {
 		change_state_to(phase, BURNING, EV_LIFTOFF);
 	}
 
 }
+
+void check_jelqing_phase(flight_fsm_t *phase, estimation_output_t MotionData){
+	if(phase->flight_state > JELQING) return;
+
+	if(MotionData.height> ALTITUDE_AIRBRAKES){
+		phase->memory[0]++;
+	}else{
+		phase->memory[0] = 0;
+	}
+
+	if(phase->memory[0] > LIFTOFF_SAFETY_COUNTER){
+		change_state_to(phase,BURNING,EV_EDGING);
+		servo_t *servo;
+		servo = get_servo();
+		servo_moveto_deg(servo,180.0); //GIUSEPPE 180 gradi per chiudere gli airbrakes
+		W25Q128_t *flash;
+		flash = get_flash();
+		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
+		uint8_t data_flown[1];
+		W25Q128_write_flown_flag(flash, address, data_flown, 1,1);
+//		W25Q128_read_flown_flag(flash, address, data_flown, 1);
+	}
+}
+
 
 void check_burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
 	if(phase->flight_state > BURNING) return;
 
 
-	if(MotionData.acceleration< 100000){//0 ){ ABBOTT
+	if(MotionData.acceleration<0 ){
 		phase->memory[0]++;
 	}else{
 		phase->memory[0] = 0;
@@ -144,7 +174,7 @@ void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	/* When velocity is below 0, coasting concludes */
 	// if we need to check acceleration be sure that accZ is the correct one to check
 	//XXX check the altitude for a specific amount of time
-	if (MotionData.height>-1){//650) {
+	if (MotionData.height <= previous_altitude) {
 		phase->memory[0]++;
 	}
 
@@ -216,12 +246,6 @@ void check_touch_down_phase(flight_fsm_t *phase, estimation_output_t MotionData,
 
 	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
 		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
-		W25Q128_t *flash;
-		flash = get_flash();
-		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
-		uint8_t data_flown[1];
-		W25Q128_write_flown_flag(flash, address, data_flown, 1,1);
-//		W25Q128_read_flown_flag(flash, address, data_flown, 1);
 
 
 	}

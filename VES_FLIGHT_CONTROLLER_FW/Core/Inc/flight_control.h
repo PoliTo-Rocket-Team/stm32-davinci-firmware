@@ -28,6 +28,7 @@ typedef enum {
 	INVALID = 0,
 	CALIBRATING = 1,
 	READY,
+	JELQING,
 	BURNING,
 	COASTING,
 	DROGUE,
@@ -69,6 +70,7 @@ typedef struct  {
 typedef enum {
 	EV_CALIBRATE = 0,
 	EV_READY,
+	EV_EDGING,
 	EV_LIFTOFF,
 	EV_MAX_V,
 	EV_APOGEE,			/* open the drogue parachute */
@@ -82,6 +84,7 @@ osStatus_t trigger_event(events_trigger ev, bool event_unique);
 
 void check_system_calibrating_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
 void check_ready_to_takeoff_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
+void check_jelqing_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
 void check_burning_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 void check_coasting_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 void check_drogue_deploy_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);

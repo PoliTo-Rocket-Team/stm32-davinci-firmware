@@ -154,6 +154,7 @@ typedef struct {
 	bool invalid;
 	bool calibrating;
 	bool ready;
+	bool jelqing;
 	bool burning;
 	bool coasting;
 	bool drogue;
@@ -1182,7 +1183,7 @@ void FlashWrite(void *argument)
 			uint8_t *testiamo;
 			testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
-			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 256);
+			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 264);
 //			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,352);
 //	        sensor_data tesstttt;
 //			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
@@ -1318,6 +1319,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 1;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1326,6 +1328,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 1;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
@@ -1336,6 +1339,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 1;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1344,6 +1348,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 1;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
@@ -1354,6 +1359,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 1;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1362,16 +1368,37 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 1;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
 				data_2.main = 0;
 				data_2.touchdown = 0;
 				break;
+			case JELQING:
+				data_1.invalid = 0;
+				data_1.calibrating = 0;
+				data_1.ready = 0;
+				data_1.jelqing = 1;
+				data_1.burning = 0;
+				data_1.coasting = 0;
+				data_1.drogue = 0;
+				data_1.main = 0;
+				data_1.touchdown = 0;
+				data_2.invalid = 0;
+				data_2.calibrating = 0;
+				data_2.ready = 0;
+				data_2.jelqing = 1;
+				data_2.burning = 0;
+				data_2.coasting = 0;
+				data_2.drogue = 0;
+				data_2.main = 0;
+				data_2.touchdown = 0;
 			case BURNING:
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 1;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1380,6 +1407,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 1;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
@@ -1390,6 +1418,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 1;
 				data_1.drogue = 0;
@@ -1398,6 +1427,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 1;
 				data_2.drogue = 0;
@@ -1408,6 +1438,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 1;
@@ -1416,6 +1447,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 1;
@@ -1426,6 +1458,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1434,6 +1467,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
@@ -1444,6 +1478,7 @@ void SensorsRead(void *argument)
 				data_1.invalid = 0;
 				data_1.calibrating = 0;
 				data_1.ready = 0;
+				data_1.jelqing = 0;
 				data_1.burning = 0;
 				data_1.coasting = 0;
 				data_1.drogue = 0;
@@ -1452,6 +1487,7 @@ void SensorsRead(void *argument)
 				data_2.invalid = 0;
 				data_2.calibrating = 0;
 				data_2.ready = 0;
+				data_2.jelqing = 0;
 				data_2.burning = 0;
 				data_2.coasting = 0;
 				data_2.drogue = 0;
@@ -1614,6 +1650,10 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 
 W25Q128_t* get_flash(){
 	return &flash;
+}
+
+servo_t* get_servo(){
+	return &servo;
 }
 
 /**
