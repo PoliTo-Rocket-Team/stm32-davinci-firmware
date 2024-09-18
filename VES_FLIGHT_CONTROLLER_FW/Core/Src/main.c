@@ -408,93 +408,29 @@ int main(void)
 	servo_init(&servo);
 	servo_rawmove(&servo, 2000);
 
-	note_t notes[73] = {
-		C0,
-		Db0,
-		D0,
-		Eb0,
-		E0,
-		F0,
-		Gb0,
-		G0,
-		Ab0,
-		A0,
-		Bb0,
-		B0,
-		C1,
-		Db1,
-		D1,
-		Eb1,
-		E1,
-		F1,
-		Gb1,
-		G1,
-		Ab1,
-		A1,
-		Bb1,
-		B1,
-		C2,
-		Db2,
-		D2,
-		Eb2,
-		E2,
-		F2,
-		Gb2,
-		G2,
-		Ab2,
-		A2,
-		Bb2,
-		B2,
-		C3,
-		Db3,
-		D3,
-		Eb3,
-		E3,
-		F3,
-		Gb3,
-		G3,
-		Ab3,
-		A3,
-		Bb3,
-		B3,
-		C4,
-		Db4,
-		D4,
-		Eb4,
-		E4,
-		F4,
-		Gb4,
-		G4,
-		Ab4,
-		A4,
-		Bb4,
-		B4,
-		C5,
-		Db5,
-		D5,
-		Eb5,
-		E5,
-		F5,
-		Gb5,
-		G5,
-		Ab5,
-		A5,
-		Bb5,
-		B5,
-		C6
+	note_t notes[20] = {
+			C1, G1, C2, E2,
+			D1, A1, D2, F2,
+			E1, B1, E2, G2,
+			F1, C2, F2, A2,
+			G1, D2, G2, B2
 	};
 
-//	for (size_t i = 0; i < 73; i++) {
-//		beepBuzzer(&buzzer, 500, 70, notes[i]);
-//		HAL_Delay(200);
-//	}
+	for (size_t i = 0; i < 20; i++) {
+		LED_ON(Status_LED_GPIO_Port, Status_LED_Pin);
+		beepBuzzer(&buzzer, 250, 10, notes[i]);
+		LED_OFF(Status_LED_GPIO_Port, Status_LED_Pin);
+		HAL_Delay(75);
+	}
+	
   	HAL_Delay(1000);
 
-  	servo_moveto_deg(&servo, 90);
+  	servo_moveto_deg(&servo, 90); // Muovi servo a 90°
 
   	HAL_Delay(1000);
 
-  	servo_moveto_deg(&servo, 135);
+  	servo_moveto_deg(&servo, 135); // Muovi servo a 135°
+	
 //	beepBuzzer(&buzzer, 500, 100, C5);
 //	HAL_Delay(500);
 //	beepBuzzer(&buzzer, 1000, 100, C5);
