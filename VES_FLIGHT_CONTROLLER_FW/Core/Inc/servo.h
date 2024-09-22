@@ -16,7 +16,7 @@ extern TIM_HandleTypeDef htim3;
 
 #define SERVO_GPIO_PORT GPIOB
 #define SERVO_GPIO_PIN 	4
-#define TIM_CLK			48000000
+#define TIM_CLK			96000000
 #define PWM_TIM_CH		TIM_CHANNEL_1
 #define TIM_INSTANCE 	TIM3
 #define PWM_FREQUENCY	50
