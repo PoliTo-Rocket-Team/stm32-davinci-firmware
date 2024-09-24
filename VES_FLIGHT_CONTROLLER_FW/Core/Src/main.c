@@ -416,20 +416,20 @@ int main(void)
 			G1, D2, G2, B2
 	};
 
-	for (size_t i = 0; i < 20; i++) {
-		LED_ON(Status_LED_GPIO_Port, Status_LED_Pin);
-		beepBuzzer(&buzzer, 250, 10, notes[i]);
-		LED_OFF(Status_LED_GPIO_Port, Status_LED_Pin);
-		HAL_Delay(75);
-	}
+//	for (size_t i = 0; i < 20; i++) {
+//		LED_ON(Status_LED_GPIO_Port, Status_LED_Pin);
+//		beepBuzzer(&buzzer, 250, 10, notes[i]);
+//		LED_OFF(Status_LED_GPIO_Port, Status_LED_Pin);
+//		HAL_Delay(75);
+//	}
 	
-  	HAL_Delay(1000);
-
-  	servo_moveto_deg(&servo, 90); // Muovi servo a 90°
-
-  	HAL_Delay(1000);
-
-  	servo_moveto_deg(&servo, 135); // Muovi servo a 135°
+//  	HAL_Delay(1000);
+//
+//  	servo_moveto_deg(&servo, 90); // Muovi servo a 90°
+//
+//  	HAL_Delay(1000);
+//
+//  	servo_moveto_deg(&servo, 135); // Muovi servo a 135°
 	
 //	beepBuzzer(&buzzer, 500, 100, C5);
 //	HAL_Delay(500);
@@ -452,13 +452,13 @@ int main(void)
 //	float_t pressure = 0;
 //	memcpy(&pressure, buf + 28, sizeof(float_t));
 
-  	HAL_Delay(1000);
-
-  	servo_moveto_deg(&servo, 90);
-
-  	HAL_Delay(1000);
-
-  	servo_moveto_deg(&servo, 0);
+//  	HAL_Delay(1000);
+//
+//  	servo_moveto_deg(&servo, 90);
+//
+//  	HAL_Delay(1000);
+//
+//  	servo_moveto_deg(&servo, 0);
 
 
 //	char *data = "internal flash writing test\0";
@@ -1120,23 +1120,23 @@ void FlashWrite(void *argument)
 			testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
 			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 264);
-//			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,352);
-//	        sensor_data tesstttt;
-//			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
-//	        sensor_data tesstttt2;
-//			memcpy(&tesstttt2,testiamo+sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt3;
-//			memcpy(&tesstttt3,testiamo+2*sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt4;
-//			memcpy(&tesstttt4,testiamo+3*sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt5;
-//			memcpy(&tesstttt5,testiamo+4*sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt6;
-//			memcpy(&tesstttt6,testiamo+5*sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt7;
-//			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
-//	        sensor_data tesstttt8;
-//			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
+			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,352);
+	        sensor_data tesstttt;
+			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
+	        sensor_data tesstttt2;
+			memcpy(&tesstttt2,testiamo+sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt3;
+			memcpy(&tesstttt3,testiamo+2*sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt4;
+			memcpy(&tesstttt4,testiamo+3*sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt5;
+			memcpy(&tesstttt5,testiamo+4*sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt6;
+			memcpy(&tesstttt6,testiamo+5*sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt7;
+			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
+	        sensor_data tesstttt8;
+			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
 
 
 			if (result == 0) {
@@ -1438,8 +1438,8 @@ void SensorsRead(void *argument)
 		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
 //
 		memcpy(measurements_buffer + offset, &data_2, sizeof(sensor_data));
-//        sensor_data buffer_data;
-//		memcpy(&buffer_data,measurements_buffer+offset,sizeof(sensor_data));
+        sensor_data buffer_data;
+		memcpy(&buffer_data,measurements_buffer+offset,sizeof(sensor_data));
 
 
 
