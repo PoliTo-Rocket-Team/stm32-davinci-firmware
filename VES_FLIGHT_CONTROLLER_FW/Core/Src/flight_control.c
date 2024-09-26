@@ -174,9 +174,11 @@ void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	/* When velocity is below 0, coasting concludes */
 	// if we need to check acceleration be sure that accZ is the correct one to check
 	//XXX check the altitude for a specific amount of time
+
 	if (MotionData.height <= previous_altitude) {
 		phase->memory[0]++;
 	}
+	previous_altitude = MotionData.height;
 
 	if (phase->memory[0] > APOGEE_SAFETY_COUNTER) {
 		/* If the duration between BURNING and apogee is smaller than defined, go to touchdown */
