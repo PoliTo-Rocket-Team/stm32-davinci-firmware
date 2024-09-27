@@ -150,9 +150,15 @@ typedef struct {
 	float_t temperature;
 	float_t pressure;
 //	float_t altitude;
-
-
-//    int8_t phase;
+//	float_t velocity;
+//	float_t initial_pressure;
+//
+//
+//    float_t phase;
+//    float_t padding_1;
+//    float_t padding_2;
+//    float_t padding_3;
+//    float_t padding_4;
 //	bool invalid;
 //	bool calibrating;
 //	bool ready;
@@ -165,11 +171,27 @@ typedef struct {
 
 } sensor_data;
 
+//typedef struct{
+//
+//	float_t altitude;
+//	float_t velocity;
+//	float_t initial_pressure;
+//
+//
+//    float_t phase;
+//    float_t padding_1;
+//    float_t padding_2;
+//    float_t padding_3;
+//    float_t padding_4;
+//} sensor_data_2;
+
 
 uint16_t num_meas_stored_in_buffer = 0;
+//uint16_t num_meas_stored_in_buffer_2 = 0;
 uint16_t num_meas_stored_in_flash = 0;
 
 uint8_t *measurements_buffer;
+uint8_t *measurements_buffer_2;
 uint8_t flash_address[3] = {0};
 
 float_t altitude;
@@ -361,7 +383,8 @@ int main(void)
   	size_t i = 0;
 	int8_t result = 0;
 	int8_t result2 = 0;
-	measurements_buffer =malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
+	measurements_buffer = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
+//	measurements_buffer_2 = malloc(sizeof(sensor_data_2) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
 
 	/* deactivate chip select of IMU and BMP390 */
@@ -1112,17 +1135,18 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-			size_t addr = (num_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data);
+			size_t addr = 1 +(num_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data);
 
 			flash_address[0] = addr;
 			flash_address[1] = addr >> 8;
 			flash_address[2] = addr >> 16;
 
 			uint8_t *testiamo;
+
 			testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
-			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 288);
-			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,288);
+			uint8_t result = W25Q128_write_data(&flash, flash_address, measurements_buffer, 256);
+			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,256);
 	        sensor_data tesstttt;
 			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
 	        sensor_data tesstttt2;
@@ -1139,13 +1163,13 @@ void FlashWrite(void *argument)
 			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
 	        sensor_data tesstttt8;
 			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
-			sensor_data testt9;
-			memcpy(&testt9,testiamo+8*sizeof(sensor_data),sizeof(sensor_data));
 
 
 			if (result == 0) {
 				num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
+//				num_meas_stored_in_buffer_2 -= FLASH_NUMBER_OF_STORE_EACH_TIME;
 				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
+//				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
 			}
 
 
@@ -1188,6 +1212,7 @@ void SensorsRead(void *argument)
 	for(;;)
 	{
 		sensor_data data_1 = {0}, data_2 = {0};
+//		sensor_data_2 data_1_2 = {0}, data_2_2 ={0};
 		uint8_t result = 1;
 
 		/* retrieving data from a couple of sensor and doing required conversions */
@@ -1244,13 +1269,15 @@ void SensorsRead(void *argument)
 		if(first_measure){
 			Pressure_1 = data_1.pressure;
 			Pressure_2 = data_2.pressure;
+//			data_1_2.initial_pressure = Pressure_1;
+//			data_2_2.initial_pressure = Pressure_2;
 			first_measure = false;
 		}
 
 		altitude = readAltitude(Pressure_1,data_1.pressure);
-//		data_1.altitude = altitude;
+//		data_1_2.altitude = altitude;
 		altitude = readAltitude(Pressure_2,data_2.pressure);
-//		data_2.altitude = altitude;
+//		data_2_2.altitude = altitude;
 
 
 
@@ -1275,8 +1302,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 0;
-//				data_2.phase = 0;
+//				data_1_2.phase = 0.0;
+//				data_2_2.phase = 0.0;
 				break;
 			case CALIBRATING:
 //				data_1.invalid = 0;
@@ -1297,8 +1324,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 1;
-//				data_2.phase = 1;
+//				data_1_2.phase = 1.0;
+//				data_2_2.phase = 1.0;
 				break;
 			case READY:
 //				data_1.invalid = 0;
@@ -1319,8 +1346,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 2;
-//				data_2.phase = 2;
+//				data_1_2.phase = 2.0;
+//				data_2_2.phase = 2.0;
 				break;
 			case JELQING:
 //				data_1.invalid = 0;
@@ -1341,8 +1368,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 3;
-//				data_2.phase = 3;
+//				data_1_2.phase = 3.0;
+//				data_2_2.phase = 3.0;
 			case BURNING:
 //				data_1.invalid = 0;
 //				data_1.calibrating = 0;
@@ -1362,8 +1389,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 4;
-//				data_2.phase = 4;
+//				data_1_2.phase = 4.0;
+//				data_2_2.phase = 4.0;
 				break;
 			case COASTING:
 //				data_1.invalid = 0;
@@ -1384,8 +1411,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 5;
-//				data_2.phase = 5;
+//				data_1_2.phase = 5.0;
+//				data_2_2.phase = 5.0;
 				break;
 			case DROGUE:
 //				data_1.invalid = 0;
@@ -1406,8 +1433,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 1;
 //				data_2.main = 0;
 //				data_2.touchdown = 0;
-//				data_1.phase = 6;
-//				data_2.phase = 6;
+//				data_1_2.phase = 6.0;
+//				data_2_2.phase = 6.0;
 				break;
 			case MAIN:
 //				data_1.invalid = 0;
@@ -1428,8 +1455,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 1;
 //				data_2.touchdown = 0;
-//				data_1.phase = 7;
-//				data_2.phase = 7;
+//				data_1_2.phase = 7.0;
+//				data_2_2.phase = 7.0;
 				break;
 			case TOUCHDOWN:
 //				data_1.invalid = 0;
@@ -1450,8 +1477,8 @@ void SensorsRead(void *argument)
 //				data_2.drogue = 0;
 //				data_2.main = 0;
 //				data_2.touchdown = 1;
-//				data_1.phase = 8;
-//				data_2.phase = 8;
+//				data_1_2.phase = 8.0;
+//				data_2_2.phase = 8.0;
 				break;
 		}
 
@@ -1459,10 +1486,15 @@ void SensorsRead(void *argument)
 		/* computing offset of the buffer and storing the data to the buffer */
 
 		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
+//		size_t offset_2 = num_meas_stored_in_buffer_2 * sizeof(sensor_data_2);
 //
 		memcpy(measurements_buffer + offset, &data_2, sizeof(sensor_data));
+//		memcpy(measurements_buffer_2 + offset_2, &data_2_2, sizeof(sensor_data_2));
+//		sensor_data_2 buffer_data_2;
         sensor_data buffer_data;
-		memcpy(&buffer_data,measurements_buffer+offset,sizeof(sensor_data));
+		memcpy(&buffer_data,measurements_buffer + offset,sizeof(sensor_data));
+//		memcpy(&buffer_data_2,measurements_buffer_2 + offset_2, sizeof(sensor_data_2));
+//		printf(sizeof(sensor_data_2));
 
 
 
@@ -1477,6 +1509,9 @@ void SensorsRead(void *argument)
 		 */
 		num_meas_stored_in_buffer++;
 		num_meas_stored_in_buffer %= 16;
+//		num_meas_stored_in_buffer_2++;
+//		num_meas_stored_in_buffer_2 %=16;
+
 
 
 
