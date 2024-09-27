@@ -166,7 +166,8 @@ typedef struct{
 
 uint16_t num_meas_stored_in_buffer = 0;
 uint16_t num_meas_stored_in_buffer_2 = 0;
-uint16_t num_meas_stored_in_flash = 0;
+uint16_t num_big_meas_stored_in_flash = 0;
+uint16_t num_small_meas_stored_in_flash = 0;
 
 //uint8_t *measurements_buffer;
 sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
@@ -1115,7 +1116,7 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-			size_t addr = 1 +(num_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data);
+			size_t addr = 1 + (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
 
 			flash_address[0] = addr;
 			flash_address[1] = addr >> 8;
@@ -1126,31 +1127,63 @@ void FlashWrite(void *argument)
 			testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
 			uint8_t result = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
+			osDelay(10);
 			uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,256);
-	        sensor_data tesstttt;
-			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
-	        sensor_data tesstttt2;
-			memcpy(&tesstttt2,testiamo+sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt3;
-			memcpy(&tesstttt3,testiamo+2*sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt4;
-			memcpy(&tesstttt4,testiamo+3*sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt5;
-			memcpy(&tesstttt5,testiamo+4*sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt6;
-			memcpy(&tesstttt6,testiamo+5*sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt7;
-			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
-	        sensor_data tesstttt8;
-			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt;
+//			memcpy(&tesstttt,testiamo,sizeof(sensor_data));
+//	        sensor_data tesstttt2;
+//			memcpy(&tesstttt2,testiamo+sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt3;
+//			memcpy(&tesstttt3,testiamo+2*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt4;
+//			memcpy(&tesstttt4,testiamo+3*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt5;
+//			memcpy(&tesstttt5,testiamo+4*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt6;
+//			memcpy(&tesstttt6,testiamo+5*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt7;
+//			memcpy(&tesstttt7,testiamo+6*sizeof(sensor_data),sizeof(sensor_data));
+//	        sensor_data tesstttt8;
+//			memcpy(&tesstttt8,testiamo+7*sizeof(sensor_data),sizeof(sensor_data));
 
+			free(testiamo);
+
+			size_t addr2 = addr + sizeof(sensor_data) * FLASH_NUMBER_OF_STORE_EACH_TIME;
+			uint8_t *testiamo2;
+			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
+			testiamo2 = malloc(sizeof(sensor_data_2) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
+
+			flash_address[0] = addr2;
+			flash_address[1] = addr2 >> 8;
+			flash_address[2] = addr2 >> 16;
+
+			uint8_t result3 = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer_2, 96);
+			osDelay(10);
+			uint8_t result4 = W25Q128_read_data(&flash,flash_address,testiamo2,96);
+	        sensor_data_2 tesstttt9;
+			memcpy(&tesstttt9,testiamo2,sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt10;
+			memcpy(&tesstttt10,testiamo2+sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt11;
+			memcpy(&tesstttt11,testiamo2+2*sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt12;
+			memcpy(&tesstttt12,testiamo2+3*sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt13;
+			memcpy(&tesstttt13,testiamo2+4*sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt14;
+			memcpy(&tesstttt14,testiamo2+5*sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt15;
+			memcpy(&tesstttt15,testiamo2+6*sizeof(sensor_data_2),sizeof(sensor_data_2));
+	        sensor_data_2 tesstttt16;
+			memcpy(&tesstttt16,testiamo2+7*sizeof(sensor_data_2),sizeof(sensor_data_2));
 
 			if (result == 0) {
 				num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
 				num_meas_stored_in_buffer_2 -= FLASH_NUMBER_OF_STORE_EACH_TIME;
-				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
-				num_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
+				num_big_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
+				num_small_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
 			}
+			free(testiamo2);
 
 
 
@@ -1398,7 +1431,7 @@ void FlightFSM(void *argument)
 		MotionData.height = altitude;
 
 		/* Check Flight Phases */
-		    	check_flight_phase(&flight_state,MotionData, acc1, acc2);
+		check_flight_phase(&flight_state,MotionData, acc1, acc2);
 
 
 
