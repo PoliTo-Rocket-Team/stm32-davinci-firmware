@@ -21,7 +21,7 @@ osStatus_t trigger_event(events_trigger ev, bool event_unique) {
             return osOK;
         }
 
-        if (ev == EV_TOUCHDOWN) {
+        if (ev == EV_TERRA) {
             event_tracking = 0xFFFFFFFF;
         }
     }
@@ -37,56 +37,40 @@ void check_flight_phase(flight_fsm_t *phase, estimation_output_t MotionData,line
 
 	 switch (phase->flight_state) {
 
-	    case CALIBRATING:
-			  check_system_calibrating_phase(phase, MotionData,acc_data, gyro_data);
+	    case TERRA:
+			  check_Terra_phase(phase, MotionData,acc_data, gyro_data);
 			  break;
 
-	    case READY:
-			  check_ready_to_takeoff_phase(phase, MotionData ,acc_data);
+	    case AEREO:
+			  check_Aereo_phase(phase, MotionData ,acc_data);
 			  break;
 
-	    case JELQING:
-	    	  check_jelqing_phase(phase,MotionData);
+	    case CADUTA:
+	    		check_Caduta_phase(phase,MotionData);
+	    		break;
+
+	    case UN_QUARTO:
+	    	  check_Un_Quarto_phase(phase,MotionData);
 			  break;
 
-	    case BURNING:
-			  check_burning_phase(phase, MotionData);
+	    case MID:
+			  check_Mid_phase(phase, MotionData);
 			  break;
 
-	    case COASTING:
-			  check_coasting_phase(phase, MotionData);
+	    case TRE_QUARTI:
+			  check_Tre_Quarti_phase(phase, MotionData);
 			  break;
-
-	    case DROGUE:
-			  check_drogue_deploy_phase(phase, MotionData);
-			  break;
-
-	    case MAIN:
-			  check_main_deploy_phase(phase, MotionData);
-			  break;
-
-	    case TOUCHDOWN:
-	    	check_touch_down_phase(phase, MotionData,acc_data);
-	    	break;
-
-	    case INVALID:
-	    	break;
 
 	  }
 
 	 phase->state_changed = old_phase.flight_state != phase->flight_state;
 }
 
-void check_system_calibrating_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data) {
+void check_Terra_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data) {
 	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > CALIBRATING) return;
+	if(phase->flight_state > TERRA) return;
 
-	if ((fabsf(phase->old_acc_data.accX - acc_data.accX) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(phase->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(phase->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-	  (fabsf(phase->old_gyro_data.accX - gyro_data.accX) < GYRO_MEASURE_TOLERANCE_MDPS) &&
-	  (fabsf(phase->old_gyro_data.accY - gyro_data.accY) < GYRO_MEASURE_TOLERANCE_MDPS) &&
-	  (fabsf(phase->old_gyro_data.accZ - gyro_data.accZ) < GYRO_MEASURE_TOLERANCE_MDPS)) {
+	if (MotionData.height<800) {
 
 		phase->memory[0]++;
 	} else {
@@ -94,53 +78,45 @@ void check_system_calibrating_phase(flight_fsm_t *phase, estimation_output_t Mot
 		phase->memory[0] = 0;
 	}
 
-    phase->old_acc_data = acc_data;
-    phase->old_gyro_data = gyro_data;
-
 	if(phase->memory[0] > THRESHOLD) {
-		change_state_to(phase, READY, EV_READY);
+		change_state_to(phase, AEREO, EV_AEREO);
 	}
 
 }
 
-void check_ready_to_takeoff_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data) {
+void check_Aereo_phase(flight_fsm_t *phase, estimation_output_t MotionData,linear_acceleration_t acc_data) {
 	// if I'm in a higher state I cannot come back
 
-	if(phase->flight_state > READY) return;
+	if(phase->flight_state > AEREO) return;
 
-	const float accel_x = acc_data.accX * acc_data.accX;
-	const float accel_y = acc_data.accY * acc_data.accY;
-	const float accel_z = acc_data.accZ * acc_data.accZ;
-	const float acceleration = sqrt(accel_x + accel_y + accel_z);
+	if (MotionData.height <= previous_altitude) {
+		phase->memory[0]++;
+	}
+	previous_altitude = MotionData.height;
 
-	// do we use? or can we use a flag instead?
-	//	state->memory[1] > LIFTOFF_SAFETY_COUNTER
-	if (acceleration >  LIFT_OFF_ACC_THRESHOLD) {
+	if (phase->memory[0] >  NUMBER_OF_CADUTE) {
 		phase->memory[1]++;
 	  } else {
 		  phase->memory[1] = 0;
 	  }
 
-	if (phase->memory[1] > AIRBRAKES_SAFETY_COUNTER) {
-		change_state_to(phase, BURNING, EV_LIFTOFF);
+	if (phase->memory[1] > CADUTE_SAFETY_COUNTER) {
+		change_state_to(phase, CADUTA, EV_CADUTA);
 	}
 
 }
 
-void check_jelqing_phase(flight_fsm_t *phase, estimation_output_t MotionData){
-	if(phase->flight_state > JELQING) return;
+void check_Caduta_phase(flight_fsm_t *phase, estimation_output_t MotionData){
+	if(phase->flight_state > CADUTA) return;
 
-	if(MotionData.height> ALTITUDE_AIRBRAKES){
+	if(MotionData.height< ALTITUDE_QUARTO){
 		phase->memory[0]++;
 	}else{
 		phase->memory[0] = 0;
 	}
 
-	if(phase->memory[0] > LIFTOFF_SAFETY_COUNTER){
-		change_state_to(phase,BURNING,EV_EDGING);
-		servo_t *servo;
-		servo = get_servo();
-		servo_moveto_deg(servo,180.0); //GIUSEPPE 180 gradi per chiudere gli airbrakes
+	if(phase->memory[0] > QUARTO_SAFETY_COUNTER){
+		change_state_to(phase,UN_QUARTO,EV_UN_QUARTO);
 		W25Q128_t *flash;
 		flash = get_flash();
 		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
@@ -151,51 +127,50 @@ void check_jelqing_phase(flight_fsm_t *phase, estimation_output_t MotionData){
 }
 
 
-void check_burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
+void check_Un_Quarto_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > BURNING) return;
+	if(phase->flight_state > UN_QUARTO) return;
 
 
-	if(MotionData.acceleration<0 ){
+	if(MotionData.height< ALTITUDE_MID){
 		phase->memory[0]++;
 	}else{
 		phase->memory[0] = 0;
 	}
 
 
-	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
-		change_state_to(phase, COASTING, EV_MAX_V);
+
+	if (phase->memory[0] > MID_SAFETY_COUNTER) {
+		change_state_to(phase, MID, EV_TRE_QUARTI);
 	}
 }
 
-void check_coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
+void check_Mid_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > COASTING) return;
+	if(phase->flight_state > MID) return;
 	/* When velocity is below 0, coasting concludes */
 	// if we need to check acceleration be sure that accZ is the correct one to check
 	//XXX check the altitude for a specific amount of time
 
-	if (MotionData.height <= previous_altitude) {
+	if (MotionData.height < ALTITUDE_TRE_QUARTI) {
 		phase->memory[0]++;
+	}else{
+		phase->memory[0] = 0;
 	}
-	previous_altitude = MotionData.height;
 
-	if (phase->memory[0] > APOGEE_SAFETY_COUNTER) {
+	if (phase->memory[0] > TRE_QUARTI_SAFETY_COUNTER) {
 		/* If the duration between BURNING and apogee is smaller than defined, go to touchdown */
-		if ((osKernelGetTickCount() - phase->thrust_trigger_time) < MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE) {
-			change_state_to(phase,TOUCHDOWN, EV_TOUCHDOWN);
-		} else {
-			change_state_to(phase,DROGUE, EV_APOGEE);
-		}
+			change_state_to(phase,TRE_QUARTI, EV_TRE_QUARTI);
+
 	}
 
 }
 
-void check_drogue_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
+void check_Tre_Quarti_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > DROGUE) return;
+	if(phase->flight_state > TRE_QUARTI) return;
 
-	if(MotionData.height<MAIN_DEPLOY_HEIGHT){
+	if(MotionData.height < ALTITUDE_ATTERRAGGIO){
 		/* Achieved Height to deploy Main */
 
 		phase->memory[0]++;
@@ -204,54 +179,15 @@ void check_drogue_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionDa
 		phase->memory[0]= 0;
 	}
 
-	if (phase->memory[0] > MAIN_SAFETY_COUNTER) {//PER ORA 5 MA SI PUO CAMBIARE
-		change_state_to(phase,MAIN, EV_MAIN_DEPLOYMENT);
+	if (phase->memory[0] > ATTERRAGGIO_SAFETY_COUNTER) {//PER ORA 5 MA SI PUO CAMBIARE
+		change_state_to(phase,TERRA, EV_TERRA);
 	}
 
 }
 
-void check_main_deploy_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
-	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > MAIN) return;
-
-	/* If the velocity is very small we have touchdown */
-	// check the altitude for a specific amount of time
-	if (fabsf(MotionData.height) < 5) {
-//		/* Touchdown achieved */
-		phase->memory[0]++;
-	} else {
-		/* Touchdown not achieved */
-		phase->memory[0] = 0;
-	}
-
-	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
-		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
-	}
-
-}
-
-void check_touch_down_phase(flight_fsm_t *phase, estimation_output_t MotionData, linear_acceleration_t acc_data) {
-	// if I'm in a higher state I cannot come back
-	if(phase->flight_state > TOUCHDOWN) return;
 
 
 
-	if ((fabsf(phase->old_acc_data.accX - acc_data.accX ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-		(fabsf(phase->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-		(fabsf(phase->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG)) {
-		/* Touchdown achieved */
-		phase->memory[0]++;
-	} else {
-		/* Touchdown not achieved */
-		phase->memory[0] = 0;
-	}
-
-	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
-		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
-
-
-	}
-}
 
 /* Function that needs to be called every time that a state transition is done */
 static void clear_fsm_memory(flight_fsm_t *phase) {
@@ -262,9 +198,7 @@ static void clear_fsm_memory(flight_fsm_t *phase) {
 }
 
  void change_state_to(flight_fsm_t *phase, flight_phase_t new_phase, events_trigger event_to_trigger) {
-	if (phase->flight_state == BURNING) {
-		phase->thrust_trigger_time = osKernelGetTickCount();
-	}
+
 
 	trigger_event(event_to_trigger,true);
 	osEventFlagsClear(fsm_flag_id, 0xFF);

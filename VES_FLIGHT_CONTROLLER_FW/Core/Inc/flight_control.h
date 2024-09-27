@@ -25,15 +25,12 @@
 
 
 typedef enum {
-	INVALID = 0,
-	CALIBRATING = 1,
-	READY,
-	JELQING,
-	BURNING,
-	COASTING,
-	DROGUE,
-	MAIN,
-	TOUCHDOWN
+	TERRA,
+	AEREO,
+	CADUTA,
+	UN_QUARTO,
+	MID,
+	TRE_QUARTI
 } flight_phase_t;
 
 typedef struct{
@@ -68,28 +65,24 @@ typedef struct  {
 
 
 typedef enum {
-	EV_CALIBRATE = 0,
-	EV_READY,
-	EV_EDGING,
-	EV_LIFTOFF,
-	EV_MAX_V,
-	EV_APOGEE,			/* open the drogue parachute */
-	EV_MAIN_DEPLOYMENT,	/* open the main parachute */
-	EV_TOUCHDOWN		/* deinit servo, and other stuffs, stop flash storing */
+	EV_TERRA = 0,
+	EV_AEREO,
+	EV_CADUTA,
+	EV_UN_QUARTO,
+	EV_MID,
+	EV_TRE_QUARTI
 } events_trigger;
 
 
 osStatus_t trigger_event(events_trigger ev, bool event_unique);
 
 
-void check_system_calibrating_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
-void check_ready_to_takeoff_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
-void check_jelqing_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
-void check_burning_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_coasting_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_drogue_deploy_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_main_deploy_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_touch_down_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
+void check_Terra_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
+void check_Aereo_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
+void check_Caduta_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
+void check_Un_Quarto_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Mid_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Tre_Quarti_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 
 void check_flight_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
 

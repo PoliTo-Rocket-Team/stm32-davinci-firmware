@@ -114,7 +114,7 @@ buzzer_t buzzer = {0};
 
 /* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
 
-flight_phase_t flight_phase = CALIBRATING;
+flight_phase_t flight_phase = TERRA;
 
 flight_fsm_t flight_state;
 
@@ -1294,43 +1294,30 @@ void SensorsRead(void *argument)
 
 		switch (flight_state.flight_state){
 
-			case INVALID:
+			case TERRA:
 				data_1_2.phase = 0.0;
 				data_2_2.phase = 0.0;
 				break;
-			case CALIBRATING:
+			case AEREO:
 				data_1_2.phase = 1.0;
 				data_2_2.phase = 1.0;
 				break;
-			case READY:
+			case CADUTA:
 				data_1_2.phase = 2.0;
 				data_2_2.phase = 2.0;
 				break;
-			case JELQING:
+			case UN_QUARTO:
 				data_1_2.phase = 3.0;
 				data_2_2.phase = 3.0;
-			case BURNING:
+				break;
+			case MID:
 				data_1_2.phase = 4.0;
 				data_2_2.phase = 4.0;
-				break;
-			case COASTING:
+			case TRE_QUARTI:
 				data_1_2.phase = 5.0;
 				data_2_2.phase = 5.0;
 				break;
-			case DROGUE:
-				data_1_2.phase = 6.0;
-				data_2_2.phase = 6.0;
-				break;
-			case MAIN:
-				data_1_2.phase = 7.0;
-				data_2_2.phase = 7.0;
-				break;
-			case TOUCHDOWN:
-				data_1_2.phase = 8.0;
-				data_2_2.phase = 8.0;
-				break;
 		}
-
 
 		/* computing offset of the buffer and storing the data to the buffer */
 

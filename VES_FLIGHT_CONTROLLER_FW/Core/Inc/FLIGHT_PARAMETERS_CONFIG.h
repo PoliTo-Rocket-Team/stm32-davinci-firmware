@@ -21,14 +21,17 @@
 #define ACC_SENSOR_ERROR 0
 #define VELOCITY_BOUND_TOUCHDOWN 3.0F
 #define THRESHOLD 10
-#define LIFT_OFF_ACC_THRESHOLD 1.5F
-#define ALTITUDE_AIRBRAKES 650 // GIUSEPPE altezza sopra la quale salire prima di chiudere gli airbrakes
+#define NUMBER_OF_CADUTE 5
+#define ALTITUDE_QUARTO 3375
+#define ALTITUDE_MID 2250
+#define ALTITUDE_TRE_QUARTI 1250
+#define ALTITUDE_ATTERRAGGIO 300
 #define MAIN_DEPLOY_HEIGHT 100 //GIUSEPPE altezza sotto òa quale scendere prima di deployare i main parachute
-#define AIRBRAKES_SAFETY_COUNTER 10 //GIUSEPPE Numero di volte che controlliamo che l'altezza di 650 metri è superata
-#define LIFTOFF_SAFETY_COUNTER 10
-#define COASTING_SAFETY_COUNTER 5
-#define APOGEE_SAFETY_COUNTER 30
-#define MAIN_SAFETY_COUNTER 5
+#define CADUTE_SAFETY_COUNTER 10
+#define QUARTO_SAFETY_COUNTER 10
+#define MID_SAFETY_COUNTER 5
+#define TRE_QUARTI_SAFETY_COUNTER 5
+#define ATTERRAGGIO_SAFETY_COUNTER 5
 #define TOUCHDOWN_SAFETY_COUNTER 100
 #define MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE 1500
 
