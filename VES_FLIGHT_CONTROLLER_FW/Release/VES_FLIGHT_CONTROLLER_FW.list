@@ -3939,7 +3939,7 @@ Disassembly of section .text:
  8002b54:	4827      	ldr	r0, [pc, #156]	@ (8002bf4 <FlashWrite+0x108>)
  8002b56:	f7fe faa2 	bl	800109e <W25Q128_write_data>
  8002b5a:	9001      	str	r0, [sp, #4]
- 8002b5c:	200a      	movs	r0, #10
+ 8002b5c:	2002      	movs	r0, #2
  8002b5e:	f004 fb25 	bl	80071ac <osDelay>
  8002b62:	4632      	mov	r2, r6
  8002b64:	f44f 7380 	mov.w	r3, #256	@ 0x100
@@ -3962,7 +3962,7 @@ Disassembly of section .text:
  8002b92:	0c24      	lsrs	r4, r4, #16
  8002b94:	f88b 4002 	strb.w	r4, [fp, #2]
  8002b98:	f7fe fa81 	bl	800109e <W25Q128_write_data>
- 8002b9c:	200a      	movs	r0, #10
+ 8002b9c:	2002      	movs	r0, #2
  8002b9e:	f004 fb05 	bl	80071ac <osDelay>
  8002ba2:	2360      	movs	r3, #96	@ 0x60
  8002ba4:	4813      	ldr	r0, [pc, #76]	@ (8002bf4 <FlashWrite+0x108>)

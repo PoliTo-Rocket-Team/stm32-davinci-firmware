@@ -70,7 +70,7 @@ void check_Terra_phase(flight_fsm_t *phase, estimation_output_t MotionData,linea
 	// if I'm in a higher state I cannot come back
 	if(phase->flight_state > TERRA) return;
 
-	if (MotionData.height<800) {
+	if (MotionData.height>800) {
 
 		phase->memory[0]++;
 	} else {

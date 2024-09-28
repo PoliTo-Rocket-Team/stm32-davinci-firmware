@@ -1295,27 +1295,27 @@ void SensorsRead(void *argument)
 		switch (flight_state.flight_state){
 
 			case TERRA:
-				data_1_2.phase = 0.0;
-				data_2_2.phase = 0.0;
-				break;
-			case AEREO:
 				data_1_2.phase = 1.0;
 				data_2_2.phase = 1.0;
 				break;
-			case CADUTA:
+			case AEREO:
 				data_1_2.phase = 2.0;
 				data_2_2.phase = 2.0;
 				break;
-			case UN_QUARTO:
+			case CADUTA:
 				data_1_2.phase = 3.0;
 				data_2_2.phase = 3.0;
 				break;
-			case MID:
+			case UN_QUARTO:
 				data_1_2.phase = 4.0;
 				data_2_2.phase = 4.0;
-			case TRE_QUARTI:
+				break;
+			case MID:
 				data_1_2.phase = 5.0;
 				data_2_2.phase = 5.0;
+			case TRE_QUARTI:
+				data_1_2.phase = 6.0;
+				data_2_2.phase = 6.0;
 				break;
 		}
 
