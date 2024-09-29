@@ -385,7 +385,7 @@ int main(void)
 //	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
 	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
 
-	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
+//	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
   	uint8_t angle = 0;
 	uint8_t dataflag[1];
 	uint8_t address[3] = {0, 0, 0};

@@ -2,7 +2,7 @@
  * W25Q128.h
  *
  *  Created on: Dec 23, 2023
- *      Author: tomma
+ *      Author: tomma & Francesco
  */
 
 #ifndef W25Q128_H
