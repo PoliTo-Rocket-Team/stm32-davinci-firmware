@@ -1,6 +1,8 @@
-Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
- ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h ../Core/Inc/lsm6dso32_reg.h \
- ../Core/Inc/W25Q128.h \
+Core/Src/z_flash_W25QXXX.o: ../Core/Src/z_flash_W25QXXX.c \
+ ../Core/Inc/main.h ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
+ ../Core/Inc/stm32f4xx_hal_conf.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f411xe.h \
  ../Drivers/CMSIS/Include/core_cm4.h \
@@ -9,10 +11,6 @@ Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
  ../Drivers/CMSIS/Include/cmsis_gcc.h \
  ../Drivers/CMSIS/Include/mpu_armv7.h \
  ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
- ../Core/Inc/stm32f4xx_hal_conf.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h \
@@ -37,18 +35,20 @@ Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
+ ../Core/Inc/W25Q128.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- ../Core/Inc/main.h ../Core/Inc/codegen_model.h \
- ../Core/Inc/rtw_continuous.h ../Core/Inc/rtwtypes.h \
- ../Core/Inc/rtw_solver.h ../Core/Inc/z_flash_W25QXXX.h \
- ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h ../Core/Inc/servo.h \
- ../Core/Inc/pitot_sensor.h ../Core/Inc/flight_control.h \
- ../Core/Inc/utilities.h ../Core/Inc/buzzer.h
-../Core/Inc/utilities.h:
-../Core/Inc/bmp3.h:
-../Core/Inc/bmp3_defs.h:
-../Core/Inc/lsm6dso32_reg.h:
-../Core/Inc/W25Q128.h:
+ ../Core/Inc/codegen_model.h ../Core/Inc/rtw_continuous.h \
+ ../Core/Inc/rtwtypes.h ../Core/Inc/rtw_solver.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h \
+ ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
+ ../Core/Inc/main.h ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/buzzer.h ../Core/Inc/z_flash_W25QXXX.h
+../Core/Inc/main.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
+../Core/Inc/stm32f4xx_hal_conf.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:
+../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f411xe.h:
 ../Drivers/CMSIS/Include/core_cm4.h:
@@ -57,10 +57,6 @@ Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
 ../Drivers/CMSIS/Include/cmsis_gcc.h:
 ../Drivers/CMSIS/Include/mpu_armv7.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/system_stm32f4xx.h:
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
-../Core/Inc/stm32f4xx_hal_conf.h:
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_def.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/Legacy/stm32_hal_legacy.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_gpio.h:
@@ -85,8 +81,8 @@ Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+../Core/Inc/W25Q128.h:
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
-../Core/Inc/main.h:
 ../Core/Inc/codegen_model.h:
 ../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtwtypes.h:
@@ -94,7 +90,12 @@ Core/Src/utilities.o: ../Core/Src/utilities.c ../Core/Inc/utilities.h \
 ../Core/Inc/z_flash_W25QXXX.h:
 ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
 ../Core/Inc/servo.h:
+../Core/Inc/bmp3.h:
+../Core/Inc/bmp3_defs.h:
+../Core/Inc/lsm6dso32_reg.h:
 ../Core/Inc/pitot_sensor.h:
+../Core/Inc/main.h:
 ../Core/Inc/flight_control.h:
 ../Core/Inc/utilities.h:
 ../Core/Inc/buzzer.h:
+../Core/Inc/z_flash_W25QXXX.h:

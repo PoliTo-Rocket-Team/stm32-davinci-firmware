@@ -17,6 +17,7 @@
 "./Core/Src/system_stm32f4xx.o"
 "./Core/Src/test.o"
 "./Core/Src/utilities.o"
+"./Core/Src/z_flash_W25QXXX.o"
 "./Core/Startup/startup_stm32f411retx.o"
 "./Core/sensors_drivers/bmp390/bmp390_test/bmp3.o"
 "./Core/sensors_drivers/bmp390/bmp390_test/usr_bmp390_task.o"

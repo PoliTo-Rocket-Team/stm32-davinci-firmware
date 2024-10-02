@@ -38,6 +38,7 @@ extern "C" {
 #include <stdbool.h>
 #include "W25Q128.h"
 #include "codegen_model.h"
+#include "z_flash_W25QXXX.h"
 
 #ifndef __STM32F4xx_H
 #include "stm32f4xx.h"

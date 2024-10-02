@@ -42,10 +42,10 @@ Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.o: \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Core/Inc/codegen_model.h ../Core/Inc/rtw_continuous.h \
  ../Core/Inc/rtwtypes.h ../Core/Inc/rtw_solver.h \
- ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h ../Core/Inc/servo.h \
- ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h ../Core/Inc/lsm6dso32_reg.h \
- ../Core/Inc/pitot_sensor.h ../Core/Inc/main.h \
- ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h \
+ ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
+ ../Core/Inc/main.h ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
  ../Core/Inc/buzzer.h
 ../Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc/usbd_msc_data.h:
 ../USB_DEVICE/Target/usbd_conf.h:
@@ -92,6 +92,7 @@ Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/usbd_msc_data.o: \
 ../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtwtypes.h:
 ../Core/Inc/rtw_solver.h:
+../Core/Inc/z_flash_W25QXXX.h:
 ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
 ../Core/Inc/servo.h:
 ../Core/Inc/bmp3.h:

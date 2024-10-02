@@ -44,9 +44,10 @@ Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.o: \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Core/Inc/codegen_model.h ../Core/Inc/rtw_continuous.h \
  ../Core/Inc/rtwtypes.h ../Core/Inc/rtw_solver.h \
- ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h ../Core/Inc/servo.h \
- ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
- ../Core/Inc/main.h ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/lsm6dso32_reg.h \
+ ../Core/Inc/pitot_sensor.h ../Core/Inc/main.h \
+ ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
  ../Core/Inc/buzzer.h
 ../Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.h:
 ../Core/sensors_drivers/bmp390/bmp390_test/usr_user_define.h:
@@ -95,6 +96,7 @@ Core/sensors_drivers/bmp390/bmp390_test/usr_common_porting.o: \
 ../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtwtypes.h:
 ../Core/Inc/rtw_solver.h:
+../Core/Inc/z_flash_W25QXXX.h:
 ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
 ../Core/Inc/servo.h:
 ../Core/Inc/lsm6dso32_reg.h:

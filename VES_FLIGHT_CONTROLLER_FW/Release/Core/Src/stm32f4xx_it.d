@@ -39,10 +39,10 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
  ../Core/Inc/codegen_model.h ../Core/Inc/rtw_continuous.h \
  ../Core/Inc/rtwtypes.h ../Core/Inc/rtw_solver.h \
- ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h ../Core/Inc/servo.h \
- ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h ../Core/Inc/lsm6dso32_reg.h \
- ../Core/Inc/pitot_sensor.h ../Core/Inc/main.h \
- ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h \
+ ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
+ ../Core/Inc/main.h ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
  ../Core/Inc/buzzer.h ../Core/Inc/stm32f4xx_it.h
 ../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
@@ -87,6 +87,7 @@ Core/Src/stm32f4xx_it.o: ../Core/Src/stm32f4xx_it.c ../Core/Inc/main.h \
 ../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtwtypes.h:
 ../Core/Inc/rtw_solver.h:
+../Core/Inc/z_flash_W25QXXX.h:
 ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
 ../Core/Inc/servo.h:
 ../Core/Inc/bmp3.h:
