@@ -117,12 +117,6 @@ void check_Caduta_phase(flight_fsm_t *phase, estimation_output_t MotionData){
 
 	if(phase->memory[0] > QUARTO_SAFETY_COUNTER){
 		change_state_to(phase,UN_QUARTO,EV_UN_QUARTO);
-		W25Q128_t *flash;
-		flash = get_flash();
-		uint8_t address[3] = {0, 0, 0}; // Address of the first byte
-		uint8_t data_flown[1];
-		W25Q128_write_flown_flag(flash, address, data_flown, 1,1);
-//		W25Q128_read_flown_flag(flash, address, data_flown, 1);
 	}
 }
 

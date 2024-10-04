@@ -28,7 +28,7 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-
+bool has_flown;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -52,8 +52,6 @@ TIM_HandleTypeDef htim4;
 
 USART_HandleTypeDef husart1;
 UART_HandleTypeDef huart2;
-
-bool has_flown;
 
 /* Definitions for StartupTask */
 osThreadId_t StartupTaskHandle;
@@ -174,6 +172,7 @@ sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 //uint8_t *measurements_buffer_2;
 sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 uint8_t flash_address[3] = {0};
+uint8_t addr = 0;
 
 float_t altitude;
 bool first_measure = true;
@@ -317,7 +316,21 @@ void SystemHealthCheck(void *argument);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+W25Q128_t* get_flash(){
+	return &flash;
+}
 
+servo_t* get_servo(){
+	return &servo;
+}
+
+float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
+  float_t altitude;
+
+  altitude = 44330.0 * (1.0 - pow(currentPa / seaLevelPa, 0.1903));
+
+  return altitude;
+}
 /* USER CODE END 0 */
 
 /**
@@ -380,26 +393,13 @@ int main(void)
 	result = init_bmp390_1(&bmp390_1);
 	result = init_bmp390_2(&bmp390_2);
 
-//	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
-	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
+	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
+//	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
 
 //	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
   	uint8_t angle = 0;
-	uint8_t dataflag[1];
-	uint8_t address[3] = {0, 0, 0};
-	uint8_t result_first_read = W25Q128_read_flown_flag(&flash, address, dataflag, 1);
 
-	if (result_first_read != HAL_OK){
-		return HAL_ERROR;
-	}
 
-	if (dataflag[0]==1){
-		has_flown = true;
-	}else{
-		has_flown = false;
-		result2 = init_flash(&flash, ERASE);
-		if (result2 == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
-	}
 
 	flight_state.flight_state = flight_phase;
 
@@ -456,13 +456,13 @@ int main(void)
 //	float_t pressure = 0;
 //	memcpy(&pressure, buf + 28, sizeof(float_t));
 
-//  	HAL_Delay(1000);
+  	HAL_Delay(1000);
+
+  	servo_moveto_deg(&servo,180); //chiudere
 //
-//  	servo_moveto_deg(&servo, 90);
-//
-//  	HAL_Delay(1000);
-//
-//  	servo_moveto_deg(&servo, 0);
+  	HAL_Delay(1000);
+////
+  	servo_moveto_deg(&servo, 0); //aprire
 
 
 //	char *data = "internal flash writing test\0";
@@ -535,7 +535,7 @@ int main(void)
 
   /* Create the thread(s) */
   /* creation of StartupTask */
-//  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
+  StartupTaskHandle = osThreadNew(Startup, NULL, &StartupTask_attributes);
 
   /* creation of FlashWriteTask */
   FlashWriteTaskHandle = osThreadNew(FlashWrite, NULL, &FlashWriteTask_attributes);
@@ -544,13 +544,13 @@ int main(void)
   SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
 
   /* creation of COMBoardTask */
-//  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
+  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
 
   /* creation of FlightFSMTask */
   FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
 
   /* creation of SystemHealthCheckTask */
-//  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
+  SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
 //  /* add threads, ... */
@@ -610,10 +610,10 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLN = 96;
   RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
   RCC_OscInitStruct.PLL.PLLQ = 4;
-//  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK) //ABBOT DEBUG
-//  {
-//    Error_Handler();
-//  }
+  if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
+  {
+    Error_Handler();
+  }
 
   /** Initializes the CPU, AHB and APB buses clocks
   */
@@ -624,10 +624,10 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-//  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
-//  {
-//    Error_Handler();
-//  }
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_3) != HAL_OK)
+  {
+    Error_Handler();
+  }
 }
 
 /**
@@ -1114,11 +1114,7 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-			size_t addr = 4+ (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
-
-			flash_address[0] = addr;
-			flash_address[1] = addr >> 8;
-			flash_address[2] = addr >> 16;
+//			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
 
 			//uint8_t *testiamo;
 			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
@@ -1155,21 +1151,57 @@ void FlashWrite(void *argument)
 //				Flash_Write_float(addr+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
 //				Flash_Write_float(addr+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
 //			}
-
-			for (int j = 0; j < 8; j++) {
-			    // Assuming sensor_data contains an array of 8 floats inside it.
-			    // Write 8 floats from the j-th object in measurements_buffer
-			    Flash_Write_float(addr, (float*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
-
-			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
-			    // Write 3 floats from the j-th object in measurements_buffer_2
-			    Flash_Write_float(addr + 8 * sizeof(float), (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
-
-			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
-			    addr += 8 * sizeof(float) + 3 * sizeof(float);
-			}
+			uint8_t cazzo = 0;
+			Flash_Write_float(cazzo, (float*)&measurements_buffer[0], 8*4);
+			Flash_Write_float(cazzo+32, (float*)&measurements_buffer[0], 3*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[0], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[1], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[1], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[2], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[2], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[3], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[3], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[4], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[4], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[5], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[5], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[6], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[6], 3*4);
+//			addr += 12;
+//			Flash_Write_float(addr, (float*)&measurements_buffer[7], 8*4);
+//			addr += 32;
+//			Flash_Write_float(addr, (float*)&measurements_buffer_2[7], 3*4);
+//			addr += 12;
+//			for (int j = 0; j < 8; j++) {
+//			    // Assuming sensor_data contains an array of 8 floats inside it.
+//			    // Write 8 floats from the j-th object in measurements_buffer
+//			    Flash_Write_float(addr, (float*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
+//
+//
+//			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
+//			    // Write 3 floats from the j-th object in measurements_buffer_2
+//			    addr = addr+8*sizeof(float);
+//			    Flash_Write_float(addr, (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
+//
+//			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
+//			    addr = addr + 3 * sizeof(float);
+////			    addr += 10;
+//			}
 			//DEAR FRANCIS, PROVA ANCHE QUESTO
-
+// DIO VIOLA; BIANCO CLOCK; ROSSO A 1; IL 2 è IL BIANCO; il 4 VIOLA
 //			float test[8][8];
 //			for (int j = 0; j<8; j++){
 //				for(int i = 0; i<8; i++){
@@ -1201,15 +1233,6 @@ void FlashWrite(void *argument)
 		osDelayUntil(tick);
 	}
   /* USER CODE END FlashWrite */
-}
-
-
-float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
-  float_t altitude;
-
-  altitude = 44330.0 * (1.0 - pow(currentPa / seaLevelPa, 0.1903));
-
-  return altitude;
 }
 
 /* USER CODE BEGIN Header_SensorsRead */
@@ -1348,10 +1371,10 @@ void SensorsRead(void *argument)
 		 * During READY phase data are not saved in the flash, therefore the data
 		 * are always overwritten to the previous ones
 		 */
+		num_meas_stored_in_buffer %= 8;
 		num_meas_stored_in_buffer++;
-		num_meas_stored_in_buffer %= 16;
+		num_meas_stored_in_buffer_2 %= 8;
 		num_meas_stored_in_buffer_2++;
-		num_meas_stored_in_buffer_2 %=16;
 
 
 
@@ -1483,14 +1506,6 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
   /* USER CODE END Callback 1 */
 }
 
-W25Q128_t* get_flash(){
-	return &flash;
-}
-
-servo_t* get_servo(){
-	return &servo;
-}
-
 /**
   * @brief  This function is executed in case of error occurrence.
   * @retval None
@@ -1505,8 +1520,6 @@ void Error_Handler(void)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-
 
 #ifdef  USE_FULL_ASSERT
 /**

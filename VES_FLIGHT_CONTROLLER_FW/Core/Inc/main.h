@@ -182,11 +182,12 @@ void Error_Handler(void);
 
 W25Q128_t *get_flash();
 
+servo_t* get_servo();
+
 /* USER CODE END Private defines */
 
 #ifdef __cplusplus
 }
 #endif
-
 
 #endif /* __MAIN_H */
