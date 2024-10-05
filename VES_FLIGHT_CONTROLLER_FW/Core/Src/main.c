@@ -1191,8 +1191,8 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-//			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
-			uint32_t cazzo = 0;
+			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
+//			uint32_t cazzo = 0;
 			uint32_t num2 = 0;
 			uint32_t num3 = 0;
 			num2 = Getnum_big_meas_stored_in_flash();
@@ -1282,7 +1282,7 @@ void FlashWrite(void *argument)
 //
 //			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
 //			    // Write 3 floats from the j-th object in measurements_buffer_2
-			    addr = addr+8*sizeof(float);
+			    addr = addr + 8*sizeof(float);
 			    Flash_Write_float(addr, (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
 //
 //			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
