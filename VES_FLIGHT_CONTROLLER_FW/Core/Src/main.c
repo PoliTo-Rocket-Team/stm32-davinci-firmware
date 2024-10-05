@@ -23,7 +23,7 @@
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-
+#include "e220.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -49,8 +49,7 @@ SPI_HandleTypeDef hspi3;
 TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
-USART_HandleTypeDef husart1;
-UART_HandleTypeDef huart2;
+UART_HandleTypeDef huart1;
 
 /* Definitions for StartupTask */
 osThreadId_t StartupTaskHandle;
@@ -128,7 +127,7 @@ uint32_t flash_addr16 = FLASH_START_ADDRESS +(uint32_t)340;
 
 /* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
 
-flight_phase_t flight_phase = TERRA;
+flight_phase_t flight_phase = CALIBRATING;
 
 flight_fsm_t flight_state;
 
@@ -176,13 +175,35 @@ typedef struct{
 } sensor_data_2;
 #pragma pack(pop)
 
+#pragma pack(push, 1)
+typedef struct {
+	char carattere;
+	float_t acc_x;
+	float_t acc_y;
+	float_t acc_z;
+
+	float_t dps_x;
+	float_t dps_y;
+	float_t dps_z;
+
+	float_t temperature;
+	float_t pressure;
+
+    float_t altitude;
+    float_t velocity;
+    float_t phase;
+} Lora_Package;
+#pragma pack(pop)
+
+
+
 
 
 uint32_t num_meas_stored_in_buffer = (uint32_t)0;
 uint32_t num_meas_stored_in_buffer_2 = (uint32_t)0;
 uint32_t num_big_meas_stored_in_flash = (uint32_t)0;
 uint32_t num_small_meas_stored_in_flash = (uint32_t)0;
-uint32_t num_times_lol_was_written = (uint32_t)0;
+//uint32_t num_times_lol_was_written = (uint32_t)0;
 bool flash_flag = false;
 
 //uint8_t *measurements_buffer;
@@ -198,6 +219,13 @@ float_t velocity;
 float_t Pressure_1;
 float_t Pressure_2;
 
+uint8_t send_buffer[35]="Hello There!bro";
+uint8_t receive_buffer[35];
+int16_t Lora_result;
+uint8_t all_reg_rx[8], all_reg_tx[8];
+
+struct LoRa_Handler LoraTX={0},LoraRX={0};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -207,8 +235,7 @@ static void MX_SPI1_Init(void);
 static void MX_SPI2_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_TIM3_Init(void);
-static void MX_USART2_UART_Init(void);
-static void MX_USART1_Init(void);
+static void MX_USART1_UART_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_TIM4_Init(void);
 void Startup(void *argument);
@@ -435,8 +462,7 @@ int main(void)
   MX_SPI2_Init();
   MX_SPI3_Init();
   MX_TIM3_Init();
-  MX_USART2_UART_Init();
-  MX_USART1_Init();
+  MX_USART1_UART_Init();
   MX_ADC1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
@@ -468,6 +494,37 @@ int main(void)
 //	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
   	uint8_t angle = 0;
 
+    LoraTX.uart_handler=&huart1;
+    LoraTX.M_GPIO_PORT=GPIOA;
+    LoraTX.AUX_GPIO_PORT=GPIOA;
+    LoraTX.M0_PIN=GPIO_PIN_2;
+    LoraTX.M1_PIN=GPIO_PIN_3;
+    LoraTX.MAUX_PIN=GPIO_PIN_8;
+//
+    LoraRX.uart_handler=&huart1;
+    LoraRX.M_GPIO_PORT=GPIOA;
+    LoraRX.AUX_GPIO_PORT=GPIOA;
+    LoraRX.M0_PIN=GPIO_PIN_2;
+    LoraRX.M1_PIN=GPIO_PIN_3;
+    LoraRX.MAUX_PIN=GPIO_PIN_8;
+
+
+
+    while (E220_enter_config_mode(&LoraTX)!=1);
+    while (E220_enter_config_mode(&LoraRX)!=1);
+//    E220_reset(&LoraRX);
+//    E220_reset(&LoraTX);
+//    E220_set_packetsize_32k(&LoraTX);
+//    E220_set_packetsize_32k(&LoraRX);
+//    E220_set_datarate_62k(&LoraRX);
+//    E220_set_datarate_62k(&LoraTX);
+//    Lora_result=E220_read_register_all(&LoraTX,all_reg_tx);
+//    Lora_result=E220_read_register_all(&LoraRX,all_reg_rx);
+
+
+    E220_enter_normal_mode(&LoraRX);
+    E220_enter_normal_mode(&LoraTX);
+    E220_read_register(&LoraTX,REG1);
 
 
 	flight_state.flight_state = flight_phase;
@@ -982,7 +1039,7 @@ static void MX_TIM4_Init(void)
   * @param None
   * @retval None
   */
-static void MX_USART1_Init(void)
+static void MX_USART1_UART_Init(void)
 {
 
   /* USER CODE BEGIN USART1_Init 0 */
@@ -992,55 +1049,21 @@ static void MX_USART1_Init(void)
   /* USER CODE BEGIN USART1_Init 1 */
 
   /* USER CODE END USART1_Init 1 */
-  husart1.Instance = USART1;
-  husart1.Init.BaudRate = 115200;
-  husart1.Init.WordLength = USART_WORDLENGTH_8B;
-  husart1.Init.StopBits = USART_STOPBITS_1;
-  husart1.Init.Parity = USART_PARITY_NONE;
-  husart1.Init.Mode = USART_MODE_TX_RX;
-  husart1.Init.CLKPolarity = USART_POLARITY_LOW;
-  husart1.Init.CLKPhase = USART_PHASE_1EDGE;
-  husart1.Init.CLKLastBit = USART_LASTBIT_DISABLE;
-  if (HAL_USART_Init(&husart1) != HAL_OK)
+  huart1.Instance = USART1;
+  huart1.Init.BaudRate = 9600;
+  huart1.Init.WordLength = UART_WORDLENGTH_8B;
+  huart1.Init.StopBits = UART_STOPBITS_1;
+  huart1.Init.Parity = UART_PARITY_NONE;
+  huart1.Init.Mode = UART_MODE_TX_RX;
+  huart1.Init.HwFlowCtl = UART_HWCONTROL_NONE;
+  huart1.Init.OverSampling = UART_OVERSAMPLING_16;
+  if (HAL_UART_Init(&huart1) != HAL_OK)
   {
     Error_Handler();
   }
   /* USER CODE BEGIN USART1_Init 2 */
 
   /* USER CODE END USART1_Init 2 */
-
-}
-
-/**
-  * @brief USART2 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART2_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART2_Init 0 */
-
-  /* USER CODE END USART2_Init 0 */
-
-  /* USER CODE BEGIN USART2_Init 1 */
-
-  /* USER CODE END USART2_Init 1 */
-  huart2.Instance = USART2;
-  huart2.Init.BaudRate = 9600;
-  huart2.Init.WordLength = UART_WORDLENGTH_8B;
-  huart2.Init.StopBits = UART_STOPBITS_1;
-  huart2.Init.Parity = UART_PARITY_NONE;
-  huart2.Init.Mode = UART_MODE_TX_RX;
-  huart2.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart2.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart2) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART2_Init 2 */
-
-  /* USER CODE END USART2_Init 2 */
 
 }
 
@@ -1067,10 +1090,10 @@ static void MX_GPIO_Init(void)
                           |BARO_2_nCS_Pin|IMU_2_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, M0_LORA_Pin|M1_LORA_Pin|FLASH_nCS_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(FLASH_nCS_GPIO_Port, FLASH_nCS_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, Channel1_PYRO_Pin|Channel2_PYRO_Pin|Status_LED_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin, GPIO_PIN_RESET);
@@ -1098,6 +1121,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : M0_LORA_Pin M1_LORA_Pin FLASH_nCS_Pin */
+  GPIO_InitStruct.Pin = M0_LORA_Pin|M1_LORA_Pin|FLASH_nCS_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
+
   /*Configure GPIO pins : PB0 PB12 PB3 PB5
                            PB6 PB7 PB8 */
   GPIO_InitStruct.Pin = GPIO_PIN_0|GPIO_PIN_12|GPIO_PIN_3|GPIO_PIN_5
@@ -1113,12 +1143,11 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : FLASH_nCS_Pin */
-  GPIO_InitStruct.Pin = FLASH_nCS_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(FLASH_nCS_GPIO_Port, &GPIO_InitStruct);
+  /*Configure GPIO pin : LORA_AUX_Pin */
+  GPIO_InitStruct.Pin = LORA_AUX_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
+  HAL_GPIO_Init(LORA_AUX_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : DEBUG_LED_FLASH_Pin */
   GPIO_InitStruct.Pin = DEBUG_LED_FLASH_Pin;
@@ -1191,19 +1220,20 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
+//			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
 //			uint32_t cazzo = 0;
 			uint32_t num2 = 0;
 			uint32_t num3 = 0;
 			num2 = Getnum_big_meas_stored_in_flash();
 			num3 = Getnum_small_meas_stored_in_flash();
-			addr = num2 * sizeof(sensor_data) + sizeof(sensor_data_2) * num3;
+			uint32_t addr = num2 * sizeof(sensor_data) + sizeof(sensor_data_2) * num3;
 			//cazzo = (size_t)4;//*num_times_lol_was_written;
 			//uint8_t *testiamo;
 			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 			//testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
-			//uint8_t result = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
+//			uint8_t result = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
+			//uint8_t result2 = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
 			//uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,256);
 //			float misura_princ[8][8];
 //			for (int j = 0; j<8; j++){
@@ -1415,28 +1445,35 @@ void SensorsRead(void *argument)
 
 			switch (flight_state.flight_state){
 
-				case TERRA:
+				case CALIBRATING:
 					data_1_2.phase = 1.0;
 					data_2_2.phase = 1.0;
 					break;
-				case AEREO:
+				case READY:
 					data_1_2.phase = 2.0;
 					data_2_2.phase = 2.0;
 					break;
-				case CADUTA:
+				case BURNING:
 					data_1_2.phase = 3.0;
 					data_2_2.phase = 3.0;
 					break;
-				case UN_QUARTO:
+				case COASTING:
 					data_1_2.phase = 4.0;
 					data_2_2.phase = 4.0;
 					break;
-				case MID:
+				case DROGUE:
 					data_1_2.phase = 5.0;
 					data_2_2.phase = 5.0;
-				case TRE_QUARTI:
+				case MAIN:
 					data_1_2.phase = 6.0;
 					data_2_2.phase = 6.0;
+					break;
+				case TOUCHDOWN:
+					data_1_2.phase = 7.0;
+					data_2_2.phase = 7.0;
+					break;
+
+				case INVALID:
 					break;
 			}
 
@@ -1495,12 +1532,65 @@ void CommunicationBoard(void *argument)
 	uint32_t tick;
 
 	tick = osKernelGetTickCount();
+	Lora_Package package;
+	uint8_t array[44];
 	  /* Infinite loop */
 	for(;;)
 	{
+		for(uint8_t i=0; i<45; i++){
+			array[i] = i;
+		}
+//		package.carattere = 'A';
+//	    package.acc_x = data_raw_acceleration_1[0];
+//	    package.acc_y = data_raw_acceleration_1[1];
+//	    package.acc_z = data_raw_acceleration_1[2];
+//	    package.dps_x = data_raw_angular_rate_1[0];
+//	    package.dps_y = data_raw_angular_rate_1[1];
+//	    package.dps_z = data_raw_angular_rate_1[2];
+//	    package.temperature = barometer_data_1.temperature;
+//	    package.pressure = barometer_data_1.pressure;
+//	    package.altitude =  altitude;
+//	    package.velocity = 0;
+//	    switch (flight_state.flight_state){
+//			case INVALID:
+//				package.phase = 2.0;
+//				break;
+//			case CALIBRATING:
+//				package.phase = 3.0;
+//				break;
+//			case READY:
+//				package.phase = 2.0;
+//				break;
+//			case BURNING:
+//				package.phase = 3.0;
+//				break;
+//			case COASTING:
+//				package.phase = 4.0;
+//				break;
+//			case DROGUE:
+//				package.phase = 5.0;
+//				break;
+//			case MAIN:
+//				package.phase = 6.0;
+//			case TOUCHDOWN:
+//				package.phase = 7.0;
+//				break;
 
 
-		HAL_UART_Transmit(&huart2, "lol", 1, HAL_MAX_DELAY);
+//	    }
+
+
+		int tx_status = E220_transmit_payload(&LoraTX, (uint8_t*)"cacca", 5);
+		if (tx_status != 0) {
+		    printf("Transmission failed with status: %d\n", tx_status);
+		}
+		if(HAL_UART_Transmit(&huart1, (uint8_t *)"test", 4, 100)!= HAL_OK){
+			printf("Transmission failed with status: %d\n", tx_status);
+		}
+		printf("CAZZI", tx_status);
+		HAL_Delay(1000);
+
+//		E220_receive_payload(&LoraRX,receive_buffer,35);
 
 		tick += COMMUNICATION_BOARD_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );

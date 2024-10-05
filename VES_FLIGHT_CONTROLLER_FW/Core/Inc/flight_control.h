@@ -25,12 +25,14 @@
 
 
 typedef enum {
-	TERRA,
-	AEREO,
-	CADUTA,
-	UN_QUARTO,
-	MID,
-	TRE_QUARTI
+	INVALID,
+	CALIBRATING,
+	READY,
+	BURNING,
+	COASTING,
+	DROGUE,
+	MAIN,
+	TOUCHDOWN
 } flight_phase_t;
 
 typedef struct{
@@ -65,24 +67,27 @@ typedef struct  {
 
 
 typedef enum {
-	EV_TERRA = 0,
-	EV_AEREO,
-	EV_CADUTA,
-	EV_UN_QUARTO,
-	EV_MID,
-	EV_TRE_QUARTI
+	EV_INVALID = 0,
+	EV_CALIBRATING,
+	EV_READY,
+	EV_BURNING,
+	EV_COASTING,
+	EV_DROGUE,
+	EV_MAIN,
+	EV_TOUCHDOWN
 } events_trigger;
 
 
 osStatus_t trigger_event(events_trigger ev, bool event_unique);
 
 
-void check_Terra_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
-void check_Aereo_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
-void check_Caduta_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
-void check_Un_Quarto_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_Mid_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
-void check_Tre_Quarti_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Calibrating_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
+void check_Ready_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
+void check_Burning_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
+void check_Coasting_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Drogue_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Main_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_Touchdown_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
 
 void check_flight_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
 

@@ -26,7 +26,7 @@
 #define ALTITUDE_MID 2250
 #define ALTITUDE_TRE_QUARTI 1250
 #define ALTITUDE_ATTERRAGGIO 300
-#define MAIN_DEPLOY_HEIGHT 100 //GIUSEPPE altezza sotto òa quale scendere prima di deployare i main parachute
+#define MAIN_DEPLOY_HEIGHT 100
 #define CADUTE_SAFETY_COUNTER 10
 #define QUARTO_SAFETY_COUNTER 10
 #define MID_SAFETY_COUNTER 5

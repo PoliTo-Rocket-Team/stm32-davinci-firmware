@@ -1,0 +1,10 @@
+../Core/Src/e220.c:13:8:E220_enter_config_mode	1
+../Core/Src/e220.c:35:8:E220_read_register	5
+../Core/Src/e220.c:53:8:E220_write_register	5
+../Core/Src/e220.c:75:8:E220_read_register_all	3
+../Core/Src/e220.c:90:8:E220_enter_normal_mode	2
+../Core/Src/e220.c:101:8:E220_transmit_payload	1
+../Core/Src/e220.c:107:8:E220_receive_payload	1
+../Core/Src/e220.c:115:8:E220_set_packetsize_32k	1
+../Core/Src/e220.c:124:8:E220_set_datarate_62k	1
+../Core/Src/e220.c:133:6:E220_reset	1

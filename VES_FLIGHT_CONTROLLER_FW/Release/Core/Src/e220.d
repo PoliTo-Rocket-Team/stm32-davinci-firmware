@@ -1,5 +1,4 @@
-Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.o: \
- ../Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.c \
+Core/Src/e220.o: ../Core/Src/e220.c ../Core/Inc/main.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h \
  ../Core/Inc/stm32f4xx_hal_conf.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h \
@@ -32,10 +31,19 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.o: \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_usart.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
- ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h
+ ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
+ ../Core/Inc/W25Q128.h \
+ ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
+ ../Core/Inc/codegen_model.h ../Core/Inc/rtw_continuous.h \
+ ../Core/Inc/rtwtypes.h ../Core/Inc/rtw_solver.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h \
+ ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
+ ../Core/Inc/main.h ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/buzzer.h ../Core/Inc/e220.h
+../Core/Inc/main.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal.h:
 ../Core/Inc/stm32f4xx_hal_conf.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_rcc.h:
@@ -68,7 +76,24 @@ Drivers/STM32F4xx_HAL_Driver/Src/stm32f4xx_hal_usart.o: \
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_tim_ex.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_uart.h:
-../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_usart.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h:
 ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h:
+../Core/Inc/W25Q128.h:
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
+../Core/Inc/codegen_model.h:
+../Core/Inc/rtw_continuous.h:
+../Core/Inc/rtwtypes.h:
+../Core/Inc/rtw_solver.h:
+../Core/Inc/z_flash_W25QXXX.h:
+../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
+../Core/Inc/servo.h:
+../Core/Inc/bmp3.h:
+../Core/Inc/bmp3_defs.h:
+../Core/Inc/lsm6dso32_reg.h:
+../Core/Inc/pitot_sensor.h:
+../Core/Inc/main.h:
+../Core/Inc/flight_control.h:
+../Core/Inc/utilities.h:
+../Core/Inc/buzzer.h:
+../Core/Inc/e220.h:
