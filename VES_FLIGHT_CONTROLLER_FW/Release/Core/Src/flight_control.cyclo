@@ -1,9 +1,9 @@
 ../Core/Src/flight_control.c:16:12:trigger_event	4
-../Core/Src/flight_control.c:200:7:change_state_to	1
+../Core/Src/flight_control.c:194:7:change_state_to	1
 ../Core/Src/flight_control.c:87:6:check_Aereo_phase	5
 ../Core/Src/flight_control.c:109:6:check_Caduta_phase	4
-../Core/Src/flight_control.c:130:6:check_Un_Quarto_phase	4
-../Core/Src/flight_control.c:148:6:check_Mid_phase	4
-../Core/Src/flight_control.c:169:6:check_Tre_Quarti_phase	4
+../Core/Src/flight_control.c:124:6:check_Un_Quarto_phase	4
+../Core/Src/flight_control.c:142:6:check_Mid_phase	4
+../Core/Src/flight_control.c:163:6:check_Tre_Quarti_phase	4
 ../Core/Src/flight_control.c:34:6:check_flight_phase	9
 ../Core/Src/flight_control.c:69:6:check_Terra_phase	4

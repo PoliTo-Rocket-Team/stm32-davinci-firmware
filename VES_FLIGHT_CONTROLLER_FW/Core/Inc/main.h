@@ -83,8 +83,6 @@ extern "C" {
 
 /* Exported types ------------------------------------------------------------*/
 /* USER CODE BEGIN ET */
-extern bool has_flown;
-
 /* USER CODE END ET */
 
 /* Exported constants --------------------------------------------------------*/

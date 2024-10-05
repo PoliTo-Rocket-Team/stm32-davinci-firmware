@@ -98,13 +98,20 @@ void Flash_Transmit(uint8_t* data, uint16_t dataSize){
 }
 
 void Flash_Transmit_float(float* data, uint16_t dataSize){
+
+    // Create a buffer to hold the byte representation of the float array
+    uint8_t byteBuffer[dataSize];
+
+    // Copy the float data into the byte buffer
+    memcpy(byteBuffer, data, dataSize);
+
 #ifndef	EXT_FLASH_SPI_POLLING_MODE
 	if (dataSize<EXT_FLASH_DMA_CUTOFF) {
 #endif //FLASH_SPI_POLLING_MODE
-		HAL_SPI_Transmit(&FLASH_SPI_PORT , data, dataSize, HAL_MAX_DELAY);
+		HAL_SPI_Transmit(&FLASH_SPI_PORT , byteBuffer, dataSize, HAL_MAX_DELAY);
 #ifndef	EXT_FLASH_SPI_POLLING_MODE
 	} else {
-		HAL_SPI_Transmit_DMA(&EXT_FLASH_SPI_PORT , data, dataSize);
+		HAL_SPI_Transmit_DMA(&EXT_FLASH_SPI_PORT , byteBuffer, dataSize);
 	}
 #endif  //FLASH_SPI_POLLING_MODE
 }

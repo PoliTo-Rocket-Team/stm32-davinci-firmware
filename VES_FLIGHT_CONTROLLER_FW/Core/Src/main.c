@@ -28,7 +28,6 @@
 
 /* Private typedef -----------------------------------------------------------*/
 /* USER CODE BEGIN PTD */
-bool has_flown;
 /* USER CODE END PTD */
 
 /* Private define ------------------------------------------------------------*/
@@ -109,6 +108,23 @@ uint8_t output[4000] = {0};
 servo_t servo = {0};
 
 buzzer_t buzzer = {0};
+uint32_t flash_addr1 = FLASH_START_ADDRESS;
+uint32_t flash_addr2 = FLASH_START_ADDRESS +(uint32_t)32;
+uint32_t flash_addr3 = FLASH_START_ADDRESS +(uint32_t)44;
+uint32_t flash_addr4 = FLASH_START_ADDRESS +(uint32_t)76;
+uint32_t flash_addr5 = FLASH_START_ADDRESS +(uint32_t)88;
+uint32_t flash_addr6 = FLASH_START_ADDRESS +(uint32_t)120;
+uint32_t flash_addr7 = FLASH_START_ADDRESS +(uint32_t)132;
+uint32_t flash_addr8 = FLASH_START_ADDRESS +(uint32_t)164;
+uint32_t flash_addr9 = FLASH_START_ADDRESS +(uint32_t)176;
+uint32_t flash_addr10 = FLASH_START_ADDRESS +(uint32_t)208;
+uint32_t flash_addr11 = FLASH_START_ADDRESS +(uint32_t)220;
+uint32_t flash_addr12 = FLASH_START_ADDRESS +(uint32_t)252;
+uint32_t flash_addr13 = FLASH_START_ADDRESS +(uint32_t)264;
+uint32_t flash_addr14 = FLASH_START_ADDRESS +(uint32_t)296;
+uint32_t flash_addr15 = FLASH_START_ADDRESS +(uint32_t)308;
+uint32_t flash_addr16 = FLASH_START_ADDRESS +(uint32_t)340;
+
 
 /* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
 
@@ -162,17 +178,19 @@ typedef struct{
 
 
 
-uint16_t num_meas_stored_in_buffer = 0;
-uint16_t num_meas_stored_in_buffer_2 = 0;
-uint16_t num_big_meas_stored_in_flash = 0;
-uint16_t num_small_meas_stored_in_flash = 0;
+uint32_t num_meas_stored_in_buffer = (uint32_t)0;
+uint32_t num_meas_stored_in_buffer_2 = (uint32_t)0;
+uint32_t num_big_meas_stored_in_flash = (uint32_t)0;
+uint32_t num_small_meas_stored_in_flash = (uint32_t)0;
+uint32_t num_times_lol_was_written = (uint32_t)0;
+bool flash_flag = false;
 
 //uint8_t *measurements_buffer;
 sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 //uint8_t *measurements_buffer_2;
 sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
-uint8_t flash_address[3] = {0};
-uint8_t addr = 0;
+
+
 
 float_t altitude;
 bool first_measure = true;
@@ -327,10 +345,61 @@ servo_t* get_servo(){
 float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
   float_t altitude;
 
-  altitude = 44330.0 * (1.0 - pow(currentPa / seaLevelPa, 0.1903));
+  altitude = (float_t)44330.0 * ((float_t)1.0 - pow(currentPa / seaLevelPa, (float_t)0.1903));
 
   return altitude;
 }
+
+//uint32_t GetAddr(){
+//	return addr;
+//}
+
+//void SetAddr(){
+//	addr += 352;
+//}
+
+uint32_t Getnum_meas_stored_in_buffer(){
+	return num_meas_stored_in_buffer;
+}
+
+uint32_t Getnum_big_meas_stored_in_flash(){
+	return num_big_meas_stored_in_flash;
+}
+
+uint32_t Getnum_small_meas_stored_in_flash(){
+	return num_small_meas_stored_in_flash;
+}
+
+void Setnum_meas_stored_in_flash(){
+	num_big_meas_stored_in_flash += 8;
+	num_small_meas_stored_in_flash +=3;
+}
+
+void Setnum_meas_stored_in_buffer(float num){
+	if(num <0){
+		num_meas_stored_in_buffer = (uint32_t)0;
+		num_meas_stored_in_buffer_2 = (uint32_t)0;
+	}else{
+		num_meas_stored_in_buffer += (uint32_t)num;
+		num_meas_stored_in_buffer_2 += (uint32_t)num;
+	}
+
+}
+
+
+void Setnum_meas_stored_in_buffermod(){
+	num_meas_stored_in_buffer %= (uint32_t)8;
+	num_meas_stored_in_buffer_2 %= (uint32_t)8;
+}
+
+void Set_Flash_Flag(bool val){
+	flash_flag = val;
+}
+
+bool Get_Flash_Flag(){
+	return flash_flag;
+}
+
 /* USER CODE END 0 */
 
 /**
@@ -464,6 +533,9 @@ int main(void)
 ////
   	servo_moveto_deg(&servo, 0); //aprire
 
+//  	Flash_Write(0,(uint8_t*)"lopi",4);
+
+
 
 //	char *data = "internal flash writing test\0";
 //
@@ -569,6 +641,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+
 	  rtU.Altitudeinput += 10.0;
 	  rtU.Verticalvelocityinput = 200.0;
     /* USER CODE END WHILE */
@@ -1104,8 +1177,12 @@ void FlashWrite(void *argument)
 	{
 //		do {
 //		if (num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1) && (flight_phase > READY)) {
-		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
+		uint32_t num = Getnum_meas_stored_in_buffer();
+		if (num > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
 		{
+			Set_Flash_Flag(true);
+
+
 			/* this value 7 depends on the number of measurements are performed
 			* between each time the flash task is invoked. In this case it is 7
 			* because flash task has a period of 80 ticks while sensor task of
@@ -1115,7 +1192,13 @@ void FlashWrite(void *argument)
 			*/
 
 //			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
-
+			uint32_t cazzo = 0;
+			uint32_t num2 = 0;
+			uint32_t num3 = 0;
+			num2 = Getnum_big_meas_stored_in_flash();
+			num3 = Getnum_small_meas_stored_in_flash();
+			addr = num2 * sizeof(sensor_data) + sizeof(sensor_data_2) * num3;
+			//cazzo = (size_t)4;//*num_times_lol_was_written;
 			//uint8_t *testiamo;
 			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 			//testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
@@ -1128,78 +1211,84 @@ void FlashWrite(void *argument)
 //					misura_princ[j][i] = 0.0;
 //				}
 //			}
-//
-//			for (int j = 0; j<8; j++){
-//				for(int i = 0; i<8; i++){
-//					memcpy(misura_princ[j]+i,(uint8_t*)measurements_buffer + 32*j+i*4,4);
+////
+//				for (int j = 0; j<8; j++){
+//					for(int i = 0; i<8; i++){
+//						memcpy(misura_princ[j]+i,(uint8_t*)measurements_buffer + 32*j+i*4,4);
 //				}
 //			}
-//			float misura_sec[8][3];
 //			for (int j = 0; j<8; j++){
 //				for(int i = 0; i<3; i++){
 //					misura_sec[j][i] = 0.0;
 //				}
 //			}
-//
+////
 //			for (int j = 0; j<8; j++){
 //				for(int i = 0; i<3; i++){
 //					memcpy(misura_sec[j]+i,(uint8_t*)measurements_buffer_2 + 12*j+i*4,4);
 //				}
 //			}
-//			//  cazzi[0] = 2.0;
+////			//  cazzi[0] = 2.0;
 //			for(int j = 0; j<8; j++){
-//				Flash_Write_float(addr+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
-//				Flash_Write_float(addr+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
+//				Flash_Write_float(cazzo+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
+//				Flash_Write_float(cazzo+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
 //			}
-			uint8_t cazzo = 0;
-			Flash_Write_float(cazzo, (float*)&measurements_buffer[0], 8*4);
-			Flash_Write_float(cazzo+32, (float*)&measurements_buffer[0], 3*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[0], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[1], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[1], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[2], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[2], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[3], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[3], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[4], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[4], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[5], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[5], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[6], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[6], 3*4);
-//			addr += 12;
-//			Flash_Write_float(addr, (float*)&measurements_buffer[7], 8*4);
-//			addr += 32;
-//			Flash_Write_float(addr, (float*)&measurements_buffer_2[7], 3*4);
-//			addr += 12;
-//			for (int j = 0; j < 8; j++) {
+			//static uint32_t addr = 0;
+
+//			Flash_Write_float(flash_addr1, (float*)&measurements_buffer[0], 8*4);
+//			Flash_Write_float(flash_addr2, (float*)&measurements_buffer_2[0], 3*4);
+//			Flash_Write_float(flash_addr3, (float*)&measurements_buffer[1], 8*4);
+//			Flash_Write_float(flash_addr4, (float*)&measurements_buffer_2[1], 3*4);
+//			Flash_Write_float(flash_addr5, (float*)&measurements_buffer[2], 8*4);
+//			Flash_Write_float(flash_addr6, (float*)&measurements_buffer_2[2], 3*4);
+//			Flash_Write_float(flash_addr7, (float*)&measurements_buffer[3], 8*4);
+//			Flash_Write_float(flash_addr8, (float*)&measurements_buffer_2[3], 3*4);
+//			Flash_Write_float(flash_addr9, (float*)&measurements_buffer[4], 8*4);
+//			Flash_Write_float(flash_addr10, (float*)&measurements_buffer_2[4], 3*4);
+//			Flash_Write_float(flash_addr11, (float*)&measurements_buffer[5], 8*4);
+//			Flash_Write_float(flash_addr12, (float*)&measurements_buffer_2[5], 3*4);
+//			Flash_Write_float(flash_addr13, (float*)&measurements_buffer[6], 8*4);
+//			Flash_Write_float(flash_addr14, (float*)&measurements_buffer_2[6], 3*4);
+//			Flash_Write_float(flash_addr15, (float*)&measurements_buffer[7], 8*4);
+//			Flash_Write_float(flash_addr16, (float*)&measurements_buffer_2[7], 3*4);
+
+//			flash_addr1 += 352;
+//			flash_addr2 += 352;
+//			flash_addr3 += 352;
+//			flash_addr4 += 352;
+//			flash_addr5 += 352;
+//			flash_addr6 += 352;
+//			flash_addr7 += 352;
+//			flash_addr8 += 352;
+//			flash_addr9 += 352;
+//			flash_addr10 += 352;
+//			flash_addr11 += 352;
+//			flash_addr12 += 352;
+//			flash_addr13 += 352;
+//			flash_addr14 += 352;
+//			flash_addr15 += 352;
+//			flash_addr16 += 352;
+
+//			osDelay(10000);
+//			cazzo += 0xc;
+//			osDelay(5000);
+//			addr = cazzo;
+			//SetAddr();
+			for (int j = 0; j < 8; j++) {
 //			    // Assuming sensor_data contains an array of 8 floats inside it.
 //			    // Write 8 floats from the j-th object in measurements_buffer
-//			    Flash_Write_float(addr, (float*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
+			    Flash_Write_float(addr, (float*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
 //
 //
 //			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
 //			    // Write 3 floats from the j-th object in measurements_buffer_2
-//			    addr = addr+8*sizeof(float);
-//			    Flash_Write_float(addr, (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
+			    addr = addr+8*sizeof(float);
+			    Flash_Write_float(addr, (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
 //
 //			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
-//			    addr = addr + 3 * sizeof(float);
+			    addr = addr + 3 * sizeof(float);
 ////			    addr += 10;
-//			}
+			}
 			//DEAR FRANCIS, PROVA ANCHE QUESTO
 // DIO VIOLA; BIANCO CLOCK; ROSSO A 1; IL 2 è IL BIANCO; il 4 VIOLA
 //			float test[8][8];
@@ -1212,17 +1301,17 @@ void FlashWrite(void *argument)
 //			for(int j = 0; j<8 ; j++){
 //				Flash_Read_float(addr+j*sizeof(misura_princ[j]),test[j],sizeof(misura_princ[j]));
 //			}
-			//LETTURA (RISCHIO DI STACK OVERFLOW)
-
-
-
-		    num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
-			num_meas_stored_in_buffer_2 -= FLASH_NUMBER_OF_STORE_EACH_TIME;
-			num_big_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
-			num_small_meas_stored_in_flash += FLASH_NUMBER_OF_STORE_EACH_TIME;
-
-//			free(testiamo2);
-
+//			cazzo = 0x0;
+			//LETTURA
+//			Flash_Write(addr,(uint8_t*)"lopi",(uint32_t)4);
+//			num_times_lol_was_written++;
+//			cazzo += 3;
+			float r = (float)-8.0;
+			Setnum_meas_stored_in_buffer(r);
+//		    num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
+//			num_meas_stored_in_buffer_2 -= FLASH_NUMBER_OF_STORE_EACH_TIME;
+			Setnum_meas_stored_in_flash();
+			Set_Flash_Flag(false);
 
 
 		}
@@ -1253,128 +1342,133 @@ void SensorsRead(void *argument)
   /* Infinite loop */
 	for(;;)
 	{
-		sensor_data data_1 = {0}, data_2 = {0};
-		sensor_data_2 data_1_2 = {0}, data_2_2 ={0};
-		uint8_t result = 1;
+		bool flag = Get_Flash_Flag();
+		uint32_t num = Getnum_meas_stored_in_buffer();
+		if(!flag && num != 8){
+			sensor_data data_1 = {0}, data_2 = {0};
+			sensor_data_2 data_1_2 = {0}, data_2_2 ={0};
+			uint8_t result = 1;
 
-		/* retrieving data from a couple of sensor and doing required conversions */
-		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_1, &bmp390_1);
-		result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_2, &bmp390_2);
+			/* retrieving data from a couple of sensor and doing required conversions */
+			result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_1, &bmp390_1);
+			result = bmp3_get_sensor_data(BMP3_PRESS_TEMP, &barometer_data_2, &bmp390_2);
 
-		result = lsm6dso32_angular_rate_raw_get(&imu_1, data_raw_angular_rate_1);
-		result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration_1);
-		result = lsm6dso32_angular_rate_raw_get(&imu_2, data_raw_angular_rate_2);
-		result = lsm6dso32_acceleration_raw_get(&imu_2, data_raw_acceleration_2);
+			result = lsm6dso32_angular_rate_raw_get(&imu_1, data_raw_angular_rate_1);
+			result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration_1);
+			result = lsm6dso32_angular_rate_raw_get(&imu_2, data_raw_angular_rate_2);
+			result = lsm6dso32_acceleration_raw_get(&imu_2, data_raw_acceleration_2);
 
-		angular_rate_mdps_1[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[0]);
-		angular_rate_mdps_1[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[1]);
-		angular_rate_mdps_1[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[2]);
-		angular_rate_mdps_2[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[0]);
-		angular_rate_mdps_2[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[1]);
-		angular_rate_mdps_2[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[2]);
+			angular_rate_mdps_1[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[0]);
+			angular_rate_mdps_1[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[1]);
+			angular_rate_mdps_1[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[2]);
+			angular_rate_mdps_2[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[0]);
+			angular_rate_mdps_2[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[1]);
+			angular_rate_mdps_2[2] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_2[2]);
 
-		acceleration_mg_1[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[0]);
-		acceleration_mg_1[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[1]);
-		acceleration_mg_1[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[2]);
-		acceleration_mg_2[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[0]);
-		acceleration_mg_2[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[1]);
-		acceleration_mg_2[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[2]);
+			acceleration_mg_1[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[0]);
+			acceleration_mg_1[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[1]);
+			acceleration_mg_1[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_1[2]);
+			acceleration_mg_2[0] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[0]);
+			acceleration_mg_2[1] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[1]);
+			acceleration_mg_2[2] = lsm6dso32_from_fs16_to_mg(data_raw_acceleration_2[2]);
 
-		/* storing measurements to sensor_data variable */
+			/* storing measurements to sensor_data variable */
 
-		data_1.acc_x = acceleration_mg_1[0];
-		data_1.acc_y = acceleration_mg_1[1];
-		data_1.acc_z = acceleration_mg_1[2];
-		data_1.dps_x = angular_rate_mdps_1[0];
-		data_1.dps_y = angular_rate_mdps_1[1];
-		data_1.dps_z = angular_rate_mdps_1[2];
-		data_1.temperature = barometer_data_1.temperature;
-		data_1.pressure = barometer_data_1.pressure;
+			data_1.acc_x = acceleration_mg_1[0];
+			data_1.acc_y = acceleration_mg_1[1];
+			data_1.acc_z = acceleration_mg_1[2];
+			data_1.dps_x = angular_rate_mdps_1[0];
+			data_1.dps_y = angular_rate_mdps_1[1];
+			data_1.dps_z = angular_rate_mdps_1[2];
+			data_1.temperature = barometer_data_1.temperature;
+			data_1.pressure = barometer_data_1.pressure;
 
-		data_2.acc_x = acceleration_mg_2[0];
-		data_2.acc_y = acceleration_mg_2[1];
-		data_2.acc_z = acceleration_mg_2[2];
-		data_2.dps_x = angular_rate_mdps_2[0];
-		data_2.dps_y = angular_rate_mdps_2[1];
-		data_2.dps_z = angular_rate_mdps_2[2];
-		data_2.temperature = barometer_data_2.temperature;
-		data_2.pressure = barometer_data_2.pressure;
+			data_2.acc_x = acceleration_mg_2[0];
+			data_2.acc_y = acceleration_mg_2[1];
+			data_2.acc_z = acceleration_mg_2[2];
+			data_2.dps_x = angular_rate_mdps_2[0];
+			data_2.dps_y = angular_rate_mdps_2[1];
+			data_2.dps_z = angular_rate_mdps_2[2];
+			data_2.temperature = barometer_data_2.temperature;
+			data_2.pressure = barometer_data_2.pressure;
 
-		prev_acc.accX = curr_acc.accX;
-		prev_acc.accY = curr_acc.accY;
-		prev_acc.accZ = curr_acc.accZ;
+			prev_acc.accX = curr_acc.accX;
+			prev_acc.accY = curr_acc.accY;
+			prev_acc.accZ = curr_acc.accZ;
 
-		curr_acc.accX = acceleration_mg_1[0];
-		curr_acc.accY = acceleration_mg_1[1];
-		curr_acc.accZ = acceleration_mg_1[2];
+			curr_acc.accX = acceleration_mg_1[0];
+			curr_acc.accY = acceleration_mg_1[1];
+			curr_acc.accZ = acceleration_mg_1[2];
 
-		if(first_measure){
-			Pressure_1 = data_1.pressure;
-			Pressure_2 = data_2.pressure;
-			first_measure = false;
+			if(first_measure){
+				Pressure_1 = data_1.pressure;
+				Pressure_2 = data_2.pressure;
+				first_measure = false;
+			}
+
+			altitude = readAltitude(Pressure_1,data_1.pressure);
+			data_1_2.altitude = altitude;
+			altitude = readAltitude(Pressure_2,data_2.pressure);
+			data_2_2.altitude = altitude;
+
+
+
+			switch (flight_state.flight_state){
+
+				case TERRA:
+					data_1_2.phase = 1.0;
+					data_2_2.phase = 1.0;
+					break;
+				case AEREO:
+					data_1_2.phase = 2.0;
+					data_2_2.phase = 2.0;
+					break;
+				case CADUTA:
+					data_1_2.phase = 3.0;
+					data_2_2.phase = 3.0;
+					break;
+				case UN_QUARTO:
+					data_1_2.phase = 4.0;
+					data_2_2.phase = 4.0;
+					break;
+				case MID:
+					data_1_2.phase = 5.0;
+					data_2_2.phase = 5.0;
+				case TRE_QUARTI:
+					data_1_2.phase = 6.0;
+					data_2_2.phase = 6.0;
+					break;
+			}
+
+			/* computing offset of the buffer and storing the data to the buffer */
+
+
+			size_t offset = num * sizeof(sensor_data);
+			size_t offset_2 = num * sizeof(sensor_data_2);
+
+			memcpy((uint8_t*)measurements_buffer + offset, &data_2, sizeof(sensor_data));
+			memcpy((uint8_t*)measurements_buffer_2 + offset_2, &data_2_2, sizeof(sensor_data_2));
+	//		sensor_data_2 buffer_data_2;
+	//        sensor_data buffer_data;
+	//		memcpy(&buffer_data,(uint8_t*)measurements_buffer + offset,sizeof(sensor_data));
+	//		memcpy(&buffer_data_2,(uint8_t*)measurements_buffer_2 + offset_2, sizeof(sensor_data_2));
+
+
+
+
+			/*
+			 * increment of the number of stored measurements and
+			 * modulo operation to avoid buffer overflow in the offset computation
+			 */
+			/*
+			 * During READY phase data are not saved in the flash, therefore the data
+			 * are always overwritten to the previous ones
+			 */
+			Setnum_meas_stored_in_buffermod();
+			float r = 1.0;
+			Setnum_meas_stored_in_buffer(r);
 		}
 
-		altitude = readAltitude(Pressure_1,data_1.pressure);
-		data_1_2.altitude = altitude;
-		altitude = readAltitude(Pressure_2,data_2.pressure);
-		data_2_2.altitude = altitude;
-
-
-
-		switch (flight_state.flight_state){
-
-			case TERRA:
-				data_1_2.phase = 1.0;
-				data_2_2.phase = 1.0;
-				break;
-			case AEREO:
-				data_1_2.phase = 2.0;
-				data_2_2.phase = 2.0;
-				break;
-			case CADUTA:
-				data_1_2.phase = 3.0;
-				data_2_2.phase = 3.0;
-				break;
-			case UN_QUARTO:
-				data_1_2.phase = 4.0;
-				data_2_2.phase = 4.0;
-				break;
-			case MID:
-				data_1_2.phase = 5.0;
-				data_2_2.phase = 5.0;
-			case TRE_QUARTI:
-				data_1_2.phase = 6.0;
-				data_2_2.phase = 6.0;
-				break;
-		}
-
-		/* computing offset of the buffer and storing the data to the buffer */
-
-		size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
-		size_t offset_2 = num_meas_stored_in_buffer_2 * sizeof(sensor_data_2);
-
-		memcpy((uint8_t*)measurements_buffer + offset, &data_2, sizeof(sensor_data));
-		memcpy((uint8_t*)measurements_buffer_2 + offset_2, &data_2_2, sizeof(sensor_data_2));
-//		sensor_data_2 buffer_data_2;
-//        sensor_data buffer_data;
-//		memcpy(&buffer_data,(uint8_t*)measurements_buffer + offset,sizeof(sensor_data));
-//		memcpy(&buffer_data_2,(uint8_t*)measurements_buffer_2 + offset_2, sizeof(sensor_data_2));
-
-
-
-
-		/*
-		 * increment of the number of stored measurements and
-		 * modulo operation to avoid buffer overflow in the offset computation
-		 */
-		/*
-		 * During READY phase data are not saved in the flash, therefore the data
-		 * are always overwritten to the previous ones
-		 */
-		num_meas_stored_in_buffer %= 8;
-		num_meas_stored_in_buffer++;
-		num_meas_stored_in_buffer_2 %= 8;
-		num_meas_stored_in_buffer_2++;
 
 
 
@@ -1405,6 +1499,8 @@ void CommunicationBoard(void *argument)
 	for(;;)
 	{
 
+
+		HAL_UART_Transmit(&huart2, "lol", 1, HAL_MAX_DELAY);
 
 		tick += COMMUNICATION_BOARD_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
