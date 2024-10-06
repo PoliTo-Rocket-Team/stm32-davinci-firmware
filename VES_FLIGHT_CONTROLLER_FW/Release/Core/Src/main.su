@@ -1,7 +1,7 @@
 ../Core/Src/main.c:1174:6:Startup	8	static
-../Core/Src/main.c:1647:6:SystemHealthCheck	8	static
-../Core/Src/main.c:1526:6:CommunicationBoard	16	static
-../Core/Src/main.c:1602:6:FlightFSM	64	static
+../Core/Src/main.c:1655:6:SystemHealthCheck	8	static
+../Core/Src/main.c:1527:6:CommunicationBoard	24	static
+../Core/Src/main.c:1610:6:FlightFSM	64	static
 ../Core/Src/main.c:364:12:get_flash	0	static
 ../Core/Src/main.c:368:10:get_servo	0	static
 ../Core/Src/main.c:372:9:readAltitude	8	static
@@ -12,10 +12,10 @@
 ../Core/Src/main.c:405:6:Setnum_meas_stored_in_buffer	0	static
 ../Core/Src/main.c:1195:6:FlashWrite	32	static
 ../Core/Src/main.c:417:6:Setnum_meas_stored_in_buffermod	0	static
-../Core/Src/main.c:1363:6:SensorsRead	96	static
+../Core/Src/main.c:1364:6:SensorsRead	96	static
 ../Core/Src/main.c:422:6:Set_Flash_Flag	0	static
 ../Core/Src/main.c:426:6:Get_Flash_Flag	0	static
 ../Core/Src/main.c:722:6:SystemClock_Config	88	static,ignoring_inline_asm
 ../Core/Src/main.c:436:5:main	128	static,ignoring_inline_asm
-../Core/Src/main.c:1675:6:HAL_TIM_PeriodElapsedCallback	0	static
-../Core/Src/main.c:1692:6:Error_Handler	0	static,ignoring_inline_asm
+../Core/Src/main.c:1683:6:HAL_TIM_PeriodElapsedCallback	0	static
+../Core/Src/main.c:1700:6:Error_Handler	0	static,ignoring_inline_asm

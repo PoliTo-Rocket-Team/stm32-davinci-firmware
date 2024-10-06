@@ -100,7 +100,9 @@ void check_Ready_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, l
 	// if I'm in a higher state I cannot come back
 	if(fsm_state->flight_state > READY) return;
 
-	if (MotionData.height>800) {
+	float acc = sqrt(acc_data.accX * acc_data.accX + acc_data.accY * acc_data.accY + acc_data.accZ * acc_data.accZ);
+
+	if (acc>LIFT_OFF_ACC_THRESHOLD) {
 
 		fsm_state->memory[0]++;
 	} else {
@@ -108,7 +110,7 @@ void check_Ready_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, l
 		fsm_state->memory[0] = 0;
 	}
 
-	if(fsm_state->memory[0] > THRESHOLD) {
+	if(fsm_state->memory[0] > AIRBRAKES_SAFETY_COUNTER) {
 		change_state_to(fsm_state, BURNING, EV_BURNING);
 	}
 
@@ -119,18 +121,13 @@ void check_Burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 
 	if(phase->flight_state > BURNING) return;
 
-	if (MotionData.height <= previous_altitude) {
+	if (MotionData.acceleration < 0) {
 		phase->memory[0]++;
-	}
-	previous_altitude = MotionData.height;
-
-	if (phase->memory[0] >  NUMBER_OF_CADUTE) {
-		phase->memory[1]++;
 	  } else {
-		  phase->memory[1] = 0;
+		  phase->memory[0] = 0;
 	  }
 
-	if (phase->memory[1] > CADUTE_SAFETY_COUNTER) {
+	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
 		change_state_to(phase, COASTING, EV_COASTING);
 	}
 
@@ -139,14 +136,23 @@ void check_Burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 void check_Coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData){
 	if(phase->flight_state > COASTING) return;
 
-	if(MotionData.height< ALTITUDE_QUARTO){
-		phase->memory[0]++;
-	}else{
+	if (MotionData.height <= previous_altitude) {
+			phase->memory[0]++;
+		}
+	else{
 		phase->memory[0] = 0;
 	}
 
-	if(phase->memory[0] > QUARTO_SAFETY_COUNTER){
-		change_state_to(phase,DROGUE,EV_DROGUE);
+	previous_altitude = MotionData.height;
+
+
+
+	if(phase->memory[0] > APOGEE_SAFETY_COUNTER){
+		if ((osKernelGetTickCount() - phase->thrust_trigger_time) < MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE) {
+					change_state_to(phase,TOUCHDOWN, EV_TOUCHDOWN);
+		} else {
+					change_state_to(phase,DROGUE, EV_DROGUE);
+		}
 	}
 }
 
@@ -156,7 +162,7 @@ void check_Drogue_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	if(phase->flight_state > DROGUE) return;
 
 
-	if(MotionData.height< ALTITUDE_MID){
+	if(MotionData.height<MAIN_DEPLOY_HEIGHT){
 		phase->memory[0]++;
 	}else{
 		phase->memory[0] = 0;
@@ -164,7 +170,7 @@ void check_Drogue_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 
 
 
-	if (phase->memory[0] > MID_SAFETY_COUNTER) {
+	if (phase->memory[0] > MAIN_SAFETY_COUNTER) {
 		change_state_to(phase, MAIN, EV_MAIN);
 	}
 }
@@ -172,20 +178,19 @@ void check_Drogue_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 void check_Main_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	// if I'm in a higher state I cannot come back
 	if(phase->flight_state > MAIN) return;
-	/* When velocity is below 0, coasting concludes */
-	// if we need to check acceleration be sure that accZ is the correct one to check
-	//XXX check the altitude for a specific amount of time
 
-	if (MotionData.height < ALTITUDE_TRE_QUARTI) {
+	/* If the velocity is very small we have touchdown */
+	// check the altitude for a specific amount of time
+	if (fabsf(MotionData.height) < 5) {
+//		/* Touchdown achieved */
 		phase->memory[0]++;
-	}else{
+	} else {
+		/* Touchdown not achieved */
 		phase->memory[0] = 0;
 	}
 
-	if (phase->memory[0] > TRE_QUARTI_SAFETY_COUNTER) {
-		/* If the duration between BURNING and apogee is smaller than defined, go to touchdown */
-			change_state_to(phase,TOUCHDOWN, EV_TOUCHDOWN);
-
+	if (phase->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
+		change_state_to(phase, TOUCHDOWN, EV_TOUCHDOWN);
 	}
 
 }
@@ -194,17 +199,23 @@ void check_Touchdown_phase(flight_fsm_t *fsm_state,estimation_output_t MotionDat
 	// if I'm in a higher state I cannot come back
 	if(fsm_state->flight_state > TOUCHDOWN) return;
 
-	if(MotionData.height < ALTITUDE_ATTERRAGGIO){
-		/* Achieved Height to deploy Main */
+	if ((fabsf(fsm_state->old_acc_data.accX - acc_data.accX ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+			(fabsf(fsm_state->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
+			(fabsf(fsm_state->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG)) {
+			/* Touchdown achieved */
+			fsm_state->memory[0]++;
+		} else {
+			/* Touchdown not achieved */
+			fsm_state->memory[0] = 0;
+		}
 
-		fsm_state->memory[0]++;
-	} else {
-		/* Did Not Achieve */
-		fsm_state->memory[0]= 0;
-	}
+	fsm_state->old_acc_data = acc_data;
 
-	if (fsm_state->memory[0] > ATTERRAGGIO_SAFETY_COUNTER) {//PER ORA 5 MA SI PUO CAMBIARE
-		change_state_to(fsm_state,TOUCHDOWN, EV_TOUCHDOWN);
+
+	if (fsm_state->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
+		change_state_to(fsm_state, TOUCHDOWN, EV_TOUCHDOWN);
+
+
 	}
 
 }

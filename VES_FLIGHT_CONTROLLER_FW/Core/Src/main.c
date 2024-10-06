@@ -1221,13 +1221,13 @@ void FlashWrite(void *argument)
 			*/
 
 //			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
-//			uint32_t cazzo = 0;
+//			uint32_t addr_2 = 0;
 			uint32_t num2 = 0;
 			uint32_t num3 = 0;
 			num2 = Getnum_big_meas_stored_in_flash();
 			num3 = Getnum_small_meas_stored_in_flash();
 			uint32_t addr = num2 * sizeof(sensor_data) + sizeof(sensor_data_2) * num3;
-			//cazzo = (size_t)4;//*num_times_lol_was_written;
+			//addr_2 = (size_t)4;//*num_times_lol_was_written;
 			//uint8_t *testiamo;
 			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 			//testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
@@ -1260,8 +1260,8 @@ void FlashWrite(void *argument)
 //			}
 ////			//  cazzi[0] = 2.0;
 //			for(int j = 0; j<8; j++){
-//				Flash_Write_float(cazzo+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
-//				Flash_Write_float(cazzo+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
+//				Flash_Write_float(addr_2+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
+//				Flash_Write_float(addr_2+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
 //			}
 			//static uint32_t addr = 0;
 
@@ -1300,9 +1300,9 @@ void FlashWrite(void *argument)
 //			flash_addr16 += 352;
 
 //			osDelay(10000);
-//			cazzo += 0xc;
+//			addr_2 += 0xc;
 //			osDelay(5000);
-//			addr = cazzo;
+//			addr = addr_2;
 			//SetAddr();
 			for (int j = 0; j < 8; j++) {
 //			    // Assuming sensor_data contains an array of 8 floats inside it.
@@ -1319,8 +1319,7 @@ void FlashWrite(void *argument)
 			    addr = addr + 3 * sizeof(float);
 ////			    addr += 10;
 			}
-			//DEAR FRANCIS, PROVA ANCHE QUESTO
-// DIO VIOLA; BIANCO CLOCK; ROSSO A 1; IL 2 è IL BIANCO; il 4 VIOLA
+
 //			float test[8][8];
 //			for (int j = 0; j<8; j++){
 //				for(int i = 0; i<8; i++){
@@ -1533,64 +1532,63 @@ void CommunicationBoard(void *argument)
 
 	tick = osKernelGetTickCount();
 	Lora_Package package;
-	uint8_t array[44];
+	uint8_t array[45];
 	  /* Infinite loop */
 	for(;;)
 	{
 		for(uint8_t i=0; i<45; i++){
 			array[i] = i;
 		}
-//		package.carattere = 'A';
-//	    package.acc_x = data_raw_acceleration_1[0];
-//	    package.acc_y = data_raw_acceleration_1[1];
-//	    package.acc_z = data_raw_acceleration_1[2];
-//	    package.dps_x = data_raw_angular_rate_1[0];
-//	    package.dps_y = data_raw_angular_rate_1[1];
-//	    package.dps_z = data_raw_angular_rate_1[2];
-//	    package.temperature = barometer_data_1.temperature;
-//	    package.pressure = barometer_data_1.pressure;
-//	    package.altitude =  altitude;
-//	    package.velocity = 0;
-//	    switch (flight_state.flight_state){
-//			case INVALID:
-//				package.phase = 2.0;
-//				break;
-//			case CALIBRATING:
-//				package.phase = 3.0;
-//				break;
-//			case READY:
-//				package.phase = 2.0;
-//				break;
-//			case BURNING:
-//				package.phase = 3.0;
-//				break;
-//			case COASTING:
-//				package.phase = 4.0;
-//				break;
-//			case DROGUE:
-//				package.phase = 5.0;
-//				break;
-//			case MAIN:
-//				package.phase = 6.0;
-//			case TOUCHDOWN:
-//				package.phase = 7.0;
-//				break;
+		package.carattere = 'D';
+	    package.acc_x = data_raw_acceleration_1[0];
+	    package.acc_y = data_raw_acceleration_1[1];
+	    package.acc_z = data_raw_acceleration_1[2];
+	    package.dps_x = data_raw_angular_rate_1[0];
+	    package.dps_y = data_raw_angular_rate_1[1];
+	    package.dps_z = data_raw_angular_rate_1[2];
+	    package.temperature = barometer_data_1.temperature;
+	    package.pressure = barometer_data_1.pressure;
+	    package.altitude =  altitude;
+	    package.velocity = 0;
+	    switch (flight_state.flight_state){
+			case INVALID:
+				package.phase = 2.0;
+				break;
+			case CALIBRATING:
+				package.phase = 3.0;
+				break;
+			case READY:
+				package.phase = 2.0;
+				break;
+			case BURNING:
+				package.phase = 3.0;
+				break;
+			case COASTING:
+				package.phase = 4.0;
+				break;
+			case DROGUE:
+				package.phase = 5.0;
+				break;
+			case MAIN:
+				package.phase = 6.0;
+				break;
+			case TOUCHDOWN:
+				package.phase = 7.0;
+				break;
+	    }
 
 
-//	    }
-
-
-		int tx_status = E220_transmit_payload(&LoraTX, (uint8_t*)"cacca", 5);
-		if (tx_status != 0) {
+		int tx_status = E220_transmit_payload(&LoraTX,"test", 4);
+		if (tx_status != 1) {
 		    printf("Transmission failed with status: %d\n", tx_status);
 		}
-		if(HAL_UART_Transmit(&huart1, (uint8_t *)"test", 4, 100)!= HAL_OK){
-			printf("Transmission failed with status: %d\n", tx_status);
-		}
-		printf("CAZZI", tx_status);
-		HAL_Delay(1000);
+//		if(HAL_UART_Transmit(&huart1, (uint8_t *)"test", 4, 100)!= HAL_OK){
+//			printf("Transmission failed with status: %d\n", tx_status);
+//		}
+//		printf("CAZZI", tx_status);
+		HAL_Delay(2000);
 
-//		E220_receive_payload(&LoraRX,receive_buffer,35);
+		int8_t rssi = E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer)); //RSSI
 
 		tick += COMMUNICATION_BOARD_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
