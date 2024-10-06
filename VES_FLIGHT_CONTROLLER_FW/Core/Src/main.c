@@ -62,7 +62,7 @@ const osThreadAttr_t StartupTask_attributes = {
 osThreadId_t FlashWriteTaskHandle;
 const osThreadAttr_t FlashWriteTask_attributes = {
   .name = "FlashWriteTask",
-  .stack_size = 128 * 4,
+  .stack_size = 256*4,//128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
 /* Definitions for SensorsReadTask */
