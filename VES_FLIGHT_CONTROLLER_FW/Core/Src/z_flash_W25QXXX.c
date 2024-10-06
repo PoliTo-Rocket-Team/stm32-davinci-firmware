@@ -58,9 +58,7 @@ void Flash_Receive(uint8_t* data, uint16_t dataSize){
 	HAL_SPI_Receive (&FLASH_SPI_PORT , data, dataSize, HAL_MAX_DELAY);
 }
 
-void Flash_Receive_float(float* data, uint16_t dataSize){
-	HAL_SPI_Receive (&FLASH_SPI_PORT ,data, dataSize, HAL_MAX_DELAY);
-}
+
 
 
 
@@ -172,7 +170,7 @@ uint8_t buffer[5];
 	Flash_UnSelect();
 }
 
-void Flash_Read_float(uint32_t addr, float* data, uint32_t dataSize){
+void Flash_Read_float(uint32_t addr, uint8_t* data, uint32_t dataSize){
 uint16_t data_to_transfer;
 uint8_t buffer[5];
 
@@ -187,7 +185,7 @@ uint8_t buffer[5];
 	// dataSize is 32 bit, spi_receive handles 16bit transfers, so I have to loop...
 	while (dataSize) {
 		data_to_transfer = ((dataSize>0xFFFF) ? 0xFFFF : (uint16_t)dataSize);
-		Flash_Receive_float(data, data_to_transfer);
+		Flash_Receive(data, data_to_transfer);
 		data+=data_to_transfer;
 		dataSize-=data_to_transfer;
 	}
@@ -288,7 +286,7 @@ uint32_t inpage_addr;
 	}
 }
 
-void Flash_Write_float(uint32_t addr, float* data, uint32_t dataSize){
+void Flash_Write_float(uint32_t addr, uint8_t* data, uint32_t dataSize){
 uint8_t buffer[4];
 uint16_t quota;
 uint32_t inpage_addr;
@@ -310,7 +308,7 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
-		Flash_SimpleWriteAPage_float(addr+quota,data+quota,(EXT_FLASH_PAGE_SIZE-inpage_addr));
+		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),(EXT_FLASH_PAGE_SIZE-inpage_addr));
 		quota+=(EXT_FLASH_PAGE_SIZE-inpage_addr);
 		// having aligned data to page border on the first writing
 		// next writings start from 0 position inside a page
@@ -323,7 +321,7 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
-		Flash_SimpleWriteAPage_float(addr+quota,data+quota,dataSize-quota);
+		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),dataSize-quota);
 		Flash_WaitForWritingComplete();
 	}
 }

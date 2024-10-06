@@ -471,7 +471,7 @@ int main(void)
   	rtU.Verticalvelocityinput = (double)0.0;
   	size_t i = 0;
 	int8_t result = 0;
-	int8_t result2 = 0;
+//	int8_t result2 = 0;
 
 
 	/* deactivate chip select of IMU and BMP390 */
@@ -492,7 +492,7 @@ int main(void)
 //	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
 
 //	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
-  	uint8_t angle = 0;
+//  	uint8_t angle = 0;
 
     LoraTX.uart_handler=&huart1;
     LoraTX.M_GPIO_PORT=GPIOA;
@@ -538,13 +538,13 @@ int main(void)
 	servo_init(&servo);
 	servo_rawmove(&servo, 2000);
 
-	note_t notes[20] = {
-			C1, G1, C2, E2,
-			D1, A1, D2, F2,
-			E1, B1, E2, G2,
-			F1, C2, F2, A2,
-			G1, D2, G2, B2
-	};
+//	note_t notes[20] = {
+//			C1, G1, C2, E2,
+//			D1, A1, D2, F2,
+//			E1, B1, E2, G2,
+//			F1, C2, F2, A2,
+//			G1, D2, G2, B2
+//	};
 
 //	for (size_t i = 0; i < 20; i++) {
 //		LED_ON(Status_LED_GPIO_Port, Status_LED_Pin);
@@ -1307,13 +1307,13 @@ void FlashWrite(void *argument)
 			for (int j = 0; j < 8; j++) {
 //			    // Assuming sensor_data contains an array of 8 floats inside it.
 //			    // Write 8 floats from the j-th object in measurements_buffer
-			    Flash_Write_float(addr, (float*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
+			    Flash_Write_float(addr, (uint8_t*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
 //
 //
 //			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
 //			    // Write 3 floats from the j-th object in measurements_buffer_2
 			    addr = addr + 8*sizeof(float);
-			    Flash_Write_float(addr, (float*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
+			    Flash_Write_float(addr, (uint8_t*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
 //
 //			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
 			    addr = addr + 3 * sizeof(float);
@@ -1375,7 +1375,8 @@ void SensorsRead(void *argument)
 		uint32_t num = Getnum_meas_stored_in_buffer();
 		if(!flag && num != 8){
 			sensor_data data_1 = {0}, data_2 = {0};
-			sensor_data_2 data_1_2 = {0}, data_2_2 ={0};
+			sensor_data_2 data_1_2 = {0};
+			sensor_data_2 data_2_2 ={0};
 			uint8_t result = 1;
 
 			/* retrieving data from a couple of sensor and doing required conversions */
@@ -1586,7 +1587,7 @@ void CommunicationBoard(void *argument)
 //			printf("Transmission failed with status: %d\n", tx_status);
 //		}
 //		printf("CAZZI", tx_status);
-		HAL_Delay(2000);
+		osDelay(2000);
 
 		int8_t rssi = E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer)); //RSSI
 

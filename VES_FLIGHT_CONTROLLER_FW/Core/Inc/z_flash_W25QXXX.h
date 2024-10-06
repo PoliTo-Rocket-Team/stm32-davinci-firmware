@@ -197,8 +197,8 @@
 
 void 	 Flash_Read(uint32_t addr, uint8_t* data, uint32_t dataSize);
 void 	 Flash_Write(uint32_t addr, uint8_t* data, uint32_t dataSize);
-void 	 Flash_Write_float(uint32_t addr, float* data, uint32_t dataSize);
-void     Flash_Read_float(uint32_t addr, float* data, uint32_t dataSize);
+void 	 Flash_Write_float(uint32_t addr, uint8_t* data, uint32_t dataSize);
+void     Flash_Read_float(uint32_t addr, uint8_t* data, uint32_t dataSize);
 //void 	 Flash_WaitForWritingComplete();
 void 	 Flash_SErase4k(uint32_t addr);
 void 	 Flash_BErase32k(uint32_t addr);
