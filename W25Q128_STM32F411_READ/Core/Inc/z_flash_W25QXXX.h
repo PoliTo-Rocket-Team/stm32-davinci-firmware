@@ -37,7 +37,7 @@
  **** otherwise		->	Standard Mode (warning: standard mode not available if SPO port speed is above 50 MHZ)
  **** SPI port must be previously correctly defined via CubeMX
  **************************************************/
-#define EXT_FLASH_MODE 		1
+#define FLASH_MODE 		1
 
 
 
