@@ -28,8 +28,8 @@ struct StorageInfo const StorageInfo  =  {
    EXT_FLASH_PAGE_SIZE,                 		// Programming Page Size (that's from Flash interface package)
    0xFF,                       					// Initial Content of Erased Memory
 // Specify Size and Address of Sectors (view example below)
-   EXT_FLASH_PAGE_NUM, EXT_FLASH_SECTOR_SIZE,	// (that's from Flash interface package)
-   0x00000000, 0x00000000,
+   {{EXT_FLASH_PAGE_NUM, EXT_FLASH_SECTOR_SIZE},	// (that's from Flash interface package)
+   {0x00000000, 0x00000000}},
 };
 
 /*  								Sector coding example
