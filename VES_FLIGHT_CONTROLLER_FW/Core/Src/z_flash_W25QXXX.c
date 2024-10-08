@@ -307,6 +307,7 @@ uint32_t inpage_addr;
 		Flash_Select();
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
+		Flash_WaitForWritingComplete();
 		Flash_UnSelect();
 		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),(EXT_FLASH_PAGE_SIZE-inpage_addr));
 		quota+=(EXT_FLASH_PAGE_SIZE-inpage_addr);
@@ -316,10 +317,11 @@ uint32_t inpage_addr;
 		Flash_WaitForWritingComplete();
 	}
 	// now just the final Flash page...
-	if (dataSize-quota) {
+	if ((int32_t)(dataSize-quota)>=0) {
 		Flash_Select();
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
+		Flash_WaitForWritingComplete();
 		Flash_UnSelect();
 		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),dataSize-quota);
 		Flash_WaitForWritingComplete();
