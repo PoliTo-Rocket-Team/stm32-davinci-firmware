@@ -134,9 +134,22 @@ uint8_t buffer[1];
 	Flash_UnSelect();
 }
 
-
-
-
+//DnLc+
+/**************************
+ * @BRIEF	keeps looping inside this function until "WEL" bit in SR1 register
+ * 			becomes 1, meaning that the write protection has been disabled
+ **************************/
+void Flash_WaitForWEL(){
+uint8_t buffer[1];
+	Flash_Select();
+	buffer[0] = W25_R_SR1;
+	Flash_Transmit(buffer, 1);
+	do {
+		Flash_Receive(buffer, 1);  //SR1 is repeteadly sent until WEL is activated
+	} while ((buffer[0] & SR1_BIT_WEL) == 0);
+	Flash_UnSelect();
+}
+//DnLc+
 
 /**************************
  * @BRIEF	reads from Flash Eeprom
@@ -268,7 +281,8 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
-		Flash_SimpleWriteAPage(addr+quota,data+quota,(EXT_FLASH_PAGE_SIZE-inpage_addr));
+        Flash_WaitForWEL(); //DnLc+
+        Flash_SimpleWriteAPage(addr+quota,data+quota,(EXT_FLASH_PAGE_SIZE-inpage_addr));
 		quota+=(EXT_FLASH_PAGE_SIZE-inpage_addr);
 		// having aligned data to page border on the first writing
 		// next writings start from 0 position inside a page
@@ -281,7 +295,8 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
-		Flash_SimpleWriteAPage(addr+quota,data+quota,dataSize-quota);
+        Flash_WaitForWEL(); //DnLc+
+        Flash_SimpleWriteAPage(addr+quota,data+quota,dataSize-quota);
 		Flash_WaitForWritingComplete();
 	}
 }
@@ -308,6 +323,7 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
+        Flash_WaitForWEL(); //DnLc+
 		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),(EXT_FLASH_PAGE_SIZE-inpage_addr));
 		quota+=(EXT_FLASH_PAGE_SIZE-inpage_addr);
 		// having aligned data to page border on the first writing
@@ -321,6 +337,7 @@ uint32_t inpage_addr;
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
 		Flash_UnSelect();
+        Flash_WaitForWEL(); //DnLc+
 		Flash_SimpleWriteAPage(addr+quota,(uint8_t*)((uint32_t)data+quota),dataSize-quota);
 		Flash_WaitForWritingComplete();
 	}

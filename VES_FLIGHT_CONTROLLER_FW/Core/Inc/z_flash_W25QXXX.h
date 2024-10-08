@@ -158,6 +158,7 @@
 
 // bit masks of W25QXX SR1, SR2, SR3 registers
 #define SR1_BIT_BUSY		(01U)  //status only: 1 means busy device
+#define SR1_BIT_WEL			(02U)  //status only: 1 means write enabled. set by W25_W_ENABLE command    //DnLc+
 
 /* unused bitmasks
 #define SR1_BIT_WEL			(02U)  //status only: 1 means write enabled. set by W25_W_ENABLE command
