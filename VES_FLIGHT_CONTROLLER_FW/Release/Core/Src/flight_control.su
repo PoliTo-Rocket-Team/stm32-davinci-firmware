@@ -1,10 +1,10 @@
 ../Core/Src/flight_control.c:16:12:trigger_event	16	static
 ../Core/Src/flight_control.c:75:6:check_Calibrating_phase	48	static
-../Core/Src/flight_control.c:224:7:change_state_to	16	static
-../Core/Src/flight_control.c:99:6:check_Ready_phase	24	static
-../Core/Src/flight_control.c:117:6:check_Burning_phase	16	static
-../Core/Src/flight_control.c:139:6:check_Coasting_phase	16	static
-../Core/Src/flight_control.c:154:6:check_Drogue_phase	16	static
-../Core/Src/flight_control.c:172:6:check_Main_phase	16	static
-../Core/Src/flight_control.c:193:6:check_Touchdown_phase	24	static
+../Core/Src/flight_control.c:198:6:check_Touchdown_phase	24	static
+../Core/Src/flight_control.c:235:7:change_state_to	16	static
+../Core/Src/flight_control.c:99:6:check_Ready_phase	32	static
+../Core/Src/flight_control.c:119:6:check_Burning_phase	16	static
+../Core/Src/flight_control.c:136:6:check_Coasting_phase	24	static
+../Core/Src/flight_control.c:160:6:check_Drogue_phase	16	static
+../Core/Src/flight_control.c:178:6:check_Main_phase	16	static
 ../Core/Src/flight_control.c:34:6:check_flight_phase	88	static

@@ -152,7 +152,6 @@ uint8_t W25Q128_read_statusreg1(W25Q128_t* memory, uint8_t* data) {
 	}
 
 	W25Q128_CS_HIGH(memory);
-
 	return result;
 }
 
@@ -417,7 +416,7 @@ uint8_t W25Q128_chip_erase(W25Q128_t* memory) {
 
 	W25Q128_CS_HIGH(memory);
 
-	result = W25Q128_write_disable(memory);
+//	result = W25Q128_write_disable(memory);
 
 	return result;
 }

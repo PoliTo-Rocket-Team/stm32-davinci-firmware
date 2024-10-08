@@ -211,6 +211,8 @@ sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 //uint8_t *measurements_buffer_2;
 sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 
+uint8_t contatore_debug = 0; //DEBUG ABBOT
+
 
 
 float_t altitude;
@@ -584,11 +586,11 @@ int main(void)
 
   	HAL_Delay(1000);
 
-  	servo_moveto_deg(&servo,180); //chiudere
+  	servo_moveto_deg(&servo,0); //chiudere
 //
   	HAL_Delay(1000);
 ////
-  	servo_moveto_deg(&servo, 0); //aprire
+  	servo_moveto_deg(&servo, 180); //aprire
 
 //  	Flash_Write(0,(uint8_t*)"lopi",4);
 
@@ -1199,6 +1201,7 @@ void FlashWrite(void *argument)
 	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
 	uint32_t tick;
+	Flash_Write_float(0x1000000 - 0x1, (uint8_t*)measurements_buffer, 1); //0x90FFFC00
 
 	tick = osKernelGetTickCount();
   /* Infinite loop */
@@ -1207,7 +1210,7 @@ void FlashWrite(void *argument)
 //		do {
 //		if (num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1) && (flight_phase > READY)) {
 		uint32_t num = Getnum_meas_stored_in_buffer();
-		if (num > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
+		if (num > 0)//(FLASH_NUMBER_OF_STORE_EACH_TIME - 1)) //DEBUG ABBOT
 		{
 			Set_Flash_Flag(true);
 
@@ -1304,20 +1307,37 @@ void FlashWrite(void *argument)
 //			osDelay(5000);
 //			addr = addr_2;
 			//SetAddr();
-			for (int j = 0; j < 8; j++) {
-//			    // Assuming sensor_data contains an array of 8 floats inside it.
-//			    // Write 8 floats from the j-th object in measurements_buffer
-			    Flash_Write_float(addr, (uint8_t*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
-//
-//
-//			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
-//			    // Write 3 floats from the j-th object in measurements_buffer_2
-			    addr = addr + 8*sizeof(float);
-			    Flash_Write_float(addr, (uint8_t*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
-//
-//			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
-			    addr = addr + 3 * sizeof(float);
-////			    addr += 10;
+			if(contatore_debug<1){ //DEBUG ABBOT
+				if(contatore_debug == 0){
+//					memset(measurements_buffer,0x55,sizeof(measurements_buffer));
+//					memset(measurements_buffer_2,0xAA,sizeof(measurements_buffer_2));
+					uint8_t * pdata=(uint8_t*)measurements_buffer;
+					for(int ii=0;ii<sizeof(measurements_buffer);ii++){
+						*pdata++ =ii;
+					}
+					pdata=(uint8_t*)measurements_buffer_2;
+					for(int ii=0;ii<sizeof(measurements_buffer_2);ii++){
+						*pdata++ =ii;
+					}
+				}
+				for (int j = 0; j <8; j++) { //VERIFICA CON MAGGIORE IN FLASH_WRITE ABBOT
+	//			    // Assuming sensor_data contains an array of 8 floats inside it.
+	//			    // Write 8 floats from the j-th object in measurements_buffer
+
+					Flash_Write_float(addr, (uint8_t*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
+	//
+	//
+	//			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
+	//			    // Write 3 floats from the j-th object in measurements_buffer_2
+					addr = addr + 8*sizeof(float);
+					Flash_Write_float(addr, (uint8_t*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
+	//
+	//			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
+					addr = addr + 3 * sizeof(float);
+
+	////			    addr += 10;
+				}
+				contatore_debug += 1;
 			}
 
 //			float test[8][8];

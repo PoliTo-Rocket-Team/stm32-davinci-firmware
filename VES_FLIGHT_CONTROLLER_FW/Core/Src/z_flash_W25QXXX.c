@@ -33,7 +33,7 @@ extern SPI_HandleTypeDef FLASH_SPI_PORT;
  * 			understand if previous transmission terminated
  ******************************************/
 void Flash_Select(void) {
-		while (SPI_IS_BUSY) {}
+//		while (SPI_IS_BUSY) {}
 		HAL_GPIO_WritePin(FLASH_nCS_GPIO_Port, FLASH_nCS_Pin, GPIO_PIN_RESET);
 }
 
