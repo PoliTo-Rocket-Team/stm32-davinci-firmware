@@ -1,12 +1,8 @@
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1077:13:prvAddNewTaskToReadyList	24	static,ignoring_inline_asm
+../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3392:8:prvIdleTask	8	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:5177:13:prvAddCurrentTaskToDelayedList	24	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1805:20:prvTaskIsTaskSuspended	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3943:13:prvResetNextTaskUnblockTime	0	static
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3887:14:prvDeleteTCB	8	static,ignoring_inline_asm
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:3392:8:prvIdleTask	8	static,ignoring_inline_asm
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:824:13:prvInitialiseNewTask.constprop	32	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:581:15:xTaskCreateStatic	40	static,ignoring_inline_asm
-../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:733:13:xTaskCreate	48	static
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1162:7:vTaskDelete	16	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1386:13:eTaskGetState	24	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/tasks.c:1478:14:uxTaskPriorityGet	8	static

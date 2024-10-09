@@ -20,6 +20,8 @@
 #include "main.h"
 #include "cmsis_os.h"
 #include "usb_device.h"
+#include <math.h>
+#include <string.h>
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
@@ -50,7 +52,82 @@ TIM_HandleTypeDef htim3;
 TIM_HandleTypeDef htim4;
 
 UART_HandleTypeDef huart1;
+#if 0
+static uint64_t startup_stk[256];
+static uint64_t flashwrite_stk[512];
+static uint64_t sensors_stk[256];
+static uint64_t comboard_stk[256];
+static uint64_t flightFSM_stk[256];
+static uint64_t systemHealth_stk[256];
 
+static StaticTask_t startup_tcb;
+static StaticTask_t flashwrite_tcb;
+static StaticTask_t sensors_tcb;
+static StaticTask_t comboard_tcb;
+static StaticTask_t flightFSM_tcb;
+static StaticTask_t systemHealth_tcb;
+
+/* Definitions for StartupTask */
+osThreadId_t StartupTaskHandle;
+const osThreadAttr_t StartupTask_attributes = {
+  .name = "StartupTask",
+  .stack_size = sizeof(startup_stk),
+  .stack_mem  = &startup_stk[0],
+  .cb_mem  = &startup_tcb,
+  .cb_size = sizeof(startup_tcb),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for FlashWriteTask */
+osThreadId_t FlashWriteTaskHandle;
+const osThreadAttr_t FlashWriteTask_attributes = {
+  .name = "FlashWriteTask",
+  .stack_size = sizeof(flashwrite_stk),
+  .stack_mem  = &flashwrite_stk[0],
+  .cb_mem  = &flashwrite_tcb,
+  .cb_size = sizeof(flashwrite_tcb),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for SensorsReadTask */
+osThreadId_t SensorsReadTaskHandle;
+const osThreadAttr_t SensorsReadTask_attributes = {
+  .name = "SensorsReadTask",
+  .stack_size = sizeof(sensors_stk),
+  .stack_mem  = &sensors_stk[0],
+  .cb_mem  = &sensors_tcb,
+  .cb_size = sizeof(sensors_tcb),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for COMBoardTask */
+osThreadId_t COMBoardTaskHandle;
+const osThreadAttr_t COMBoardTask_attributes = {
+  .name = "COMBoardTask",
+  .stack_size = sizeof(comboard_stk),
+  .stack_mem  = &comboard_stk[0],
+  .cb_mem  = &comboard_tcb,
+  .cb_size = sizeof(comboard_tcb),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for FlightFSMTask */
+osThreadId_t FlightFSMTaskHandle;
+const osThreadAttr_t FlightFSMTask_attributes = {
+  .name = "FlightFSMTask",
+  .stack_size = sizeof(flightFSM_stk),
+  .stack_mem  = &flightFSM_stk[0],
+  .cb_mem  = &flightFSM_tcb,
+  .cb_size = sizeof(flightFSM_tcb),
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for SystemHealthCheckTask */
+osThreadId_t SystemHealthCheckTaskHandle;
+const osThreadAttr_t SystemHealthCheckTask_attributes = {
+  .name = "SystemHealthCheckTask",
+  .stack_size = sizeof(systemHealth_stk),
+  .stack_mem  = &systemHealth_stk[0],
+  .cb_mem  = &systemHealth_tcb,
+  .cb_size = sizeof(systemHealth_tcb),
+  .priority = (osPriority_t) osPriorityLow,
+};
+#else
 /* Definitions for StartupTask */
 osThreadId_t StartupTaskHandle;
 const osThreadAttr_t StartupTask_attributes = {
@@ -93,6 +170,7 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+#endif
 /* USER CODE BEGIN PV */
 /* SENSORS AND DEVICES DECLARATION */
 W25Q128_t flash = {0};
@@ -105,6 +183,7 @@ stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
 pitot_sensor_t pitot = {0};
 uint8_t output[4000] = {0};
 servo_t servo = {0};
+bool acknowledge_flag = false;
 
 buzzer_t buzzer = {0};
 uint32_t flash_addr1 = FLASH_START_ADDRESS;
@@ -200,7 +279,6 @@ typedef struct {
 
 
 uint32_t num_meas_stored_in_buffer = (uint32_t)0;
-uint32_t num_meas_stored_in_buffer_2 = (uint32_t)0;
 uint32_t num_big_meas_stored_in_flash = (uint32_t)0;
 uint32_t num_small_meas_stored_in_flash = (uint32_t)0;
 //uint32_t num_times_lol_was_written = (uint32_t)0;
@@ -211,18 +289,46 @@ sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 //uint8_t *measurements_buffer_2;
 sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 
+uint8_t DnLc_00[512];
+uint8_t DnLc_01[512];
+
 uint8_t contatore_debug = 0; //DEBUG ABBOT
+
+//float dt = 0.01; // Time step
+//// Kalman filter parameters
+//float Q[3][3] = { {1.80293050e+09, 0.0, 0.0},
+//	                  {0.0, 2.12070154e+05, 0.0},
+//	                  {0.0, 0.0, 1.52358682e+05} }; // Process noise covariance
+//
+//float R[2][2] = { {16, 0},
+//	                  {0, 0.000225} }; // Measurement noise covariance
+//
+//float P[3][3] = { {1.0, 0.0, 0.0},
+//	                  {0.0, 1.0, 0.0},
+//	                  {0.0, 0.0, 1.0} }; // Initial state covariance
+//
+////float F[3][3] = { {1.0, dt, 0.5 * dt * dt},
+////	                  {0.0, 1.0, dt},
+//	                  {0.0, 0.0, 1.0} }; // State transition model
+//
+//float C[2][3] = { {1.0, 0.0, 0.0}, // Measurement matrix for altitude
+//	                  {0.0, 0.0, 1.0} }; // Measurement matrix for acceleration
+//
+//	// Initial state
+//float xp[3] = {0.0, 0.0, 0.0}; // State: [altitude, velocity, acceleration]
+
 
 
 
 float_t altitude;
+float_t altitude_2;
 bool first_measure = true;
 float_t velocity;
 float_t Pressure_1;
 float_t Pressure_2;
 
 uint8_t send_buffer[35]="Hello There!bro";
-uint8_t receive_buffer[35];
+uint8_t receive_buffer[2];
 int16_t Lora_result;
 uint8_t all_reg_rx[8], all_reg_tx[8];
 
@@ -379,48 +485,6 @@ float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
   return altitude;
 }
 
-//uint32_t GetAddr(){
-//	return addr;
-//}
-
-//void SetAddr(){
-//	addr += 352;
-//}
-
-uint32_t Getnum_meas_stored_in_buffer(){
-	return num_meas_stored_in_buffer;
-}
-
-uint32_t Getnum_big_meas_stored_in_flash(){
-	return num_big_meas_stored_in_flash;
-}
-
-uint32_t Getnum_small_meas_stored_in_flash(){
-	return num_small_meas_stored_in_flash;
-}
-
-void Setnum_meas_stored_in_flash(){
-	num_big_meas_stored_in_flash += 8;
-	num_small_meas_stored_in_flash +=3;
-}
-
-void Setnum_meas_stored_in_buffer(float num){
-	if(num <0){
-		num_meas_stored_in_buffer = (uint32_t)0;
-		num_meas_stored_in_buffer_2 = (uint32_t)0;
-	}else{
-		num_meas_stored_in_buffer += (uint32_t)num;
-		num_meas_stored_in_buffer_2 += (uint32_t)num;
-	}
-
-}
-
-
-void Setnum_meas_stored_in_buffermod(){
-	num_meas_stored_in_buffer %= (uint32_t)8;
-	num_meas_stored_in_buffer_2 %= (uint32_t)8;
-}
-
 void Set_Flash_Flag(bool val){
 	flash_flag = val;
 }
@@ -490,9 +554,18 @@ int main(void)
 	result = init_bmp390_1(&bmp390_1);
 	result = init_bmp390_2(&bmp390_2);
 
-	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
-//	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
+//	result = init_flash(&flash, ERASE); //XXX use this once to erase the chip
+	result = Flash_Init();
 
+	if (result)
+	{
+		__asm("nop");
+	}
+	Flash_ChipErase();
+//	result = init_flash(&flash, BYPASS);//XXX use this everytime the chip does not need to be erased
+//	while(1){
+//
+//	};
 //	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
 //  	uint8_t angle = 0;
 
@@ -584,13 +657,13 @@ int main(void)
 //	float_t pressure = 0;
 //	memcpy(&pressure, buf + 28, sizeof(float_t));
 
-  	HAL_Delay(1000);
+//  	HAL_Delay(1000);
 
-  	servo_moveto_deg(&servo,0); //chiudere
+//  	servo_moveto_deg(&servo,180); //chiudere
 //
-  	HAL_Delay(1000);
-////
-  	servo_moveto_deg(&servo, 180); //aprire
+//  	HAL_Delay(1000);
+//////
+//  	servo_moveto_deg(&servo, 0); //aprie AZIONE DA FARE DURANTE LA MACCHINA A STATI ABBOT
 
 //  	Flash_Write(0,(uint8_t*)"lopi",4);
 
@@ -913,7 +986,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_2;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_4;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -1200,17 +1273,32 @@ void FlashWrite(void *argument)
 	UBaseType_t uxHighWaterMark;
 	uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 
+//	uint8_t write_done = 0;
+
 	uint32_t tick;
-	Flash_Write_float(0x1000000 - 0x1, (uint8_t*)measurements_buffer, 1); //0x90FFFC00
+	//Flash_Write_float(0x1000000 - 0x1, &write_done, 1); //0x90FFFFFE
 
 	tick = osKernelGetTickCount();
   /* Infinite loop */
 	for(;;)
 	{
-//		do {
-//		if (num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1) && (flight_phase > READY)) {
-		uint32_t num = Getnum_meas_stored_in_buffer();
-		if (num > 0)//(FLASH_NUMBER_OF_STORE_EACH_TIME - 1)) //DEBUG ABBOT
+#if 0
+		if (write_done == 0)
+		{
+			for(int ii = 0; ii < sizeof(DnLc_00); ii++)
+			{
+				DnLc_00[ii] = ii;
+			}
+			for(int ii = 0; ii < sizeof(DnLc_01); ii++)
+			{
+				DnLc_01[ii] = 0x55;
+			}
+			Flash_Write_float(0, DnLc_00, sizeof(DnLc_00));
+			Flash_Write_float(sizeof(DnLc_00), DnLc_01, sizeof(DnLc_01));
+			write_done = 1;
+		}
+#else
+		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
 		{
 			Set_Flash_Flag(true);
 
@@ -1223,151 +1311,44 @@ void FlashWrite(void *argument)
 			* be (flash_task_period / sensor_task_period) - 1
 			*/
 
-//			size_t addr = (num_big_meas_stored_in_flash + num_meas_stored_in_buffer - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data) + (num_small_meas_stored_in_flash + num_meas_stored_in_buffer_2 - FLASH_NUMBER_OF_STORE_EACH_TIME) * sizeof(sensor_data_2);
-//			uint32_t addr_2 = 0;
 			uint32_t num2 = 0;
 			uint32_t num3 = 0;
-			num2 = Getnum_big_meas_stored_in_flash();
-			num3 = Getnum_small_meas_stored_in_flash();
+			num2 = num_big_meas_stored_in_flash;
+			num3 = num_small_meas_stored_in_flash;
+
 			uint32_t addr = num2 * sizeof(sensor_data) + sizeof(sensor_data_2) * num3;
-			//addr_2 = (size_t)4;//*num_times_lol_was_written;
-			//uint8_t *testiamo;
-			//sensor_data testiamo[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
-			//testiamo = malloc(sizeof(sensor_data) * (FLASH_NUMBER_OF_STORE_EACH_TIME * 2));
 
-//			uint8_t result = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
-			//uint8_t result2 = W25Q128_write_data(&flash, flash_address,(uint8_t*)measurements_buffer, 256);
-			//uint8_t result2 = W25Q128_read_data(&flash,flash_address,testiamo,256);
-//			float misura_princ[8][8];
-//			for (int j = 0; j<8; j++){
-//				for(int i = 0; i<8; i++){
-//					misura_princ[j][i] = 0.0;
-//				}
-//			}
-////
-//				for (int j = 0; j<8; j++){
-//					for(int i = 0; i<8; i++){
-//						memcpy(misura_princ[j]+i,(uint8_t*)measurements_buffer + 32*j+i*4,4);
-//				}
-//			}
-//			for (int j = 0; j<8; j++){
-//				for(int i = 0; i<3; i++){
-//					misura_sec[j][i] = 0.0;
-//				}
-//			}
-////
-//			for (int j = 0; j<8; j++){
-//				for(int i = 0; i<3; i++){
-//					memcpy(misura_sec[j]+i,(uint8_t*)measurements_buffer_2 + 12*j+i*4,4);
-//				}
-//			}
-////			//  cazzi[0] = 2.0;
-//			for(int j = 0; j<8; j++){
-//				Flash_Write_float(addr_2+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j])),misura_princ[j],sizeof(misura_princ[j]));
-//				Flash_Write_float(addr_2+j*(sizeof(misura_princ[j])+sizeof(misura_sec[j]))+sizeof(misura_princ[j]),misura_sec[j],sizeof(misura_sec[j]));
-//			}
-			//static uint32_t addr = 0;
-
-//			Flash_Write_float(flash_addr1, (float*)&measurements_buffer[0], 8*4);
-//			Flash_Write_float(flash_addr2, (float*)&measurements_buffer_2[0], 3*4);
-//			Flash_Write_float(flash_addr3, (float*)&measurements_buffer[1], 8*4);
-//			Flash_Write_float(flash_addr4, (float*)&measurements_buffer_2[1], 3*4);
-//			Flash_Write_float(flash_addr5, (float*)&measurements_buffer[2], 8*4);
-//			Flash_Write_float(flash_addr6, (float*)&measurements_buffer_2[2], 3*4);
-//			Flash_Write_float(flash_addr7, (float*)&measurements_buffer[3], 8*4);
-//			Flash_Write_float(flash_addr8, (float*)&measurements_buffer_2[3], 3*4);
-//			Flash_Write_float(flash_addr9, (float*)&measurements_buffer[4], 8*4);
-//			Flash_Write_float(flash_addr10, (float*)&measurements_buffer_2[4], 3*4);
-//			Flash_Write_float(flash_addr11, (float*)&measurements_buffer[5], 8*4);
-//			Flash_Write_float(flash_addr12, (float*)&measurements_buffer_2[5], 3*4);
-//			Flash_Write_float(flash_addr13, (float*)&measurements_buffer[6], 8*4);
-//			Flash_Write_float(flash_addr14, (float*)&measurements_buffer_2[6], 3*4);
-//			Flash_Write_float(flash_addr15, (float*)&measurements_buffer[7], 8*4);
-//			Flash_Write_float(flash_addr16, (float*)&measurements_buffer_2[7], 3*4);
-
-//			flash_addr1 += 352;
-//			flash_addr2 += 352;
-//			flash_addr3 += 352;
-//			flash_addr4 += 352;
-//			flash_addr5 += 352;
-//			flash_addr6 += 352;
-//			flash_addr7 += 352;
-//			flash_addr8 += 352;
-//			flash_addr9 += 352;
-//			flash_addr10 += 352;
-//			flash_addr11 += 352;
-//			flash_addr12 += 352;
-//			flash_addr13 += 352;
-//			flash_addr14 += 352;
-//			flash_addr15 += 352;
-//			flash_addr16 += 352;
-
-//			osDelay(10000);
-//			addr_2 += 0xc;
-//			osDelay(5000);
-//			addr = addr_2;
-			//SetAddr();
-			if(contatore_debug<1){ //DEBUG ABBOT
-				if(contatore_debug == 0){
-//					memset(measurements_buffer,0x55,sizeof(measurements_buffer));
-//					memset(measurements_buffer_2,0xAA,sizeof(measurements_buffer_2));
-					uint8_t * pdata=(uint8_t*)measurements_buffer;
-					for(int ii=0;ii<sizeof(measurements_buffer);ii++){
-						*pdata++ =ii;
-					}
-					pdata=(uint8_t*)measurements_buffer_2;
-					for(int ii=0;ii<sizeof(measurements_buffer_2);ii++){
-						*pdata++ =ii;
-					}
-				}
-				for (int j = 0; j <8; j++) { //VERIFICA CON MAGGIORE IN FLASH_WRITE ABBOT
+			if(addr< 0x1000000){
+				for (int j = 0; j < FLASH_NUMBER_OF_STORE_EACH_TIME; j++) {
 	//			    // Assuming sensor_data contains an array of 8 floats inside it.
 	//			    // Write 8 floats from the j-th object in measurements_buffer
+					Flash_Write_float(addr, (uint8_t*)&measurements_buffer[j], sizeof(sensor_data));  // 32 bytes
 
-					Flash_Write_float(addr, (uint8_t*)&measurements_buffer[j], 8*4);  // Write 8 floats (32 bytes)
-	//
-	//
 	//			    // Assuming sensor_data_2 contains an array of 3 floats inside it.
 	//			    // Write 3 floats from the j-th object in measurements_buffer_2
-					addr = addr + 8*sizeof(float);
-					Flash_Write_float(addr, (uint8_t*)&measurements_buffer_2[j], 3*4);  // Write 3 floats (12 bytes)
-	//
+					addr = addr + sizeof(sensor_data);
+					Flash_Write_float(addr, (uint8_t*)&measurements_buffer_2[j], sizeof(sensor_data_2));  // 12 bytes
+
 	//			    // Update the flash address to account for the data just written (32 + 12 = 44 bytes)
-					addr = addr + 3 * sizeof(float);
-
-	////			    addr += 10;
+					addr = addr + sizeof(sensor_data_2);
 				}
-				contatore_debug += 1;
-			}
 
-//			float test[8][8];
-//			for (int j = 0; j<8; j++){
-//				for(int i = 0; i<8; i++){
-//					test[j][i] = 0.0;
-//				}
-//			}
-			//  test[0] = 0.0;
-//			for(int j = 0; j<8 ; j++){
-//				Flash_Read_float(addr+j*sizeof(misura_princ[j]),test[j],sizeof(misura_princ[j]));
-//			}
-//			cazzo = 0x0;
-			//LETTURA
-//			Flash_Write(addr,(uint8_t*)"lopi",(uint32_t)4);
-//			num_times_lol_was_written++;
-//			cazzo += 3;
-			float r = (float)-8.0;
-			Setnum_meas_stored_in_buffer(r);
-//		    num_meas_stored_in_buffer -= FLASH_NUMBER_OF_STORE_EACH_TIME;
-//			num_meas_stored_in_buffer_2 -= FLASH_NUMBER_OF_STORE_EACH_TIME;
-			Setnum_meas_stored_in_flash();
+				num_big_meas_stored_in_flash += 8;
+				num_small_meas_stored_in_flash += 8;
+			}
+			num_meas_stored_in_buffer = (uint32_t)0;
 			Set_Flash_Flag(false);
 
 
 		}
 //		} while ((num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)));
-
+#endif
 		tick += FLASH_WRITE_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
 		osDelayUntil(tick);
 	}
   /* USER CODE END FlashWrite */
@@ -1388,12 +1369,12 @@ void SensorsRead(void *argument)
 	uint32_t tick;
 
 	tick = osKernelGetTickCount();
+
   /* Infinite loop */
 	for(;;)
 	{
 		bool flag = Get_Flash_Flag();
-		uint32_t num = Getnum_meas_stored_in_buffer();
-		if(!flag && num != 8){
+		if(!flag && (num_meas_stored_in_buffer != 8)){
 			sensor_data data_1 = {0}, data_2 = {0};
 			sensor_data_2 data_1_2 = {0};
 			sensor_data_2 data_2_2 ={0};
@@ -1407,6 +1388,11 @@ void SensorsRead(void *argument)
 			result = lsm6dso32_acceleration_raw_get(&imu_1, data_raw_acceleration_1);
 			result = lsm6dso32_angular_rate_raw_get(&imu_2, data_raw_angular_rate_2);
 			result = lsm6dso32_acceleration_raw_get(&imu_2, data_raw_acceleration_2);
+
+			if (result)
+			{
+				__asm("nop");
+			}
 
 			angular_rate_mdps_1[0] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[0]);
 			angular_rate_mdps_1[1] = lsm6dso32_from_fs2000_to_mdps(data_raw_angular_rate_1[1]);
@@ -1458,8 +1444,81 @@ void SensorsRead(void *argument)
 
 			altitude = readAltitude(Pressure_1,data_1.pressure);
 			data_1_2.altitude = altitude;
-			altitude = readAltitude(Pressure_2,data_2.pressure);
-			data_2_2.altitude = altitude;
+			altitude_2 = readAltitude(Pressure_2,data_2.pressure);
+			data_2_2.altitude = altitude_2;
+
+//		    /* Kalman filter implementation */
+//		    float z_IMU = data_1.acc_z; // Assuming acceleration z from IMU
+//		    float z_BARO = data_1_2.altitude; // Assuming altitude from barometer
+//
+//		    // Prediction step
+//		        float xp_pred[3] = {
+//		            F[0][0] * xp[0] + F[0][1] * xp[1] + F[0][2] * xp[2], // Altitude
+//		            F[1][0] * xp[0] + F[1][1] * xp[1] + F[1][2] * xp[2], // Velocity
+//		            F[2][0] * xp[0] + F[2][1] * xp[1] + F[2][2] * xp[2]  // Acceleration
+//		        };
+//
+//		        // Update covariance
+//		        float P_pred[3][3];
+//		        for (int i = 0; i < 3; i++) {
+//		            for (int j = 0; j < 3; j++) {
+//		                P_pred[i][j] = F[i][0] * P[0][j] + F[i][1] * P[1][j] + F[i][2] * P[2][j] + Q[i][j];
+//		            }
+//		        }
+//
+//		        // Measurement update
+//		        float z[2] = {z_BARO, z_IMU}; // Measurement vector
+//		        float y[2] = {z[0] - (C[0][0] * xp_pred[0] + C[0][1] * xp_pred[1] + C[0][2] * xp_pred[2]),
+//		                      z[1] - (C[1][0] * xp_pred[0] + C[1][1] * xp_pred[1] + C[1][2] * xp_pred[2])}; // Measurement residual
+//
+//		        // Compute the innovation covariance S
+//		        float S[2][2];
+//		        for (int i = 0; i < 2; i++) {
+//		            for (int j = 0; j < 2; j++) {
+//		                S[i][j] = C[i][0] * P_pred[0][j] + C[i][1] * P_pred[1][j] + C[i][2] * P_pred[2][j] + R[i][j];
+//		            }
+//		        }
+//
+//		        // Calculate the Kalman gain K
+//		        float K[3][2]; // Kalman gain
+//		        float S_inv[2][2]; // Inverse of S
+//		        // Calculate determinant
+//		        float det = S[0][0] * S[1][1] - S[0][1] * S[1][0];
+//		        // Calculate the inverse of S
+//		        S_inv[0][0] = S[1][1] / det;
+//		        S_inv[0][1] = -S[0][1] / det;
+//		        S_inv[1][0] = -S[1][0] / det;
+//		        S_inv[1][1] = S[0][0] / det;
+//
+//		        // Calculate Kalman gain K
+//		        for (int i = 0; i < 3; i++) {
+//		            for (int j = 0; j < 2; j++) {
+//		                K[i][j] = 0.0;
+//		                for (int k = 0; k < 3; k++) {
+//		                    K[i][j] += P_pred[i][k] * C[j][k];
+//		                }
+//		                for (int k = 0; k < 2; k++) {
+//		                    K[i][j] *= S_inv[j][k];
+//		                }
+//		            }
+//		        }
+//
+//		        // Update state estimate
+//		        for (int i = 0; i < 3; i++) {
+//		            xp[i] = xp_pred[i] + K[i][0] * y[0] + K[i][1] * y[1];
+//		        }
+//
+//		        // Update covariance
+//		        float P_updated[3][3];
+//		        for (int i = 0; i < 3; i++) {
+//		            for (int j = 0; j < 3; j++) {
+//		                P_updated[i][j] = P_pred[i][j];
+//		                for (int k = 0; k < 2; k++) {
+//		                    P_updated[i][j] -= K[i][k] * C[k][j] * P_pred[i][j];
+//		                }
+//		            }
+//		        }
+//		        memcpy(P, P_updated, sizeof(P)); // Update the covariance matrix
 
 
 
@@ -1477,7 +1536,7 @@ void SensorsRead(void *argument)
 					data_1_2.phase = 3.0;
 					data_2_2.phase = 3.0;
 					break;
-				case COASTING:
+				case ABCSDEPLOYED:
 					data_1_2.phase = 4.0;
 					data_2_2.phase = 4.0;
 					break;
@@ -1500,18 +1559,16 @@ void SensorsRead(void *argument)
 			/* computing offset of the buffer and storing the data to the buffer */
 
 
-			size_t offset = num * sizeof(sensor_data);
-			size_t offset_2 = num * sizeof(sensor_data_2);
+			size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
+			size_t offset_2 = num_meas_stored_in_buffer * sizeof(sensor_data_2);
 
 			memcpy((uint8_t*)measurements_buffer + offset, &data_2, sizeof(sensor_data));
 			memcpy((uint8_t*)measurements_buffer_2 + offset_2, &data_2_2, sizeof(sensor_data_2));
-	//		sensor_data_2 buffer_data_2;
-	//        sensor_data buffer_data;
-	//		memcpy(&buffer_data,(uint8_t*)measurements_buffer + offset,sizeof(sensor_data));
-	//		memcpy(&buffer_data_2,(uint8_t*)measurements_buffer_2 + offset_2, sizeof(sensor_data_2));
 
-
-
+			if (data_1_2.altitude > 0)
+			{
+				__asm("nop");
+			}
 
 			/*
 			 * increment of the number of stored measurements and
@@ -1521,17 +1578,16 @@ void SensorsRead(void *argument)
 			 * During READY phase data are not saved in the flash, therefore the data
 			 * are always overwritten to the previous ones
 			 */
-			Setnum_meas_stored_in_buffermod();
-			float r = 1.0;
-			Setnum_meas_stored_in_buffer(r);
+	        num_meas_stored_in_buffer %= (uint32_t)8;
+       		num_meas_stored_in_buffer += 1;
 		}
-
-
-
-
 
 		tick += SENSORS_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
 		osDelayUntil(tick);
 	}
   /* USER CODE END SensorsRead */
@@ -1554,29 +1610,27 @@ void CommunicationBoard(void *argument)
 	tick = osKernelGetTickCount();
 	Lora_Package package;
 	uint8_t array[45];
+	float test[11];
 	  /* Infinite loop */
 	for(;;)
 	{
-		for(uint8_t i=0; i<45; i++){
-			array[i] = i;
-		}
 		package.carattere = 'D';
-	    package.acc_x = data_raw_acceleration_1[0];
-	    package.acc_y = data_raw_acceleration_1[1];
-	    package.acc_z = data_raw_acceleration_1[2];
-	    package.dps_x = data_raw_angular_rate_1[0];
-	    package.dps_y = data_raw_angular_rate_1[1];
-	    package.dps_z = data_raw_angular_rate_1[2];
+	    package.acc_x = acceleration_mg_1[0];
+	    package.acc_y = acceleration_mg_1[1];
+	    package.acc_z = acceleration_mg_1[2];
+	    package.dps_x = angular_rate_mdps_1[0];
+	    package.dps_y = angular_rate_mdps_1[1];
+	    package.dps_z = angular_rate_mdps_1[2];
 	    package.temperature = barometer_data_1.temperature;
 	    package.pressure = barometer_data_1.pressure;
 	    package.altitude =  altitude;
 	    package.velocity = 0;
 	    switch (flight_state.flight_state){
 			case INVALID:
-				package.phase = 2.0;
+				package.phase = 0.0;
 				break;
 			case CALIBRATING:
-				package.phase = 3.0;
+				package.phase = 1.0;
 				break;
 			case READY:
 				package.phase = 2.0;
@@ -1584,7 +1638,7 @@ void CommunicationBoard(void *argument)
 			case BURNING:
 				package.phase = 3.0;
 				break;
-			case COASTING:
+			case ABCSDEPLOYED:
 				package.phase = 4.0;
 				break;
 			case DROGUE:
@@ -1598,21 +1652,41 @@ void CommunicationBoard(void *argument)
 				break;
 	    }
 
+	    memcpy((uint8_t*)array, &package, sizeof(Lora_Package));
+	    //memcpy((float*)test, &package+1, sizeof(Lora_Package));
+	    //acknowledge_flag =true;
+	    if(acknowledge_flag){
+	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
+	    	if (tx_status != 1) {
+	    		printf("Transmission failed with status: %d\n", tx_status);
+	    	}
 
-		int tx_status = E220_transmit_payload(&LoraTX,"test", 4);
-		if (tx_status != 1) {
-		    printf("Transmission failed with status: %d\n", tx_status);
+	    	osDelay(500);
+	    }
+	    else{
+	    	array[0] ='C';
+	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
+	    	if (tx_status != 1) {
+	    		printf("Transmission failed with status: %d\n", tx_status);
+	    	}
+
+	    	//osDelay(500);
+	    }
+
+		E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer));
+		if(!acknowledge_flag && receive_buffer[0] == 'C'){
+			acknowledge_flag = true;
 		}
-//		if(HAL_UART_Transmit(&huart1, (uint8_t *)"test", 4, 100)!= HAL_OK){
-//			printf("Transmission failed with status: %d\n", tx_status);
-//		}
-//		printf("CAZZI", tx_status);
-		osDelay(2000);
-
-		int8_t rssi = E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer)); //RSSI
+		if(acknowledge_flag && receive_buffer[0] == 'F' && receive_buffer[1] < 65 ){
+			E220_write_register(&LoraTX,0x4,receive_buffer[1]);
+		}
 
 		tick += COMMUNICATION_BOARD_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
 		osDelayUntil(tick);
 	}
   /* USER CODE END CommunicationBoard */
@@ -1658,6 +1732,10 @@ void FlightFSM(void *argument)
 
 		tick += FLIGHT_FSM_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
 		osDelayUntil(tick);
 	}
   /* USER CODE END FlightFSM */
@@ -1685,6 +1763,10 @@ void SystemHealthCheck(void *argument)
 
 		tick += FLIGHT_HEALTH_CHECK_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
 		osDelayUntil(tick);
 	}
   /* USER CODE END SystemHealthCheck */

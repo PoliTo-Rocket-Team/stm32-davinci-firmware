@@ -11,7 +11,7 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:395:10:osKernelGetTickFreq	0	static
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:415:10:osKernelGetSysTimerCount	16	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:438:10:osKernelGetSysTimerFreq	0	static
-../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:444:14:osThreadNew	48	static,ignoring_inline_asm
+../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:444:14:osThreadNew	40	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:512:13:osThreadGetName	0	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:525:14:osThreadGetId	0	static
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.c:533:17:osThreadGetState	8	static,ignoring_inline_asm

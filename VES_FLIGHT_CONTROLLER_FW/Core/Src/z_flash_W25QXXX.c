@@ -290,7 +290,7 @@ uint32_t inpage_addr;
 		Flash_WaitForWritingComplete();
 	}
 	// now just the final Flash page...
-	if (dataSize-quota) {
+	if ((int32_t)(dataSize-quota)>=0) {
 		Flash_Select();
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);
@@ -332,7 +332,7 @@ uint32_t inpage_addr;
 		Flash_WaitForWritingComplete();
 	}
 	// now just the final Flash page...
-	if (dataSize-quota) {
+	if ((int32_t)(dataSize-quota)>=0) {
 		Flash_Select();
 		buffer[0] = W25_W_ENABLE;
 		Flash_Transmit(buffer, 1);

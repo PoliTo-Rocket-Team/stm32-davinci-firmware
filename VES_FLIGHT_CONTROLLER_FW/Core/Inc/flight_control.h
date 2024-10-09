@@ -29,10 +29,10 @@ typedef enum {
 	CALIBRATING,
 	READY,
 	BURNING,
-	COASTING,
+	ABCSDEPLOYED,
 	DROGUE,
 	MAIN,
-	TOUCHDOWN
+	TOUCHDOWN,
 } flight_phase_t;
 
 typedef struct{
@@ -71,7 +71,7 @@ typedef enum {
 	EV_CALIBRATING,
 	EV_READY,
 	EV_BURNING,
-	EV_COASTING,
+	EV_ABCSDEPLOYED,
 	EV_DROGUE,
 	EV_MAIN,
 	EV_TOUCHDOWN

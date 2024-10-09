@@ -49,9 +49,9 @@ void check_flight_phase(flight_fsm_t *phase, estimation_output_t MotionData,line
 			  check_Burning_phase(phase, MotionData);
 			  break;
 
-	    case COASTING:
-	    		check_Coasting_phase(phase,MotionData);
-	    		break;
+	    case ABCSDEPLOYED:
+	    	  check_AbcsDeployed_phase(phase,MotionData);
+	    	  break;
 
 	    case DROGUE:
 	    	  check_Drogue_phase(phase,MotionData);
@@ -62,7 +62,6 @@ void check_flight_phase(flight_fsm_t *phase, estimation_output_t MotionData,line
 			  break;
 
 	    case TOUCHDOWN:
-			  check_Touchdown_phase(phase, MotionData,acc_data);
 			  break;
 	    case INVALID:
 	    	  break;
@@ -102,7 +101,7 @@ void check_Ready_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, l
 
 	float acc = sqrt(acc_data.accX * acc_data.accX + acc_data.accY * acc_data.accY + acc_data.accZ * acc_data.accZ);
 
-	if (acc>LIFT_OFF_ACC_THRESHOLD) {
+	if (acc<END_OF_IGNITION_PHASE) {
 
 		fsm_state->memory[0]++;
 	} else {
@@ -121,20 +120,23 @@ void check_Burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 
 	if(phase->flight_state > BURNING) return;
 
-	if (MotionData.acceleration < 0) {
+	if (MotionData.height > 2250) {
 		phase->memory[0]++;
 	  } else {
 		  phase->memory[0] = 0;
 	  }
 
 	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
-		change_state_to(phase, COASTING, EV_COASTING);
+		servo_t *servo;
+		servo= get_servo();
+		servo_moveto_deg(servo, 0); //APRI
+		change_state_to(phase, ABCSDEPLOYED, EV_ABCSDEPLOYED);//ABCSDEPLOYED
 	}
 
 }
 
-void check_Coasting_phase(flight_fsm_t *phase, estimation_output_t MotionData){
-	if(phase->flight_state > COASTING) return;
+void check_AbcsDeployed_phase(flight_fsm_t *phase, estimation_output_t MotionData){
+	if(phase->flight_state > ABCSDEPLOYED) return;
 
 	if (MotionData.height <= previous_altitude) {
 			phase->memory[0]++;
@@ -181,7 +183,7 @@ void check_Main_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 
 	/* If the velocity is very small we have touchdown */
 	// check the altitude for a specific amount of time
-	if (fabsf(MotionData.height) < 5) {
+	if (fabsf(MotionData.height) < 20) {
 //		/* Touchdown achieved */
 		phase->memory[0]++;
 	} else {
@@ -195,30 +197,7 @@ void check_Main_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 
 }
 
-void check_Touchdown_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data) {
-	// if I'm in a higher state I cannot come back
-	if(fsm_state->flight_state > TOUCHDOWN) return;
 
-	if ((fabsf(fsm_state->old_acc_data.accX - acc_data.accX ) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-			(fabsf(fsm_state->old_acc_data.accY - acc_data.accY) < ACCELEROMETER_MEASURE_TOLERANCE_MG) &&
-			(fabsf(fsm_state->old_acc_data.accZ - acc_data.accZ) < ACCELEROMETER_MEASURE_TOLERANCE_MG)) {
-			/* Touchdown achieved */
-			fsm_state->memory[0]++;
-		} else {
-			/* Touchdown not achieved */
-			fsm_state->memory[0] = 0;
-		}
-
-	fsm_state->old_acc_data = acc_data;
-
-
-	if (fsm_state->memory[0] > TOUCHDOWN_SAFETY_COUNTER) {
-		change_state_to(fsm_state, TOUCHDOWN, EV_TOUCHDOWN);
-
-
-	}
-
-}
 
 
 
