@@ -1,36 +1,49 @@
 /*
+ * codegen_model.h
+ *
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * File: codegen_model.h
+ * Code generation for model "codegen_model".
  *
- * Code generated for Simulink model 'codegen_model'.
+ * Model version              : 1.12
+ * Simulink Coder version : 23.2 (R2023b) 01-Aug-2023
+ * C source code generated on : Fri Oct 11 00:08:09 2024
  *
- * Model version                  : 1.11
- * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sat May 11 18:12:40 2024
- *
- * Target selection: ert.tlc
- * Embedded hardware selection: ARM Compatible->ARM Cortex-M
- * Code generation objectives:
- *    1. Execution efficiency
- *    2. RAM efficiency
+ * Target selection: grt.tlc
+ * Note: GRT includes extra infrastructure and instrumentation for prototyping
+ * Embedded hardware selection: Intel->x86-64 (Windows64)
+ * Code generation objectives: Unspecified
  * Validation result: Not run
  */
 
-#ifndef codegen_model_h_
-#define codegen_model_h_
+#ifndef RTW_HEADER_codegen_model_h_
+#define RTW_HEADER_codegen_model_h_
 #ifndef codegen_model_COMMON_INCLUDES_
 #define codegen_model_COMMON_INCLUDES_
-#include <stdbool.h>
-#include <stdint.h>
+#include "rtwtypes.h"
 #include "rtw_continuous.h"
 #include "rtw_solver.h"
-#include "math.h"
+#include "rt_logging.h"
 #endif                                 /* codegen_model_COMMON_INCLUDES_ */
 
+#include "codegen_model_types.h"
+#include "rt_nonfinite.h"
+#include "rtGetInf.h"
+#include <float.h>
+#include <string.h>
+#include <stddef.h>
+
 /* Macros for accessing real-time model data structure */
+#ifndef rtmGetFinalTime
+#define rtmGetFinalTime(rtm)           ((rtm)->Timing.tFinal)
+#endif
+
+#ifndef rtmGetRTWLogInfo
+#define rtmGetRTWLogInfo(rtm)          ((rtm)->rtwLogInfo)
+#endif
+
 #ifndef rtmGetErrorStatus
 #define rtmGetErrorStatus(rtm)         ((rtm)->errorStatus)
 #endif
@@ -39,38 +52,57 @@
 #define rtmSetErrorStatus(rtm, val)    ((rtm)->errorStatus = (val))
 #endif
 
+#ifndef rtmGetStopRequested
+#define rtmGetStopRequested(rtm)       ((rtm)->Timing.stopRequestedFlag)
+#endif
+
+#ifndef rtmSetStopRequested
+#define rtmSetStopRequested(rtm, val)  ((rtm)->Timing.stopRequestedFlag = (val))
+#endif
+
+#ifndef rtmGetStopRequestedPtr
+#define rtmGetStopRequestedPtr(rtm)    (&((rtm)->Timing.stopRequestedFlag))
+#endif
+
 #ifndef rtmGetT
 #define rtmGetT(rtm)                   (rtmGetTPtr((rtm))[0])
+#endif
+
+#ifndef rtmGetTFinal
+#define rtmGetTFinal(rtm)              ((rtm)->Timing.tFinal)
 #endif
 
 #ifndef rtmGetTPtr
 #define rtmGetTPtr(rtm)                ((rtm)->Timing.t)
 #endif
 
-/* Forward declaration for rtModel */
-typedef struct tag_RTM RT_MODEL;
-
-/* Block signals and states (default storage) for system '<Root>' */
+/* Block signals (default storage) */
 typedef struct {
-  double ABE;                          /* '<S1>/Rate Limiter' */
-  double Integrator_DSTATE;            /* '<S38>/Integrator' */
-  double Filter_DSTATE;                /* '<S33>/Filter' */
-  double PrevY;                        /* '<S1>/Rate Limiter' */
-  double LastMajorTime;                /* '<S1>/Rate Limiter' */
-  bool PrevLimited;                    /* '<S1>/Rate Limiter' */
-} DW;
+  real_T Sum;                          /* '<S1>/Sum' */
+  real_T Saturation;                   /* '<S43>/Saturation' */
+  real_T ABE;                          /* '<S1>/Rate Limiter' */
+} B_codegen_model_T;
+
+/* Block states (default storage) for system '<Root>' */
+typedef struct {
+  real_T Integrator_DSTATE;            /* '<S36>/Integrator' */
+  real_T Filter_DSTATE;                /* '<S31>/Filter' */
+  real_T PrevY;                        /* '<S1>/Rate Limiter' */
+  real_T LastMajorTime;                /* '<S1>/Rate Limiter' */
+  boolean_T PrevLimited;               /* '<S1>/Rate Limiter' */
+} DW_codegen_model_T;
 
 /* Constant parameters (default storage) */
 typedef struct {
   /* Expression: dy_mat
    * Referenced by: '<S1>/Constant3'
    */
-  double Constant3_Value[1397];
+  real_T Constant3_Value[276716];
 
   /* Expression: y{1}.Data
    * Referenced by: '<S1>/0% ABE Trajectory'
    */
-  double uABETrajectory_tableData[127];
+  real_T uABETrajectory_tableData[25156];
 
   /* Pooled Parameter (Mixed Expressions)
    * Referenced by:
@@ -87,73 +119,74 @@ typedef struct {
    *   '<S1>/1-D Lookup Table9'
    *   '<S1>/100% ABE Trajectory'
    */
-  double pooled2[127];
+  real_T pooled2[25156];
 
   /* Expression: y{2}.Data
    * Referenced by: '<S1>/1-D Lookup Table1'
    */
-  double uDLookupTable1_tableData[127];
+  real_T uDLookupTable1_tableData[25156];
 
   /* Expression: y{3}.Data
    * Referenced by: '<S1>/1-D Lookup Table2'
    */
-  double uDLookupTable2_tableData[127];
+  real_T uDLookupTable2_tableData[25156];
 
   /* Expression: y{4}.Data
    * Referenced by: '<S1>/1-D Lookup Table3'
    */
-  double uDLookupTable3_tableData[127];
+  real_T uDLookupTable3_tableData[25156];
 
   /* Expression: y{5}.Data
    * Referenced by: '<S1>/1-D Lookup Table4'
    */
-  double uDLookupTable4_tableData[127];
+  real_T uDLookupTable4_tableData[25156];
 
   /* Expression: y{6}.Data
    * Referenced by: '<S1>/1-D Lookup Table5'
    */
-  double uDLookupTable5_tableData[127];
+  real_T uDLookupTable5_tableData[25156];
 
   /* Expression: y{7}.Data
    * Referenced by: '<S1>/1-D Lookup Table8'
    */
-  double uDLookupTable8_tableData[127];
+  real_T uDLookupTable8_tableData[25156];
 
   /* Expression: y{8}.Data
    * Referenced by: '<S1>/1-D Lookup Table7'
    */
-  double uDLookupTable7_tableData[127];
+  real_T uDLookupTable7_tableData[25156];
 
   /* Expression: y{9}.Data
    * Referenced by: '<S1>/1-D Lookup Table6'
    */
-  double uDLookupTable6_tableData[127];
+  real_T uDLookupTable6_tableData[25156];
 
   /* Expression: y{10}.Data
    * Referenced by: '<S1>/1-D Lookup Table9'
    */
-  double uDLookupTable9_tableData[127];
+  real_T uDLookupTable9_tableData[25156];
 
   /* Expression: y{11}.Data
    * Referenced by: '<S1>/100% ABE Trajectory'
    */
-  double u00ABETrajectory_tableData[127];
-} ConstP;
+  real_T u00ABETrajectory_tableData[25156];
+} ConstP_codegen_model_T;
 
 /* External inputs (root inport signals with default storage) */
 typedef struct {
-  double Verticalvelocityinput;        /* '<Root>/Vertical velocity input' */
-  double Altitudeinput;                /* '<Root>/Altitude input' */
-} ExtU;
+  real_T Verticalvelocityinput;        /* '<Root>/Vertical velocity input' */
+  real_T Altitudeinput;                /* '<Root>/Altitude input' */
+} ExtU_codegen_model_T;
 
 /* External outputs (root outports fed by signals with default storage) */
 typedef struct {
-  double Airbrakesextoutput;           /* '<Root>/Air brakes ext output' */
-} ExtY;
+  real_T Airbrakesextoutput;           /* '<Root>/Air brakes ext output' */
+} ExtY_codegen_model_T;
 
 /* Real-time Model Data Structure */
-struct tag_RTM {
-  const char *errorStatus;
+struct tag_RTM_codegen_model_T {
+  const char_T *errorStatus;
+  RTWLogInfo *rtwLogInfo;
   RTWSolverInfo solverInfo;
 
   /*
@@ -162,33 +195,41 @@ struct tag_RTM {
    * the timing information for the model.
    */
   struct {
-    uint32_t clockTick0;
-    double stepSize0;
-    uint32_t clockTick1;
+    uint32_T clockTick0;
+    uint32_T clockTickH0;
+    time_T stepSize0;
+    uint32_T clockTick1;
+    uint32_T clockTickH1;
+    time_T tFinal;
     SimTimeStep simTimeStep;
-    double *t;
-    double tArray[2];
+    boolean_T stopRequestedFlag;
+    time_T *t;
+    time_T tArray[2];
   } Timing;
 };
 
-/* Block signals and states (default storage) */
-//extern DW rtDW;
-//
-///* External inputs (root inport signals with default storage) */
-//extern ExtU rtU;
-//
-///* External outputs (root outports fed by signals with default storage) */
-//extern ExtY rtY;
+/* Block signals (default storage) */
+extern B_codegen_model_T codegen_model_B;
+
+/* Block states (default storage) */
+extern DW_codegen_model_T codegen_model_DW;
+
+/* External inputs (root inport signals with default storage) */
+extern ExtU_codegen_model_T codegen_model_U;
+
+/* External outputs (root outports fed by signals with default storage) */
+extern ExtY_codegen_model_T codegen_model_Y;
 
 /* Constant parameters (default storage) */
-extern const ConstP rtConstP;
+extern const ConstP_codegen_model_T codegen_model_ConstP;
 
 /* Model entry point functions */
 extern void codegen_model_initialize(void);
 extern void codegen_model_step(void);
+extern void codegen_model_terminate(void);
 
 /* Real-time Model object */
-extern RT_MODEL *const rtM;
+extern RT_MODEL_codegen_model_T *const codegen_model_M;
 
 /*-
  * The generated code includes comments that allow you to trace directly
@@ -211,59 +252,51 @@ extern RT_MODEL *const rtM;
  * '<S4>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/Trajectory selector'
  * '<S5>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Anti-windup'
  * '<S6>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/D Gain'
- * '<S7>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/External Derivative'
- * '<S8>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter'
- * '<S9>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter ICs'
- * '<S10>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/I Gain'
- * '<S11>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain'
- * '<S12>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain Fdbk'
- * '<S13>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator'
- * '<S14>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator ICs'
- * '<S15>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Copy'
- * '<S16>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Gain'
- * '<S17>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/P Copy'
- * '<S18>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Parallel P Gain'
- * '<S19>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Reset Signal'
- * '<S20>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation'
- * '<S21>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation Fdbk'
- * '<S22>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum'
- * '<S23>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum Fdbk'
- * '<S24>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode'
- * '<S25>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode Sum'
- * '<S26>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Integral'
- * '<S27>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Ngain'
- * '<S28>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/postSat Signal'
- * '<S29>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/preSat Signal'
- * '<S30>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Anti-windup/Passthrough'
- * '<S31>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/D Gain/Internal Parameters'
- * '<S32>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/External Derivative/Error'
- * '<S33>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter/Disc. Forward Euler Filter'
- * '<S34>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter ICs/Internal IC - Filter'
- * '<S35>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/I Gain/Internal Parameters'
- * '<S36>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain/Passthrough'
- * '<S37>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain Fdbk/Disabled'
- * '<S38>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator/Discrete'
- * '<S39>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator ICs/Internal IC'
- * '<S40>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Copy/Disabled'
- * '<S41>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Gain/Internal Parameters'
- * '<S42>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/P Copy/Disabled'
- * '<S43>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Parallel P Gain/Internal Parameters'
- * '<S44>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Reset Signal/Disabled'
- * '<S45>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation/Enabled'
- * '<S46>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation Fdbk/Disabled'
- * '<S47>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum/Sum_PID'
- * '<S48>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum Fdbk/Disabled'
- * '<S49>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode/Disabled'
- * '<S50>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode Sum/Passthrough'
- * '<S51>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Integral/TsSignalSpecification'
- * '<S52>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Ngain/Passthrough'
- * '<S53>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/postSat Signal/Forward_Path'
- * '<S54>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/preSat Signal/Forward_Path'
+ * '<S7>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter'
+ * '<S8>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter ICs'
+ * '<S9>'   : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/I Gain'
+ * '<S10>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain'
+ * '<S11>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain Fdbk'
+ * '<S12>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator'
+ * '<S13>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator ICs'
+ * '<S14>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Copy'
+ * '<S15>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Gain'
+ * '<S16>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/P Copy'
+ * '<S17>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Parallel P Gain'
+ * '<S18>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Reset Signal'
+ * '<S19>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation'
+ * '<S20>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation Fdbk'
+ * '<S21>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum'
+ * '<S22>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum Fdbk'
+ * '<S23>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode'
+ * '<S24>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode Sum'
+ * '<S25>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Integral'
+ * '<S26>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Ngain'
+ * '<S27>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/postSat Signal'
+ * '<S28>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/preSat Signal'
+ * '<S29>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Anti-windup/Passthrough'
+ * '<S30>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/D Gain/Internal Parameters'
+ * '<S31>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter/Disc. Forward Euler Filter'
+ * '<S32>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Filter ICs/Internal IC - Filter'
+ * '<S33>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/I Gain/Internal Parameters'
+ * '<S34>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain/Passthrough'
+ * '<S35>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Ideal P Gain Fdbk/Disabled'
+ * '<S36>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator/Discrete'
+ * '<S37>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Integrator ICs/Internal IC'
+ * '<S38>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Copy/Disabled'
+ * '<S39>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/N Gain/Internal Parameters'
+ * '<S40>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/P Copy/Disabled'
+ * '<S41>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Parallel P Gain/Internal Parameters'
+ * '<S42>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Reset Signal/Disabled'
+ * '<S43>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation/Enabled'
+ * '<S44>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Saturation Fdbk/Disabled'
+ * '<S45>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum/Sum_PID'
+ * '<S46>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Sum Fdbk/Disabled'
+ * '<S47>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode/Disabled'
+ * '<S48>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tracking Mode Sum/Passthrough'
+ * '<S49>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Integral/TsSignalSpecification'
+ * '<S50>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/Tsamp - Ngain/Passthrough'
+ * '<S51>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/postSat Signal/Forward_Path'
+ * '<S52>'  : 'codegen_model/ABCS (No 3DoF model, for coding purposes)/PID Controller/preSat Signal/Forward_Path'
  */
-#endif                                 /* codegen_model_h_ */
-
-/*
- * File trailer for generated code.
- *
- * [EOF]
- */
+#endif                                 /* RTW_HEADER_codegen_model_h_ */

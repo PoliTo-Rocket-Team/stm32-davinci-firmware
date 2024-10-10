@@ -1,3 +1,6 @@
-../Core/Src/codegen_model.c:193:15:look1_binlx.constprop	4
-../Core/Src/codegen_model.c:252:6:codegen_model_step	19
-../Core/Src/codegen_model.c:578:6:codegen_model_initialize	1
+../Core/Src/codegen_model.c:45:6:BINARYSEARCH_real_T	5
+../Core/Src/codegen_model.c:77:6:LookUp_real_T_real_T	2
+../Core/Src/codegen_model.c:109:8:look1_binlxpw	4
+../Core/Src/codegen_model.c:168:6:codegen_model_step	19
+../Core/Src/codegen_model.c:556:6:codegen_model_initialize	1
+../Core/Src/codegen_model.c:638:6:codegen_model_terminate	1

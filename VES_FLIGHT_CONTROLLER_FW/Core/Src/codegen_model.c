@@ -1,133 +1,49 @@
 /*
+ * codegen_model.c
+ *
  * Academic License - for use in teaching, academic research, and meeting
  * course requirements at degree granting institutions only.  Not for
  * government, commercial, or other organizational use.
  *
- * File: codegen_model.c
+ * Code generation for model "codegen_model".
  *
- * Code generated for Simulink model 'codegen_model'.
+ * Model version              : 1.12
+ * Simulink Coder version : 23.2 (R2023b) 01-Aug-2023
+ * C source code generated on : Fri Oct 11 00:08:09 2024
  *
- * Model version                  : 1.11
- * Simulink Coder version         : 24.1 (R2024a) 19-Nov-2023
- * C/C++ source code generated on : Sat May 11 18:12:40 2024
- *
- * Target selection: ert.tlc
- * Embedded hardware selection: ARM Compatible->ARM Cortex-M
- * Code generation objectives:
- *    1. Execution efficiency
- *    2. RAM efficiency
+ * Target selection: grt.tlc
+ * Note: GRT includes extra infrastructure and instrumentation for prototyping
+ * Embedded hardware selection: Intel->x86-64 (Windows64)
+ * Code generation objectives: Unspecified
  * Validation result: Not run
  */
 
 #include "codegen_model.h"
 #include <math.h>
-#include <stdint.h>
-#include <stdbool.h>
-#include "math.h"
+#include "rtwtypes.h"
+#include <string.h>
+#include "codegen_model_private.h"
+#include "rt_nonfinite.h"
 
-/* Private macros used by the generated code to access rtModel */
-#ifndef rtmIsMajorTimeStep
-#define rtmIsMajorTimeStep(rtm)        (((rtm)->Timing.simTimeStep) == MAJOR_TIME_STEP)
-#endif
+/* Block signals (default storage) */
+B_codegen_model_T codegen_model_B;
 
-#ifndef rtmIsMinorTimeStep
-#define rtmIsMinorTimeStep(rtm)        (((rtm)->Timing.simTimeStep) == MINOR_TIME_STEP)
-#endif
-
-#ifndef rtmSetTPtr
-#define rtmSetTPtr(rtm, val)           ((rtm)->Timing.t = (val))
-#endif
-
-/* Block signals and states (default storage) */
-DW rtDW;
+/* Block states (default storage) */
+DW_codegen_model_T codegen_model_DW;
 
 /* External inputs (root inport signals with default storage) */
-extern ExtU rtU;
+ExtU_codegen_model_T codegen_model_U;
 
 /* External outputs (root outports fed by signals with default storage) */
-extern ExtY rtY;
+ExtY_codegen_model_T codegen_model_Y;
 
 /* Real-time model */
-static RT_MODEL rtM_;
-RT_MODEL *const rtM = &rtM_;
-static void BINARYSEARCH_double(uint32_t *piLeft, uint32_t *piRght, double u,
-  const double *pData, uint32_t iHi);
-static void LookUp_double_double(double *pY, const double *pYData, double u,
-  const double *pUData, uint32_t iHi);
-static double look1_binlx(double u0, const double bp0[], const double table[],
-  uint32_t maxIndex);
-//static double rtGetInf(void);
-//static float rtGetInfF(void);
-//static double rtGetMinusInf(void);
-//static float rtGetMinusInfF(void);
-extern double rtInf;
-extern double rtMinusInf;
-extern double rtNaN;
-extern float rtInfF;
-extern float rtMinusInfF;
-extern float rtNaNF;
-//static bool rtIsInf(double value);
-//static bool rtIsInfF(float value);
-//static bool rtIsNaN(double value);
-//static bool rtIsNaNF(float value);
-double rtNaN = -(double)NAN;
-double rtInf = (double)INFINITY;
-double rtMinusInf = -(double)INFINITY;
-float rtNaNF = -(float)NAN;
-float rtInfF = (float)INFINITY;
-float rtMinusInfF = -(float)INFINITY;
+static RT_MODEL_codegen_model_T codegen_model_M_;
+RT_MODEL_codegen_model_T *const codegen_model_M = &codegen_model_M_;
 
-/* Return rtInf needed by the generated code. */
-//static double rtGetInf(void)
-//{
-//  return rtInf;
-//}
-//
-///* Get rtInfF needed by the generated code. */
-//static float rtGetInfF(void)
-//{
-//  return rtInfF;
-//}
-//
-///* Return rtMinusInf needed by the generated code. */
-//static double rtGetMinusInf(void)
-//{
-//  return rtMinusInf;
-//}
-//
-///* Return rtMinusInfF needed by the generated code. */
-//static float rtGetMinusInfF(void)
-//{
-//  return rtMinusInfF;
-//}
-//
-///* Test if value is infinite */
-//static bool rtIsInf(double value)
-//{
-//  return (bool)((value==rtInf || value==rtMinusInf) ? 1U : 0U);
-//}
-//
-///* Test if single-precision value is infinite */
-//static bool rtIsInfF(float value)
-//{
-//  return (bool)(((value)==rtInfF || (value)==rtMinusInfF) ? 1U : 0U);
-//}
-//
-///* Test if value is not a number */
-//static bool rtIsNaN(double value)
-//{
-//  return (bool)(isnan(value) != 0);
-//}
-//
-///* Test if single-precision value is not a number */
-//static bool rtIsNaNF(float value)
-//{
-//  return (bool)(isnan(value) != 0);
-//}
-
-/* Lookup Binary Search Utility BINARYSEARCH_double */
-static void BINARYSEARCH_double(uint32_t *piLeft, uint32_t *piRght, double u,
-  const double *pData, uint32_t iHi)
+/* Lookup Binary Search Utility BINARYSEARCH_real_T */
+void BINARYSEARCH_real_T(uint32_T *piLeft, uint32_T *piRght, real_T u, const
+  real_T *pData, uint32_T iHi)
 {
   /* Find the location of current input value in the data table. */
   *piLeft = 0U;
@@ -139,7 +55,7 @@ static void BINARYSEARCH_double(uint32_t *piLeft, uint32_t *piRght, double u,
     /* Greater than or equal to the largest point in the table. */
     *piLeft = iHi;
   } else {
-    uint32_t i;
+    uint32_T i;
 
     /* Do a binary search. */
     while (( *piRght - *piLeft ) > 1U ) {
@@ -157,19 +73,19 @@ static void BINARYSEARCH_double(uint32_t *piLeft, uint32_t *piRght, double u,
   }
 }
 
-/* Lookup Utility LookUp_double_double */
-static void LookUp_double_double(double *pY, const double *pYData, double u,
-  const double *pUData, uint32_t iHi)
+/* Lookup Utility LookUp_real_T_real_T */
+void LookUp_real_T_real_T(real_T *pY, const real_T *pYData, real_T u, const
+  real_T *pUData, uint32_T iHi)
 {
-  uint32_t iLeft;
-  uint32_t iRght;
-  BINARYSEARCH_double( &(iLeft), &(iRght), u, pUData, iHi);
+  uint32_T iLeft;
+  uint32_T iRght;
+  BINARYSEARCH_real_T( &(iLeft), &(iRght), u, pUData, iHi);
 
   {
-    double lambda;
+    real_T lambda;
     if (pUData[iRght] > pUData[iLeft] ) {
-      double num;
-      double den;
+      real_T num;
+      real_T den;
       den = pUData[iRght];
       den -= pUData[iLeft];
       num = u;
@@ -180,8 +96,8 @@ static void LookUp_double_double(double *pY, const double *pYData, double u,
     }
 
     {
-      double yLeftCast;
-      double yRghtCast;
+      real_T yLeftCast;
+      real_T yRghtCast;
       yLeftCast = pYData[iLeft];
       yRghtCast = pYData[iRght];
       yLeftCast += lambda * ( yRghtCast - yLeftCast );
@@ -190,12 +106,12 @@ static void LookUp_double_double(double *pY, const double *pYData, double u,
   }
 }
 
-static double look1_binlx(double u0, const double bp0[], const double table[],
-  uint32_t maxIndex)
+real_T look1_binlxpw(real_T u0, const real_T bp0[], const real_T table[],
+                     uint32_T maxIndex)
 {
-  double frac;
-  double yL_0d0;
-  uint32_t iLeft;
+  real_T frac;
+  real_T yL_0d0;
+  uint32_T iLeft;
 
   /* Column-major Lookup 1-D
      Search method: 'binary'
@@ -216,8 +132,8 @@ static double look1_binlx(double u0, const double bp0[], const double table[],
     iLeft = 0U;
     frac = (u0 - bp0[0U]) / (bp0[1U] - bp0[0U]);
   } else if (u0 < bp0[maxIndex]) {
-    uint32_t bpIdx;
-    uint32_t iRght;
+    uint32_T bpIdx;
+    uint32_T iRght;
 
     /* Binary Search */
     bpIdx = maxIndex >> 1U;
@@ -242,7 +158,7 @@ static double look1_binlx(double u0, const double bp0[], const double table[],
   /* Column-major Interpolation 1-D
      Interpolation method: 'Linear point-slope'
      Use last breakpoint for index at or above upper limit: 'off'
-     Overflow mode: 'wrapping'
+     Overflow mode: 'portable wrapping'
    */
   yL_0d0 = table[iLeft];
   return (table[iLeft + 1U] - yL_0d0) * frac + yL_0d0;
@@ -252,133 +168,150 @@ static double look1_binlx(double u0, const double bp0[], const double table[],
 void codegen_model_step(void)
 {
   /* local block i/o variables */
-  double rtb_FilterCoefficient;
-  double rtb_IntegralGain;
-  double rtb_TmpSignalConversionAtSFunct[11];
-  const double *rtb_trajectory_vel_0;
-  double rtb_Add4;
-  double rtb_Clock1;
-  double rtb_Highesttrajectory;
-  double rtb_LookupTableDynamic;
-  double rtb_Lowesttrajectory;
-  double rtb_undhighesttrajectory;
-  double rtb_undlowesttrajectory;
-  int32_t i;
-  int32_t rtb_Add3;
-  bool limitedCache;
+  real_T rtb_FilterCoefficient;
+  real_T rtb_IntegralGain;
+  real_T rtb_TmpSignalConversionAtSFunct[11];
+  const real_T *rtb_trajectory_vel_0;
+  real_T difference;
+  real_T rtb_Clock1;
+  real_T rtb_Highesttrajectory;
+  real_T rtb_LookupTableDynamic;
+  real_T rtb_Lowesttrajectory;
+  real_T rtb_undhighesttrajectory;
+  real_T rtb_undlowesttrajectory;
+  int32_T i;
+  int32_T rtb_index;
+  boolean_T limitedCache;
 
   /* Clock: '<S1>/Clock' incorporates:
    *  Clock: '<S1>/Clock1'
    */
-  rtb_LookupTableDynamic = rtM->Timing.t[0];
+  rtb_LookupTableDynamic = codegen_model_M->Timing.t[0];
 
   /* Lookup_n-D: '<S1>/0% ABE Trajectory' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Lowesttrajectory = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uABETrajectory_tableData, 126U);
+  rtb_Lowesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uABETrajectory_tableData,
+    25155U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table1' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_undlowesttrajectory = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable1_tableData, 126U);
+  rtb_undlowesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable1_tableData,
+    25155U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table2' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable2_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable2_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add3'
    */
-  rtb_TmpSignalConversionAtSFunct[2] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[2] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table3' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable3_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable3_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add4'
    */
-  rtb_TmpSignalConversionAtSFunct[3] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[3] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table4' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable4_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable4_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add5'
    */
-  rtb_TmpSignalConversionAtSFunct[4] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[4] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table5' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable5_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable5_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add6'
    */
-  rtb_TmpSignalConversionAtSFunct[5] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[5] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table8' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable8_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable8_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add9'
    */
-  rtb_TmpSignalConversionAtSFunct[6] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[6] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table7' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable7_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable7_tableData,
+    25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
    *  MATLAB Function: '<S1>/Trajectory selector'
    *  Sum: '<S1>/Add8'
    */
-  rtb_TmpSignalConversionAtSFunct[7] = rtU.Altitudeinput - rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[7] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table6' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Clock1 = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.uDLookupTable6_tableData, 126U);
+  rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable6_tableData,
+    25155U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table9' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_undhighesttrajectory = look1_binlx(rtb_LookupTableDynamic,
-    rtConstP.pooled2, rtConstP.uDLookupTable9_tableData, 126U);
+  rtb_undhighesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable9_tableData,
+    25155U);
 
   /* Lookup_n-D: '<S1>/100% ABE Trajectory' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
-  rtb_Highesttrajectory = look1_binlx(rtb_LookupTableDynamic, rtConstP.pooled2,
-    rtConstP.u00ABETrajectory_tableData, 126U);
+  rtb_Highesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
+    codegen_model_ConstP.pooled2,
+    codegen_model_ConstP.u00ABETrajectory_tableData, 25155U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -389,30 +322,33 @@ void codegen_model_step(void)
    *  Sum: '<S1>/Add2'
    *  Sum: '<S1>/Add7'
    */
-  rtb_TmpSignalConversionAtSFunct[0] = rtU.Altitudeinput - rtb_Lowesttrajectory;
-  rtb_TmpSignalConversionAtSFunct[1] = rtU.Altitudeinput -
+  rtb_TmpSignalConversionAtSFunct[0] = codegen_model_U.Altitudeinput -
+    rtb_Lowesttrajectory;
+  rtb_TmpSignalConversionAtSFunct[1] = codegen_model_U.Altitudeinput -
     rtb_undlowesttrajectory;
-  rtb_TmpSignalConversionAtSFunct[8] = rtU.Altitudeinput - rtb_Clock1;
-  rtb_TmpSignalConversionAtSFunct[9] = rtU.Altitudeinput -
+  rtb_TmpSignalConversionAtSFunct[8] = codegen_model_U.Altitudeinput -
+    rtb_Clock1;
+  rtb_TmpSignalConversionAtSFunct[9] = codegen_model_U.Altitudeinput -
     rtb_undhighesttrajectory;
-  rtb_TmpSignalConversionAtSFunct[10] = rtU.Altitudeinput -
+  rtb_TmpSignalConversionAtSFunct[10] = codegen_model_U.Altitudeinput -
     rtb_Highesttrajectory;
 
   /* MATLAB Function: '<S1>/Trajectory selector' */
   rtb_Clock1 = (rtInf);
-  rtb_Add3 = 0;
+  rtb_index = 0;
   for (i = 0; i < 11; i++) {
-    rtb_Add4 = fabs(rtb_TmpSignalConversionAtSFunct[i]);
-    if (rtb_Add4 < rtb_Clock1) {
-      rtb_Clock1 = rtb_Add4;
-      rtb_Add3 = i + 1;
+    difference = fabs(rtb_TmpSignalConversionAtSFunct[i]);
+    if (difference < rtb_Clock1) {
+      rtb_Clock1 = difference;
+      rtb_index = i + 1;
     }
   }
 
   /* MATLAB Function: '<S1>/Selected trajectory to desired setpoint' incorporates:
    *  Constant: '<S1>/Constant3'
    */
-  rtb_trajectory_vel_0 = &rtConstP.Constant3_Value[rtb_Add3 * 127 + -127];
+  rtb_trajectory_vel_0 = &codegen_model_ConstP.Constant3_Value[rtb_index * 25156
+    + -25156];
 
   /* Clock: '<S1>/Clock1' */
   rtb_Clock1 = rtb_LookupTableDynamic;
@@ -421,37 +357,57 @@ void codegen_model_step(void)
    *  Constant: '<S1>/Constant'
    */
   /* Dynamic Look-Up Table Block: '<S1>/Lookup Table Dynamic'
-   * Input0  Data Type:  Floating Point double
-   * Input1  Data Type:  Floating Point double
-   * Input2  Data Type:  Floating Point double
-   * Output0 Data Type:  Floating Point double
+   * Input0  Data Type:  Floating Point real_T
+   * Input1  Data Type:  Floating Point real_T
+   * Input2  Data Type:  Floating Point real_T
+   * Output0 Data Type:  Floating Point real_T
    * Lookup Method: Linear_Endpoint
    *
    */
-  LookUp_double_double( &(rtb_LookupTableDynamic), &rtb_trajectory_vel_0[0],
-                       rtb_Clock1, rtConstP.pooled2, 126U);
+  LookUp_real_T_real_T( &(rtb_LookupTableDynamic), &rtb_trajectory_vel_0[0],
+                       rtb_Clock1, codegen_model_ConstP.pooled2, 25155U);
 
   /* Sum: '<S1>/Sum' incorporates:
    *  Inport: '<Root>/Vertical velocity input'
    */
-  rtb_LookupTableDynamic = rtU.Verticalvelocityinput - rtb_LookupTableDynamic;
+  codegen_model_B.Sum = codegen_model_U.Verticalvelocityinput -
+    rtb_LookupTableDynamic;
 
-  /* Gain: '<S41>/Filter Coefficient' incorporates:
-   *  DiscreteIntegrator: '<S33>/Filter'
-   *  Gain: '<S31>/Derivative Gain'
-   *  Sum: '<S33>/SumD'
+  /* Gain: '<S39>/Filter Coefficient' incorporates:
+   *  DiscreteIntegrator: '<S31>/Filter'
+   *  Gain: '<S30>/Derivative Gain'
+   *  Sum: '<S31>/SumD'
    */
-  rtb_FilterCoefficient = (9.8046696918563914 * rtb_LookupTableDynamic -
-    rtDW.Filter_DSTATE) * 50.551815401727268;
+  rtb_FilterCoefficient = (92.8732132811108 * codegen_model_B.Sum -
+    codegen_model_DW.Filter_DSTATE) * 138.62756104986786;
+
+  /* Sum: '<S45>/Sum' incorporates:
+   *  DiscreteIntegrator: '<S36>/Integrator'
+   *  Gain: '<S41>/Proportional Gain'
+   */
+  codegen_model_B.Saturation = (300.0 * codegen_model_B.Sum +
+    codegen_model_DW.Integrator_DSTATE) + rtb_FilterCoefficient;
+
+  /* Saturate: '<S43>/Saturation' */
+  if (codegen_model_B.Saturation > 1.0) {
+    /* Sum: '<S45>/Sum' incorporates:
+     *  Saturate: '<S43>/Saturation'
+     */
+    codegen_model_B.Saturation = 1.0;
+  } else if (codegen_model_B.Saturation < 0.0) {
+    /* Sum: '<S45>/Sum' incorporates:
+     *  Saturate: '<S43>/Saturation'
+     */
+    codegen_model_B.Saturation = 0.0;
+  }
+
+  /* End of Saturate: '<S43>/Saturation' */
 
   /* Switch: '<S1>/Switch1' incorporates:
-   *  Constant: '<S1>/Constant1'
    *  Inport: '<Root>/Altitude input'
    */
-  if (rtU.Altitudeinput >= 1500.0) {
+  if (codegen_model_U.Altitudeinput >= 2000.0) {
     /* Switch: '<S1>/Switch4' incorporates:
-     *  Constant: '<S1>/0% ABE'
-     *  Constant: '<S1>/100% ABE'
      *  Gain: '<S1>/High margin mult'
      *  Gain: '<S1>/Low margin mult'
      *  Sum: '<S1>/Sum1'
@@ -462,76 +418,72 @@ void codegen_model_step(void)
      *  Sum: '<S1>/Sum6'
      *  Switch: '<S1>/Switch2'
      */
-    if (rtU.Altitudeinput - ((rtb_Highesttrajectory - rtb_undhighesttrajectory) *
-         50.0 + rtb_Highesttrajectory) >= 0.0) {
-      rtb_Lowesttrajectory = 1.0;
-    } else if (rtU.Altitudeinput - (rtb_Lowesttrajectory -
+    if (codegen_model_U.Altitudeinput - ((rtb_Highesttrajectory -
+          rtb_undhighesttrajectory) * 50.0 + rtb_Highesttrajectory) >= 0.0) {
+      /* Switch: '<S1>/Switch1' incorporates:
+       *  Constant: '<S1>/100% ABE'
+       */
+      codegen_model_B.ABE = 1.0;
+    } else if (codegen_model_U.Altitudeinput - (rtb_Lowesttrajectory -
                 (rtb_undlowesttrajectory - rtb_Lowesttrajectory) * 25.0) >= 0.0)
     {
-      /* Sum: '<S47>/Sum' incorporates:
-       *  DiscreteIntegrator: '<S38>/Integrator'
-       *  Gain: '<S43>/Proportional Gain'
+      /* Switch: '<S1>/Switch1' incorporates:
+       *  Switch: '<S1>/Switch2'
        */
-      rtb_Lowesttrajectory = (18.439618771030755 * rtb_LookupTableDynamic +
-        rtDW.Integrator_DSTATE) + rtb_FilterCoefficient;
-
-      /* Saturate: '<S45>/Saturation' */
-      if (rtb_Lowesttrajectory > 1.0) {
-        /* Switch: '<S1>/Switch2' */
-        rtb_Lowesttrajectory = 1.0;
-      } else if (rtb_Lowesttrajectory < 0.0) {
-        /* Switch: '<S1>/Switch2' */
-        rtb_Lowesttrajectory = 0.0;
-      }
-
-      /* End of Saturate: '<S45>/Saturation' */
+      codegen_model_B.ABE = codegen_model_B.Saturation;
     } else {
-      rtb_Lowesttrajectory = 0.0;
+      /* Switch: '<S1>/Switch1' incorporates:
+       *  Constant: '<S1>/0% ABE'
+       *  Switch: '<S1>/Switch2'
+       */
+      codegen_model_B.ABE = 0.0;
     }
-
-    /* End of Switch: '<S1>/Switch4' */
   } else {
-    rtb_Lowesttrajectory = 0.0;
+    /* Switch: '<S1>/Switch1' incorporates:
+     *  Constant: '<S1>/Constant1'
+     *  Switch: '<S1>/Switch4'
+     */
+    codegen_model_B.ABE = 0.0;
   }
 
   /* End of Switch: '<S1>/Switch1' */
 
   /* RateLimiter: '<S1>/Rate Limiter' */
-  if (rtDW.LastMajorTime == (rtInf)) {
-    /* RateLimiter: '<S1>/Rate Limiter' */
-    rtDW.ABE = rtb_Lowesttrajectory;
-  } else {
-    rtb_undhighesttrajectory = rtM->Timing.t[0];
-    rtb_undlowesttrajectory = rtb_undhighesttrajectory - rtDW.LastMajorTime;
-    if (rtDW.LastMajorTime == rtb_undhighesttrajectory) {
-      if (rtDW.PrevLimited) {
-        /* RateLimiter: '<S1>/Rate Limiter' */
-        rtDW.ABE = rtDW.PrevY;
-      } else {
-        /* RateLimiter: '<S1>/Rate Limiter' */
-        rtDW.ABE = rtb_Lowesttrajectory;
+  if (!(codegen_model_DW.LastMajorTime == (rtInf))) {
+    rtb_undlowesttrajectory = codegen_model_M->Timing.t[0];
+    rtb_Lowesttrajectory = rtb_undlowesttrajectory -
+      codegen_model_DW.LastMajorTime;
+    if (codegen_model_DW.LastMajorTime == rtb_undlowesttrajectory) {
+      if (codegen_model_DW.PrevLimited) {
+        /* Switch: '<S1>/Switch1' incorporates:
+         *  RateLimiter: '<S1>/Rate Limiter'
+         */
+        codegen_model_B.ABE = codegen_model_DW.PrevY;
       }
     } else {
-      rtb_undhighesttrajectory = rtb_Lowesttrajectory - rtDW.PrevY;
-      if (rtb_undhighesttrajectory > rtb_undlowesttrajectory) {
-        /* RateLimiter: '<S1>/Rate Limiter' */
-        rtDW.ABE = rtDW.PrevY + rtb_undlowesttrajectory;
+      rtb_undhighesttrajectory = rtb_Lowesttrajectory * 1.85;
+      rtb_undlowesttrajectory = codegen_model_B.ABE - codegen_model_DW.PrevY;
+      if (rtb_undlowesttrajectory > rtb_undhighesttrajectory) {
+        /* Switch: '<S1>/Switch1' incorporates:
+         *  RateLimiter: '<S1>/Rate Limiter'
+         */
+        codegen_model_B.ABE = codegen_model_DW.PrevY + rtb_undhighesttrajectory;
         limitedCache = true;
       } else {
-        rtb_undlowesttrajectory = -rtb_undlowesttrajectory;
-        if (rtb_undhighesttrajectory < rtb_undlowesttrajectory) {
-          /* RateLimiter: '<S1>/Rate Limiter' */
-          rtDW.ABE = rtDW.PrevY + rtb_undlowesttrajectory;
+        rtb_Lowesttrajectory *= -1.85;
+        if (rtb_undlowesttrajectory < rtb_Lowesttrajectory) {
+          /* Switch: '<S1>/Switch1' incorporates:
+           *  RateLimiter: '<S1>/Rate Limiter'
+           */
+          codegen_model_B.ABE = codegen_model_DW.PrevY + rtb_Lowesttrajectory;
           limitedCache = true;
         } else {
-          /* RateLimiter: '<S1>/Rate Limiter' */
-          rtDW.ABE = rtb_Lowesttrajectory;
           limitedCache = false;
         }
       }
 
-      if (rtsiIsModeUpdateTimeStep(&rtM->solverInfo)) {
-        rtDW.PrevLimited = limitedCache;
+      if (rtsiIsModeUpdateTimeStep(&codegen_model_M->solverInfo)) {
+        codegen_model_DW.PrevLimited = limitedCache;
       }
     }
   }
@@ -539,29 +491,49 @@ void codegen_model_step(void)
   /* End of RateLimiter: '<S1>/Rate Limiter' */
 
   /* Outport: '<Root>/Air brakes ext output' */
-  rtY.Airbrakesextoutput = rtDW.ABE;
+  codegen_model_Y.Airbrakesextoutput = codegen_model_B.ABE;
 
-  /* Gain: '<S35>/Integral Gain' */
-  rtb_IntegralGain = 0.32557239105898234 * rtb_LookupTableDynamic;
+  /* Gain: '<S33>/Integral Gain' */
+  rtb_IntegralGain = codegen_model_B.Sum;
 
-  /* Update for DiscreteIntegrator: '<S38>/Integrator' */
-  rtDW.Integrator_DSTATE += 0.01 * rtb_IntegralGain;
+  /* Matfile logging */
+  rt_UpdateTXYLogVars(codegen_model_M->rtwLogInfo, (codegen_model_M->Timing.t));
 
-  /* Update for DiscreteIntegrator: '<S33>/Filter' */
-  rtDW.Filter_DSTATE += 0.01 * rtb_FilterCoefficient;
+  /* Update for DiscreteIntegrator: '<S36>/Integrator' */
+  codegen_model_DW.Integrator_DSTATE += 0.01 * rtb_IntegralGain;
+
+  /* Update for DiscreteIntegrator: '<S31>/Filter' */
+  codegen_model_DW.Filter_DSTATE += 0.01 * rtb_FilterCoefficient;
 
   /* Update for RateLimiter: '<S1>/Rate Limiter' */
-  rtDW.PrevY = rtDW.ABE;
-  rtDW.LastMajorTime = rtM->Timing.t[0];
+  codegen_model_DW.PrevY = codegen_model_B.ABE;
+  codegen_model_DW.LastMajorTime = codegen_model_M->Timing.t[0];
+
+  /* signal main to stop simulation */
+  {                                    /* Sample time: [0.0s, 0.0s] */
+    if ((rtmGetTFinal(codegen_model_M)!=-1) &&
+        !((rtmGetTFinal(codegen_model_M)-codegen_model_M->Timing.t[0]) >
+          codegen_model_M->Timing.t[0] * (DBL_EPSILON))) {
+      rtmSetErrorStatus(codegen_model_M, "Simulation finished");
+    }
+  }
 
   /* Update absolute time for base rate */
   /* The "clockTick0" counts the number of times the code of this task has
    * been executed. The absolute time is the multiplication of "clockTick0"
    * and "Timing.stepSize0". Size of "clockTick0" ensures timer will not
    * overflow during the application lifespan selected.
+   * Timer of this task consists of two 32 bit unsigned integers.
+   * The two integers represent the low bits Timing.clockTick0 and the high bits
+   * Timing.clockTickH0. When the low bit overflows to 0, the high bits increment.
    */
-  rtM->Timing.t[0] =
-    ((double)(++rtM->Timing.clockTick0)) * rtM->Timing.stepSize0;
+  if (!(++codegen_model_M->Timing.clockTick0)) {
+    ++codegen_model_M->Timing.clockTickH0;
+  }
+
+  codegen_model_M->Timing.t[0] = codegen_model_M->Timing.clockTick0 *
+    codegen_model_M->Timing.stepSize0 + codegen_model_M->Timing.clockTickH0 *
+    codegen_model_M->Timing.stepSize0 * 4294967296.0;
 
   {
     /* Update absolute timer for sample time: [0.01s, 0.0s] */
@@ -569,8 +541,14 @@ void codegen_model_step(void)
      * been executed. The resolution of this integer timer is 0.01, which is the step size
      * of the task. Size of "clockTick1" ensures timer will not overflow during the
      * application lifespan selected.
+     * Timer of this task consists of two 32 bit unsigned integers.
+     * The two integers represent the low bits Timing.clockTick1 and the high bits
+     * Timing.clockTickH1. When the low bit overflows to 0, the high bits increment.
      */
-    rtM->Timing.clockTick1++;
+    codegen_model_M->Timing.clockTick1++;
+    if (!codegen_model_M->Timing.clockTick1) {
+      codegen_model_M->Timing.clockTickH1++;
+    }
   }
 }
 
@@ -578,28 +556,86 @@ void codegen_model_step(void)
 void codegen_model_initialize(void)
 {
   /* Registration code */
+
+  /* initialize non-finites */
+  rt_InitInfAndNaN(sizeof(real_T));
+
+  /* initialize real-time model */
+  (void) memset((void *)codegen_model_M, 0,
+                sizeof(RT_MODEL_codegen_model_T));
+
   {
     /* Setup solver object */
-    rtsiSetSimTimeStepPtr(&rtM->solverInfo, &rtM->Timing.simTimeStep);
-    rtsiSetTPtr(&rtM->solverInfo, &rtmGetTPtr(rtM));
-    rtsiSetStepSizePtr(&rtM->solverInfo, &rtM->Timing.stepSize0);
-    rtsiSetErrorStatusPtr(&rtM->solverInfo, (&rtmGetErrorStatus(rtM)));
-    rtsiSetRTModelPtr(&rtM->solverInfo, rtM);
+    rtsiSetSimTimeStepPtr(&codegen_model_M->solverInfo,
+                          &codegen_model_M->Timing.simTimeStep);
+    rtsiSetTPtr(&codegen_model_M->solverInfo, &rtmGetTPtr(codegen_model_M));
+    rtsiSetStepSizePtr(&codegen_model_M->solverInfo,
+                       &codegen_model_M->Timing.stepSize0);
+    rtsiSetErrorStatusPtr(&codegen_model_M->solverInfo, (&rtmGetErrorStatus
+      (codegen_model_M)));
+    rtsiSetRTModelPtr(&codegen_model_M->solverInfo, codegen_model_M);
   }
 
-  rtsiSetSimTimeStep(&rtM->solverInfo, MAJOR_TIME_STEP);
-  rtsiSetIsMinorTimeStepWithModeChange(&rtM->solverInfo, false);
-  rtsiSetIsContModeFrozen(&rtM->solverInfo, false);
-  rtsiSetSolverName(&rtM->solverInfo,"FixedStepDiscrete");
-  rtmSetTPtr(rtM, &rtM->Timing.tArray[0]);
-  rtM->Timing.stepSize0 = 0.01;
+  rtsiSetSimTimeStep(&codegen_model_M->solverInfo, MAJOR_TIME_STEP);
+  rtsiSetSolverName(&codegen_model_M->solverInfo,"FixedStepDiscrete");
+  rtmSetTPtr(codegen_model_M, &codegen_model_M->Timing.tArray[0]);
+  rtmSetTFinal(codegen_model_M, 30.0);
+  codegen_model_M->Timing.stepSize0 = 0.01;
+
+  /* Setup for data logging */
+  {
+    static RTWLogInfo rt_DataLoggingInfo;
+    rt_DataLoggingInfo.loggingInterval = (NULL);
+    codegen_model_M->rtwLogInfo = &rt_DataLoggingInfo;
+  }
+
+  /* Setup for data logging */
+  {
+    rtliSetLogXSignalInfo(codegen_model_M->rtwLogInfo, (NULL));
+    rtliSetLogXSignalPtrs(codegen_model_M->rtwLogInfo, (NULL));
+    rtliSetLogT(codegen_model_M->rtwLogInfo, "tout");
+    rtliSetLogX(codegen_model_M->rtwLogInfo, "");
+    rtliSetLogXFinal(codegen_model_M->rtwLogInfo, "");
+    rtliSetLogVarNameModifier(codegen_model_M->rtwLogInfo, "rt_");
+    rtliSetLogFormat(codegen_model_M->rtwLogInfo, 4);
+    rtliSetLogMaxRows(codegen_model_M->rtwLogInfo, 0);
+    rtliSetLogDecimation(codegen_model_M->rtwLogInfo, 1);
+    rtliSetLogY(codegen_model_M->rtwLogInfo, "");
+    rtliSetLogYSignalInfo(codegen_model_M->rtwLogInfo, (NULL));
+    rtliSetLogYSignalPtrs(codegen_model_M->rtwLogInfo, (NULL));
+  }
+
+  /* block I/O */
+  (void) memset(((void *) &codegen_model_B), 0,
+                sizeof(B_codegen_model_T));
+
+  /* states (dwork) */
+  (void) memset((void *)&codegen_model_DW, 0,
+                sizeof(DW_codegen_model_T));
+
+  /* external inputs */
+  (void)memset(&codegen_model_U, 0, sizeof(ExtU_codegen_model_T));
+
+  /* external outputs */
+  codegen_model_Y.Airbrakesextoutput = 0.0;
+
+  /* Matfile logging */
+  rt_StartDataLoggingWithStartTime(codegen_model_M->rtwLogInfo, 0.0,
+    rtmGetTFinal(codegen_model_M), codegen_model_M->Timing.stepSize0,
+    (&rtmGetErrorStatus(codegen_model_M)));
+
+  /* InitializeConditions for DiscreteIntegrator: '<S36>/Integrator' */
+  codegen_model_DW.Integrator_DSTATE = 0.0;
+
+  /* InitializeConditions for DiscreteIntegrator: '<S31>/Filter' */
+  codegen_model_DW.Filter_DSTATE = 0.0;
 
   /* InitializeConditions for RateLimiter: '<S1>/Rate Limiter' */
-  rtDW.LastMajorTime = (rtInf);
+  codegen_model_DW.LastMajorTime = (rtInf);
 }
 
-/*
- * File trailer for generated code.
- *
- * [EOF]
- */
+/* Model terminate function */
+void codegen_model_terminate(void)
+{
+  /* (no terminate code required) */
+}

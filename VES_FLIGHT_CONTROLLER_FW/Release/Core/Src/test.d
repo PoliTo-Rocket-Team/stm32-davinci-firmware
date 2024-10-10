@@ -36,13 +36,18 @@ Core/Src/test.o: ../Core/Src/test.c ../Core/Inc/test.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_ll_usb.h \
  ../Drivers/STM32F4xx_HAL_Driver/Inc/stm32f4xx_hal_pcd_ex.h \
  ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h \
- ../Core/Inc/main.h ../Core/Inc/codegen_model.h \
- ../Core/Inc/rtw_continuous.h ../Core/Inc/rtwtypes.h \
- ../Core/Inc/rtw_solver.h ../Core/Inc/z_flash_W25QXXX.h \
- ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h ../Core/Inc/servo.h \
- ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h ../Core/Inc/lsm6dso32_reg.h \
- ../Core/Inc/pitot_sensor.h ../Core/Inc/flight_control.h \
- ../Core/Inc/utilities.h ../Core/Inc/buzzer.h
+ ../Core/Inc/main.h ../Core/Inc/codegen_model.h ../Core/Inc/rtwtypes.h \
+ ../Core/Inc/tmwtypes.h ../Core/Inc/rtw_continuous.h \
+ ../Core/Inc/rtw_solver.h ../Core/Inc/rt_logging.h \
+ ../Core/Inc/builtin_typeid_types.h ../Core/Inc/multiword_types.h \
+ ../Core/Inc/rt_mxclassid.h ../Core/Inc/rtw_matlogging.h \
+ ../Core/Inc/sl_types_def.h ../Core/Inc/codegen_model_types.h \
+ ../Core/Inc/rt_nonfinite.h ../Core/Inc/rtGetInf.h \
+ ../Core/Inc/z_flash_W25QXXX.h ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h \
+ ../Core/Inc/servo.h ../Core/Inc/bmp3.h ../Core/Inc/bmp3_defs.h \
+ ../Core/Inc/lsm6dso32_reg.h ../Core/Inc/pitot_sensor.h \
+ ../Core/Inc/flight_control.h ../Core/Inc/utilities.h \
+ ../Core/Inc/buzzer.h
 ../Core/Inc/test.h:
 ../Core/Inc/W25Q128.h:
 ../Drivers/CMSIS/Device/ST/STM32F4xx/Include/stm32f4xx.h:
@@ -83,9 +88,19 @@ Core/Src/test.o: ../Core/Src/test.c ../Core/Inc/test.h \
 ../Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2/cmsis_os2.h:
 ../Core/Inc/main.h:
 ../Core/Inc/codegen_model.h:
-../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtwtypes.h:
+../Core/Inc/tmwtypes.h:
+../Core/Inc/rtw_continuous.h:
 ../Core/Inc/rtw_solver.h:
+../Core/Inc/rt_logging.h:
+../Core/Inc/builtin_typeid_types.h:
+../Core/Inc/multiword_types.h:
+../Core/Inc/rt_mxclassid.h:
+../Core/Inc/rtw_matlogging.h:
+../Core/Inc/sl_types_def.h:
+../Core/Inc/codegen_model_types.h:
+../Core/Inc/rt_nonfinite.h:
+../Core/Inc/rtGetInf.h:
 ../Core/Inc/z_flash_W25QXXX.h:
 ../Core/Inc/FLIGHT_PARAMETERS_CONFIG.h:
 ../Core/Inc/servo.h:

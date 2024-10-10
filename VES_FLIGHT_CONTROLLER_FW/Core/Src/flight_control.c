@@ -129,7 +129,11 @@ void check_Burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
 		servo_t *servo;
 		servo= get_servo();
-		servo_moveto_deg(servo, 0); //APRI
+		bool* flag_airbrakes;
+		flag_airbrakes = get_flag_air();
+		//servo_moveto_deg(servo, 0); //APRI
+		codegen_model_initialize();
+		flag_airbrakes = true;
 		change_state_to(phase, ABCSDEPLOYED, EV_ABCSDEPLOYED);//ABCSDEPLOYED
 	}
 
@@ -152,8 +156,10 @@ void check_AbcsDeployed_phase(flight_fsm_t *phase, estimation_output_t MotionDat
 	if(phase->memory[0] > APOGEE_SAFETY_COUNTER){
 		if ((osKernelGetTickCount() - phase->thrust_trigger_time) < MIN_TICK_COUNTS_BETWEEN_BURNING_APOGEE) {
 					change_state_to(phase,TOUCHDOWN, EV_TOUCHDOWN);
+					codegen_model_terminate();
 		} else {
 					change_state_to(phase,DROGUE, EV_DROGUE);
+					codegen_model_terminate();
 		}
 	}
 }

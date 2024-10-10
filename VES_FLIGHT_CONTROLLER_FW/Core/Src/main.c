@@ -174,15 +174,14 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
 /* USER CODE BEGIN PV */
 /* SENSORS AND DEVICES DECLARATION */
 W25Q128_t flash = {0};
-ExtU rtU = {0};
-ExtY rtY = {0};
 
 struct bmp3_dev bmp390_1 = {0}, bmp390_2 = {0};
 stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
 
-pitot_sensor_t pitot = {0};
-uint8_t output[4000] = {0};
+//pitot_sensor_t pitot = {0};
+//uint8_t output[4000] = {0};
 servo_t servo = {0};
+bool flag_airbrakes = false;
 bool acknowledge_flag = false;
 
 buzzer_t buzzer = {0};
@@ -289,10 +288,7 @@ sensor_data measurements_buffer[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 //uint8_t *measurements_buffer_2;
 sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 
-uint8_t DnLc_00[512];
-uint8_t DnLc_01[512];
-
-uint8_t contatore_debug = 0; //DEBUG ABBOT
+//uint8_t contatore_debug = 0; //DEBUG ABBOT
 
 //float dt = 0.01; // Time step
 //// Kalman filter parameters
@@ -307,8 +303,8 @@ uint8_t contatore_debug = 0; //DEBUG ABBOT
 //	                  {0.0, 1.0, 0.0},
 //	                  {0.0, 0.0, 1.0} }; // Initial state covariance
 //
-////float F[3][3] = { {1.0, dt, 0.5 * dt * dt},
-////	                  {0.0, 1.0, dt},
+//float F[3][3] = { {1.0, 0,01, 0.5 * 0,01 * 0,01},
+//	                  {0.0, 1.0, 0,1},
 //	                  {0.0, 0.0, 1.0} }; // State transition model
 //
 //float C[2][3] = { {1.0, 0.0, 0.0}, // Measurement matrix for altitude
@@ -327,8 +323,8 @@ float_t velocity;
 float_t Pressure_1;
 float_t Pressure_2;
 
-uint8_t send_buffer[35]="Hello There!bro";
-uint8_t receive_buffer[2];
+//uint8_t send_buffer[35]="Hello There!bro";
+uint8_t receive_buffer[2] ={0,0};
 int16_t Lora_result;
 uint8_t all_reg_rx[8], all_reg_tx[8];
 
@@ -477,6 +473,10 @@ servo_t* get_servo(){
 	return &servo;
 }
 
+bool* get_flag_air(){
+	return &flag_airbrakes;
+}
+
 float_t readAltitude(float_t seaLevelPa,float_t currentPa) {
   float_t altitude;
 
@@ -532,9 +532,6 @@ int main(void)
   MX_ADC1_Init();
   MX_TIM4_Init();
   /* USER CODE BEGIN 2 */
-  	codegen_model_initialize();
-  	rtU.Altitudeinput = (double)0.0;
-  	rtU.Verticalvelocityinput = (double)0.0;
   	size_t i = 0;
 	int8_t result = 0;
 //	int8_t result2 = 0;
@@ -613,20 +610,16 @@ int main(void)
 	servo_init(&servo);
 	servo_rawmove(&servo, 2000);
 
-//	note_t notes[20] = {
-//			C1, G1, C2, E2,
-//			D1, A1, D2, F2,
-//			E1, B1, E2, G2,
-//			F1, C2, F2, A2,
-//			G1, D2, G2, B2
-//	};
+	note_t notes[20] = {
+			C1, G1, C2
+	};
 
-//	for (size_t i = 0; i < 20; i++) {
+	for (size_t i = 0; i < 3; i++) {
 //		LED_ON(Status_LED_GPIO_Port, Status_LED_Pin);
-//		beepBuzzer(&buzzer, 250, 10, notes[i]);
+		beepBuzzer(&buzzer, 250, 10, notes[i]);
 //		LED_OFF(Status_LED_GPIO_Port, Status_LED_Pin);
-//		HAL_Delay(75);
-//	}
+		HAL_Delay(75);
+	}
 //
 //  	HAL_Delay(1000);
 //
@@ -658,14 +651,10 @@ int main(void)
 //	memcpy(&pressure, buf + 28, sizeof(float_t));
 
 //  	HAL_Delay(1000);
-
 //  	servo_moveto_deg(&servo,180); //chiudere
-//
 //  	HAL_Delay(1000);
-//////
-//  	servo_moveto_deg(&servo, 0); //aprie AZIONE DA FARE DURANTE LA MACCHINA A STATI ABBOT
+ // 	servo_moveto_deg(&servo, 0); //aprie AZIONE DA FARE DURANTE LA MACCHINA A STATI ABBOT
 
-//  	Flash_Write(0,(uint8_t*)"lopi",4);
 
 
 
@@ -773,19 +762,12 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
+	  if (flag_airbrakes) {
+	          codegen_model_step();
+	          flag_airbrakes = false; // Reset flag after execution
+	      }
 
-	  rtU.Altitudeinput += 10.0;
-	  rtU.Verticalvelocityinput = 200.0;
-    /* USER CODE END WHILE */
 
-    /* USER CODE BEGIN 3 */
-	  codegen_model_step();
-
-	  output[i++] = rtY.Airbrakesextoutput * 100;
-
-	  servo_moveto_deg(&servo, rtY.Airbrakesextoutput * 60);
-
-	  HAL_Delay(10);
   }
   /* USER CODE END 3 */
 }
@@ -1282,22 +1264,7 @@ void FlashWrite(void *argument)
   /* Infinite loop */
 	for(;;)
 	{
-#if 0
-		if (write_done == 0)
-		{
-			for(int ii = 0; ii < sizeof(DnLc_00); ii++)
-			{
-				DnLc_00[ii] = ii;
-			}
-			for(int ii = 0; ii < sizeof(DnLc_01); ii++)
-			{
-				DnLc_01[ii] = 0x55;
-			}
-			Flash_Write_float(0, DnLc_00, sizeof(DnLc_00));
-			Flash_Write_float(sizeof(DnLc_00), DnLc_01, sizeof(DnLc_01));
-			write_done = 1;
-		}
-#else
+
 		if (num_meas_stored_in_buffer > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1))
 		{
 			Set_Flash_Flag(true);
@@ -1342,7 +1309,6 @@ void FlashWrite(void *argument)
 
 		}
 //		} while ((num_meas_stored > (FLASH_NUMBER_OF_STORE_EACH_TIME - 1)));
-#endif
 		tick += FLASH_WRITE_TASK_PERIOD;
 		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
 		if (uxHighWaterMark)
@@ -1447,78 +1413,78 @@ void SensorsRead(void *argument)
 			altitude_2 = readAltitude(Pressure_2,data_2.pressure);
 			data_2_2.altitude = altitude_2;
 
-//		    /* Kalman filter implementation */
+		    /* Kalman filter implementation */
 //		    float z_IMU = data_1.acc_z; // Assuming acceleration z from IMU
 //		    float z_BARO = data_1_2.altitude; // Assuming altitude from barometer
 //
 //		    // Prediction step
-//		        float xp_pred[3] = {
+//		    float xp_pred[3] = {
 //		            F[0][0] * xp[0] + F[0][1] * xp[1] + F[0][2] * xp[2], // Altitude
 //		            F[1][0] * xp[0] + F[1][1] * xp[1] + F[1][2] * xp[2], // Velocity
 //		            F[2][0] * xp[0] + F[2][1] * xp[1] + F[2][2] * xp[2]  // Acceleration
-//		        };
+//		    };
 //
 //		        // Update covariance
-//		        float P_pred[3][3];
-//		        for (int i = 0; i < 3; i++) {
-//		            for (int j = 0; j < 3; j++) {
-//		                P_pred[i][j] = F[i][0] * P[0][j] + F[i][1] * P[1][j] + F[i][2] * P[2][j] + Q[i][j];
-//		            }
-//		        }
+//		    float P_pred[3][3];
+//		    for (int i = 0; i < 3; i++) {
+//		       for (int j = 0; j < 3; j++) {
+//		          P_pred[i][j] = F[i][0] * P[0][j] + F[i][1] * P[1][j] + F[i][2] * P[2][j] + Q[i][j];
+//		       }
+//		    }
 //
 //		        // Measurement update
-//		        float z[2] = {z_BARO, z_IMU}; // Measurement vector
-//		        float y[2] = {z[0] - (C[0][0] * xp_pred[0] + C[0][1] * xp_pred[1] + C[0][2] * xp_pred[2]),
+//		    float z[2] = {z_BARO, z_IMU}; // Measurement vector
+//		    float y[2] = {z[0] - (C[0][0] * xp_pred[0] + C[0][1] * xp_pred[1] + C[0][2] * xp_pred[2]),
 //		                      z[1] - (C[1][0] * xp_pred[0] + C[1][1] * xp_pred[1] + C[1][2] * xp_pred[2])}; // Measurement residual
 //
 //		        // Compute the innovation covariance S
-//		        float S[2][2];
-//		        for (int i = 0; i < 2; i++) {
-//		            for (int j = 0; j < 2; j++) {
-//		                S[i][j] = C[i][0] * P_pred[0][j] + C[i][1] * P_pred[1][j] + C[i][2] * P_pred[2][j] + R[i][j];
-//		            }
-//		        }
+//		    float S[2][2];
+//		    for (int i = 0; i < 2; i++) {
+//		       for (int j = 0; j < 2; j++) {
+//		          S[i][j] = C[i][0] * P_pred[0][j] + C[i][1] * P_pred[1][j] + C[i][2] * P_pred[2][j] + R[i][j];
+//		       }
+//		    }
 //
 //		        // Calculate the Kalman gain K
-//		        float K[3][2]; // Kalman gain
-//		        float S_inv[2][2]; // Inverse of S
+//		    float K[3][2]; // Kalman gain
+//		    float S_inv[2][2]; // Inverse of S
 //		        // Calculate determinant
-//		        float det = S[0][0] * S[1][1] - S[0][1] * S[1][0];
+//		    float det = S[0][0] * S[1][1] - S[0][1] * S[1][0];
 //		        // Calculate the inverse of S
-//		        S_inv[0][0] = S[1][1] / det;
-//		        S_inv[0][1] = -S[0][1] / det;
-//		        S_inv[1][0] = -S[1][0] / det;
-//		        S_inv[1][1] = S[0][0] / det;
+//		    S_inv[0][0] = S[1][1] / det;
+//		    S_inv[0][1] = -S[0][1] / det;
+//		    S_inv[1][0] = -S[1][0] / det;
+//		    S_inv[1][1] = S[0][0] / det;
 //
 //		        // Calculate Kalman gain K
-//		        for (int i = 0; i < 3; i++) {
-//		            for (int j = 0; j < 2; j++) {
-//		                K[i][j] = 0.0;
-//		                for (int k = 0; k < 3; k++) {
-//		                    K[i][j] += P_pred[i][k] * C[j][k];
-//		                }
-//		                for (int k = 0; k < 2; k++) {
-//		                    K[i][j] *= S_inv[j][k];
-//		                }
-//		            }
-//		        }
+//		    for (int i = 0; i < 3; i++) {
+//		       for (int j = 0; j < 2; j++) {
+//		           K[i][j] = 0.0;
+//		           for (int k = 0; k < 3; k++) {
+//		              K[i][j] += P_pred[i][k] * C[j][k];
+//		           }
+//		           for (int k = 0; k < 2; k++) {
+//		              K[i][j] *= S_inv[j][k];
+//		           }
+//		       }
+//		    }
 //
 //		        // Update state estimate
-//		        for (int i = 0; i < 3; i++) {
-//		            xp[i] = xp_pred[i] + K[i][0] * y[0] + K[i][1] * y[1];
-//		        }
+//		    for (int i = 0; i < 3; i++) {
+//		       xp[i] = xp_pred[i] + K[i][0] * y[0] + K[i][1] * y[1];
+//		     }
 //
 //		        // Update covariance
-//		        float P_updated[3][3];
-//		        for (int i = 0; i < 3; i++) {
-//		            for (int j = 0; j < 3; j++) {
-//		                P_updated[i][j] = P_pred[i][j];
-//		                for (int k = 0; k < 2; k++) {
-//		                    P_updated[i][j] -= K[i][k] * C[k][j] * P_pred[i][j];
-//		                }
-//		            }
+//		     float P_updated[3][3];
+//		     for (int i = 0; i < 3; i++) {
+//		        for (int j = 0; j < 3; j++) {
+//		           P_updated[i][j] = P_pred[i][j];
+//		           for (int k = 0; k < 2; k++) {
+//		              P_updated[i][j] -= K[i][k] * C[k][j] * P_pred[i][j];
+//		           }
 //		        }
-//		        memcpy(P, P_updated, sizeof(P)); // Update the covariance matrix
+//		     }
+//		     memcpy(P, P_updated, sizeof(P)); // Update the covariance matrix
 
 
 
@@ -1562,8 +1528,12 @@ void SensorsRead(void *argument)
 			size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
 			size_t offset_2 = num_meas_stored_in_buffer * sizeof(sensor_data_2);
 
-			memcpy((uint8_t*)measurements_buffer + offset, &data_2, sizeof(sensor_data));
-			memcpy((uint8_t*)measurements_buffer_2 + offset_2, &data_2_2, sizeof(sensor_data_2));
+			memcpy((uint8_t*)measurements_buffer + offset, &data_1, sizeof(sensor_data));
+			memcpy((uint8_t*)measurements_buffer_2 + offset_2, &data_1_2, sizeof(sensor_data_2));
+
+//			if(flag_airbrakes){
+//				codegen_model_step();
+//			}
 
 			if (data_1_2.altitude > 0)
 			{
@@ -1610,10 +1580,12 @@ void CommunicationBoard(void *argument)
 	tick = osKernelGetTickCount();
 	Lora_Package package;
 	uint8_t array[45];
-	float test[11];
+	uint8_t result;
 	  /* Infinite loop */
 	for(;;)
 	{
+		receive_buffer[0] = 0;
+		receive_buffer[1] = 0;
 		package.carattere = 'D';
 	    package.acc_x = acceleration_mg_1[0];
 	    package.acc_y = acceleration_mg_1[1];
@@ -1654,7 +1626,7 @@ void CommunicationBoard(void *argument)
 
 	    memcpy((uint8_t*)array, &package, sizeof(Lora_Package));
 	    //memcpy((float*)test, &package+1, sizeof(Lora_Package));
-	    //acknowledge_flag =true;
+//	    acknowledge_flag =true;
 	    if(acknowledge_flag){
 	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
 	    	if (tx_status != 1) {
@@ -1666,11 +1638,12 @@ void CommunicationBoard(void *argument)
 	    else{
 	    	array[0] ='C';
 	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
-	    	if (tx_status != 1) {
+//	    	E220_transmit_payload(&LoraTX,"merda", 5);
+	    	if (tx_status == 1) {
 	    		printf("Transmission failed with status: %d\n", tx_status);
 	    	}
 
-	    	//osDelay(500);
+	    	osDelay(500);
 	    }
 
 		E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer));
@@ -1678,7 +1651,11 @@ void CommunicationBoard(void *argument)
 			acknowledge_flag = true;
 		}
 		if(acknowledge_flag && receive_buffer[0] == 'F' && receive_buffer[1] < 65 ){
-			E220_write_register(&LoraTX,0x4,receive_buffer[1]);
+			E220_write_register(&LoraTX,REG2,receive_buffer[1]);
+			E220_write_register(&LoraRX,REG2,receive_buffer[1]);
+			result = E220_read_register(&LoraTX,REG2);
+			result = E220_read_register(&LoraRX,REG2);
+
 		}
 
 		tick += COMMUNICATION_BOARD_TASK_PERIOD;
