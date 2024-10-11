@@ -127,9 +127,9 @@ void check_Burning_phase(flight_fsm_t *phase, estimation_output_t MotionData) {
 	  }
 
 	if (phase->memory[0] > COASTING_SAFETY_COUNTER) {
-		servo_t *servo;
-		servo= get_servo();
-		servo_moveto_deg(servo, 0); //APRI
+//		servo_t *servo;
+//		servo= get_servo();
+//		servo_moveto_deg(servo, 0); //APRI
 		change_state_to(phase, ABCSDEPLOYED, EV_ABCSDEPLOYED);//ABCSDEPLOYED
 	}
 

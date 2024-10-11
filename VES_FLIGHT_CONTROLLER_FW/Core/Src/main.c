@@ -322,6 +322,7 @@ uint8_t contatore_debug = 0; //DEBUG ABBOT
 
 float_t altitude;
 float_t altitude_2;
+float_t prev_altitude = 0.0;
 bool first_measure = true;
 float_t velocity;
 float_t Pressure_1;
@@ -1556,6 +1557,11 @@ void SensorsRead(void *argument)
 					break;
 			}
 
+
+			data_1_2.velocity=(altitude - prev_altitude)*100;
+			velocity = data_1_2.velocity;
+			prev_altitude = altitude;
+
 			/* computing offset of the buffer and storing the data to the buffer */
 
 
@@ -1610,7 +1616,7 @@ void CommunicationBoard(void *argument)
 	tick = osKernelGetTickCount();
 	Lora_Package package;
 	uint8_t array[45];
-	float test[11];
+//	float test[11];
 	  /* Infinite loop */
 	for(;;)
 	{
@@ -1654,7 +1660,7 @@ void CommunicationBoard(void *argument)
 
 	    memcpy((uint8_t*)array, &package, sizeof(Lora_Package));
 	    //memcpy((float*)test, &package+1, sizeof(Lora_Package));
-	    //acknowledge_flag =true;
+	    acknowledge_flag =true;
 	    if(acknowledge_flag){
 	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
 	    	if (tx_status != 1) {
@@ -1670,7 +1676,7 @@ void CommunicationBoard(void *argument)
 	    		printf("Transmission failed with status: %d\n", tx_status);
 	    	}
 
-	    	//osDelay(500);
+	    	osDelay(500);
 	    }
 
 		E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer));

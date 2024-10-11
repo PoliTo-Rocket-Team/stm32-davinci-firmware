@@ -63,6 +63,7 @@
 "./Middlewares/Third_Party/FreeRTOS/Source/tasks.o"
 "./Middlewares/Third_Party/FreeRTOS/Source/timers.o"
 "./Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F/port.o"
+"./Middlewares/Third_Party/FreeRTOS/Source/portable/MemMang/heap_4.o"
 "./USB_DEVICE/App/usb_device.o"
 "./USB_DEVICE/App/usbd_desc.o"
 "./USB_DEVICE/App/usbd_storage_if.o"

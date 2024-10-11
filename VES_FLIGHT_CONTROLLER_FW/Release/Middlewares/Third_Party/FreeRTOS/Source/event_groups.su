@@ -1,4 +1,5 @@
 ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c:93:21:xEventGroupCreateStatic	16	static,ignoring_inline_asm
+../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c:145:21:xEventGroupCreate	16	static
 ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c:311:13:xEventGroupWaitBits	32	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c:461:13:xEventGroupClearBits	16	static,ignoring_inline_asm
 ../Middlewares/Third_Party/FreeRTOS/Source/event_groups.c:665:6:vEventGroupClearBitsCallback	0	static
