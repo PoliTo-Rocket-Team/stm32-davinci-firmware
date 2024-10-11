@@ -9,7 +9,7 @@
  *
  * Model version              : 1.12
  * Simulink Coder version : 23.2 (R2023b) 01-Aug-2023
- * C source code generated on : Fri Oct 11 00:08:09 2024
+ * C source code generated on : Fri Oct 11 02:16:48 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -193,21 +193,21 @@ void codegen_model_step(void)
    */
   rtb_Lowesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uABETrajectory_tableData,
-    25155U);
+    252U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table1' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
   rtb_undlowesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable1_tableData,
-    25155U);
+    252U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table2' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable2_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -222,7 +222,7 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable3_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -237,7 +237,7 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable4_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -252,7 +252,7 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable5_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -267,7 +267,7 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable8_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -282,7 +282,7 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable7_tableData,
-    25155U);
+    252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -297,21 +297,21 @@ void codegen_model_step(void)
    */
   rtb_Clock1 = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable6_tableData,
-    25155U);
+    252U);
 
   /* Lookup_n-D: '<S1>/1-D Lookup Table9' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
   rtb_undhighesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2, codegen_model_ConstP.uDLookupTable9_tableData,
-    25155U);
+    252U);
 
   /* Lookup_n-D: '<S1>/100% ABE Trajectory' incorporates:
    *  S-Function (sfix_look1_dyn): '<S1>/Lookup Table Dynamic'
    */
   rtb_Highesttrajectory = look1_binlxpw(rtb_LookupTableDynamic,
     codegen_model_ConstP.pooled2,
-    codegen_model_ConstP.u00ABETrajectory_tableData, 25155U);
+    codegen_model_ConstP.u00ABETrajectory_tableData, 252U);
 
   /* SignalConversion generated from: '<S4>/ SFunction ' incorporates:
    *  Inport: '<Root>/Altitude input'
@@ -347,8 +347,8 @@ void codegen_model_step(void)
   /* MATLAB Function: '<S1>/Selected trajectory to desired setpoint' incorporates:
    *  Constant: '<S1>/Constant3'
    */
-  rtb_trajectory_vel_0 = &codegen_model_ConstP.Constant3_Value[rtb_index * 25156
-    + -25156];
+  rtb_trajectory_vel_0 = &codegen_model_ConstP.Constant3_Value[rtb_index * 253 +
+    -253];
 
   /* Clock: '<S1>/Clock1' */
   rtb_Clock1 = rtb_LookupTableDynamic;
@@ -365,7 +365,7 @@ void codegen_model_step(void)
    *
    */
   LookUp_real_T_real_T( &(rtb_LookupTableDynamic), &rtb_trajectory_vel_0[0],
-                       rtb_Clock1, codegen_model_ConstP.pooled2, 25155U);
+                       rtb_Clock1, codegen_model_ConstP.pooled2, 252U);
 
   /* Sum: '<S1>/Sum' incorporates:
    *  Inport: '<Root>/Vertical velocity input'

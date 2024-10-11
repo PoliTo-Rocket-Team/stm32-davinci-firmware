@@ -61,8 +61,8 @@ all:
 main-build: W25Q128_STM32F411_READ.elf secondary-outputs
 
 # Tool invocations
-W25Q128_STM32F411_READ.elf W25Q128_STM32F411_READ.map: $(OBJS) $(USER_OBJS) C:\Users\fabate\Documents\VES-firmware\W25Q128_STM32F411_READ\EL_linker.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "W25Q128_STM32F411_READ.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\fabate\Documents\VES-firmware\W25Q128_STM32F411_READ\EL_linker.ld" --specs=nosys.specs -Wl,-Map="W25Q128_STM32F411_READ.map" -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+W25Q128_STM32F411_READ.elf W25Q128_STM32F411_READ.map: $(OBJS) $(USER_OBJS) C:\Users\fabate\Downloads\stm32-davinci-firmware\W25Q128_STM32F411_READ\EL_linker.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "W25Q128_STM32F411_READ.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\fabate\Downloads\stm32-davinci-firmware\W25Q128_STM32F411_READ\EL_linker.ld" --specs=nosys.specs -Wl,-Map="W25Q128_STM32F411_READ.map" -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

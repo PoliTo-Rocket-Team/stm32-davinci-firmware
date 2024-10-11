@@ -1,9 +1,9 @@
 ../Core/Src/flight_control.c:16:12:trigger_event	4
 ../Core/Src/flight_control.c:74:6:check_Calibrating_phase	2
-../Core/Src/flight_control.c:220:7:change_state_to	1
+../Core/Src/flight_control.c:224:7:change_state_to	1
 ../Core/Src/flight_control.c:98:6:check_Ready_phase	4
 ../Core/Src/flight_control.c:118:6:check_Burning_phase	4
 ../Core/Src/flight_control.c:142:6:check_AbcsDeployed_phase	5
-../Core/Src/flight_control.c:168:6:check_Drogue_phase	4
-../Core/Src/flight_control.c:186:6:check_Main_phase	4
+../Core/Src/flight_control.c:172:6:check_Drogue_phase	4
+../Core/Src/flight_control.c:190:6:check_Main_phase	4
 ../Core/Src/flight_control.c:34:6:check_flight_phase	7

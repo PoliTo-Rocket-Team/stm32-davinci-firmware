@@ -70,8 +70,8 @@ all: main-build
 main-build: VES_FLIGHT_CONTROLLER_FW.elf secondary-outputs
 
 # Tool invocations
-VES_FLIGHT_CONTROLLER_FW.elf VES_FLIGHT_CONTROLLER_FW.map: $(OBJS) $(USER_OBJS) C:\Users\fabate\Documents\VES-firmware\VES_FLIGHT_CONTROLLER_FW\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
-	arm-none-eabi-gcc -o "VES_FLIGHT_CONTROLLER_FW.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\fabate\Documents\VES-firmware\VES_FLIGHT_CONTROLLER_FW\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VES_FLIGHT_CONTROLLER_FW.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
+VES_FLIGHT_CONTROLLER_FW.elf VES_FLIGHT_CONTROLLER_FW.map: $(OBJS) $(USER_OBJS) C:\Users\fabate\Downloads\stm32-davinci-firmware\VES_FLIGHT_CONTROLLER_FW\STM32F411RETX_FLASH.ld makefile objects.list $(OPTIONAL_TOOL_DEPS)
+	arm-none-eabi-gcc -o "VES_FLIGHT_CONTROLLER_FW.elf" @"objects.list" $(USER_OBJS) $(LIBS) -mcpu=cortex-m4 -T"C:\Users\fabate\Downloads\stm32-davinci-firmware\VES_FLIGHT_CONTROLLER_FW\STM32F411RETX_FLASH.ld" --specs=nosys.specs -Wl,-Map="VES_FLIGHT_CONTROLLER_FW.map" -Wl,--gc-sections -static --specs=nano.specs -mfpu=fpv4-sp-d16 -mfloat-abi=hard -mthumb -Wl,--start-group -lc -lm -Wl,--end-group
 	@echo 'Finished building target: $@'
 	@echo ' '
 

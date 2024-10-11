@@ -170,6 +170,12 @@ const osThreadAttr_t SystemHealthCheckTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
 };
+osThreadId_t ModelStepCheckTaskHandle;
+const osThreadAttr_t ModelStepCheckTask_attributes = {
+		.name = "ModelStepCheckTask",
+		.stack_size = 128*10,
+		.priority = (osPriority_t) osPriorityNormal,
+};
 #endif
 /* USER CODE BEGIN PV */
 /* SENSORS AND DEVICES DECLARATION */
@@ -181,7 +187,7 @@ stmdev_ctx_t imu_1 = {0}, imu_2 = {0};
 //pitot_sensor_t pitot = {0};
 //uint8_t output[4000] = {0};
 servo_t servo = {0};
-bool flag_airbrakes = false;
+uint8_t flag_airbrakes = 0;
 bool acknowledge_flag = false;
 
 buzzer_t buzzer = {0};
@@ -318,6 +324,7 @@ sensor_data_2 measurements_buffer_2[FLASH_NUMBER_OF_STORE_EACH_TIME * 2];
 
 float_t altitude;
 float_t altitude_2;
+float_t prev_altitude;
 bool first_measure = true;
 float_t velocity;
 float_t Pressure_1;
@@ -348,6 +355,7 @@ void SensorsRead(void *argument);
 void CommunicationBoard(void *argument);
 void FlightFSM(void *argument);
 void SystemHealthCheck(void *argument);
+void ModelStepCheck(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -473,7 +481,7 @@ servo_t* get_servo(){
 	return &servo;
 }
 
-bool* get_flag_air(){
+uint8_t* get_flag_air(){
 	return &flag_airbrakes;
 }
 
@@ -745,6 +753,7 @@ int main(void)
   /* creation of SystemHealthCheckTask */
   SystemHealthCheckTaskHandle = osThreadNew(SystemHealthCheck, NULL, &SystemHealthCheckTask_attributes);
 
+  ModelStepCheckTaskHandle = osThreadNew(ModelStepCheck, NULL, &ModelStepCheckTask_attributes);
   /* USER CODE BEGIN RTOS_THREADS */
 //  /* add threads, ... */
   /* USER CODE END RTOS_THREADS */
@@ -762,10 +771,7 @@ int main(void)
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if (flag_airbrakes) {
-	          codegen_model_step();
-	          flag_airbrakes = false; // Reset flag after execution
-	      }
+
 
 
   }
@@ -1523,6 +1529,8 @@ void SensorsRead(void *argument)
 			}
 
 			/* computing offset of the buffer and storing the data to the buffer */
+			data_1_2.velocity=(altitude - prev_altitude)*0,01;
+			velocity = data_1_2.velocity;
 
 
 			size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
@@ -1747,6 +1755,46 @@ void SystemHealthCheck(void *argument)
 		osDelayUntil(tick);
 	}
   /* USER CODE END SystemHealthCheck */
+}
+
+/* USER CODE BEGIN ModelStepCheck */
+/**
+* @brief Function implementing the ModelStepCheck thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END ModelStepCheck */
+void ModelStepCheck(void *argument)
+{
+  /* USER CODE BEGIN ModelStepCheck */
+	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+
+	uint32_t tick;
+
+	tick = osKernelGetTickCount();
+	/* Infinite loop */
+	for(;;)
+	{
+		if(flag_airbrakes == 1){
+			codegen_model_step();
+			codegen_model_U.Verticalvelocityinput = velocity;
+			codegen_model_U.Altitudeinput = altitude;
+			codegen_model_Y.Airbrakesextoutput = codegen_model_B.ABE;
+			servo_moveto_deg((servo_t*)&servo,(float)180*sizeof(codegen_model_Y.Airbrakesextoutput));
+		}
+		else if(flag_airbrakes >= 2){
+			vTaskDelete(NULL);
+		}
+
+		tick += MODEL_STEP_CHECK_TASK_PERIOD;
+		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+		if (uxHighWaterMark)
+		{
+			__asm("nop");
+		}
+		osDelayUntil(tick);
+	}
+	/* USER CODE END ModelStepCheck */
 }
 
 /**

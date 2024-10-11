@@ -9,7 +9,7 @@
  *
  * Model version              : 1.12
  * Simulink Coder version : 23.2 (R2023b) 01-Aug-2023
- * C source code generated on : Fri Oct 11 00:08:09 2024
+ * C source code generated on : Fri Oct 11 02:16:48 2024
  *
  * Target selection: grt.tlc
  * Note: GRT includes extra infrastructure and instrumentation for prototyping
@@ -97,12 +97,12 @@ typedef struct {
   /* Expression: dy_mat
    * Referenced by: '<S1>/Constant3'
    */
-  real_T Constant3_Value[276716];
+  real_T Constant3_Value[2783];
 
   /* Expression: y{1}.Data
    * Referenced by: '<S1>/0% ABE Trajectory'
    */
-  real_T uABETrajectory_tableData[25156];
+  real_T uABETrajectory_tableData[253];
 
   /* Pooled Parameter (Mixed Expressions)
    * Referenced by:
@@ -119,57 +119,57 @@ typedef struct {
    *   '<S1>/1-D Lookup Table9'
    *   '<S1>/100% ABE Trajectory'
    */
-  real_T pooled2[25156];
+  real_T pooled2[253];
 
   /* Expression: y{2}.Data
    * Referenced by: '<S1>/1-D Lookup Table1'
    */
-  real_T uDLookupTable1_tableData[25156];
+  real_T uDLookupTable1_tableData[253];
 
   /* Expression: y{3}.Data
    * Referenced by: '<S1>/1-D Lookup Table2'
    */
-  real_T uDLookupTable2_tableData[25156];
+  real_T uDLookupTable2_tableData[253];
 
   /* Expression: y{4}.Data
    * Referenced by: '<S1>/1-D Lookup Table3'
    */
-  real_T uDLookupTable3_tableData[25156];
+  real_T uDLookupTable3_tableData[253];
 
   /* Expression: y{5}.Data
    * Referenced by: '<S1>/1-D Lookup Table4'
    */
-  real_T uDLookupTable4_tableData[25156];
+  real_T uDLookupTable4_tableData[253];
 
   /* Expression: y{6}.Data
    * Referenced by: '<S1>/1-D Lookup Table5'
    */
-  real_T uDLookupTable5_tableData[25156];
+  real_T uDLookupTable5_tableData[253];
 
   /* Expression: y{7}.Data
    * Referenced by: '<S1>/1-D Lookup Table8'
    */
-  real_T uDLookupTable8_tableData[25156];
+  real_T uDLookupTable8_tableData[253];
 
   /* Expression: y{8}.Data
    * Referenced by: '<S1>/1-D Lookup Table7'
    */
-  real_T uDLookupTable7_tableData[25156];
+  real_T uDLookupTable7_tableData[253];
 
   /* Expression: y{9}.Data
    * Referenced by: '<S1>/1-D Lookup Table6'
    */
-  real_T uDLookupTable6_tableData[25156];
+  real_T uDLookupTable6_tableData[253];
 
   /* Expression: y{10}.Data
    * Referenced by: '<S1>/1-D Lookup Table9'
    */
-  real_T uDLookupTable9_tableData[25156];
+  real_T uDLookupTable9_tableData[253];
 
   /* Expression: y{11}.Data
    * Referenced by: '<S1>/100% ABE Trajectory'
    */
-  real_T u00ABETrajectory_tableData[25156];
+  real_T u00ABETrajectory_tableData[253];
 } ConstP_codegen_model_T;
 
 /* External inputs (root inport signals with default storage) */

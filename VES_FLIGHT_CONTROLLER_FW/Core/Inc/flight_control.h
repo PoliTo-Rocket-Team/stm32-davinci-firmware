@@ -84,7 +84,7 @@ osStatus_t trigger_event(events_trigger ev, bool event_unique);
 void check_Calibrating_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData,linear_acceleration_t acc_data, linear_acceleration_t gyro_data);
 void check_Ready_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
 void check_Burning_phase(flight_fsm_t *fsm_state, estimation_output_t MotionData);
-void check_Coasting_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
+void check_AbcsDeployed_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 void check_Drogue_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 void check_Main_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData);
 void check_Touchdown_phase(flight_fsm_t *fsm_state,estimation_output_t MotionData, linear_acceleration_t acc_data);
