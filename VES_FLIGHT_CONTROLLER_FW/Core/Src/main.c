@@ -149,13 +149,13 @@ const osThreadAttr_t SensorsReadTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
-/* Definitions for COMBoardTask */
-osThreadId_t COMBoardTaskHandle;
-const osThreadAttr_t COMBoardTask_attributes = {
-  .name = "COMBoardTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
-};
+///* Definitions for COMBoardTask */
+//osThreadId_t COMBoardTaskHandle;
+//const osThreadAttr_t COMBoardTask_attributes = {
+//  .name = "COMBoardTask",
+//  .stack_size = 128 * 4,
+//  .priority = (osPriority_t) osPriorityNormal,
+//};
 /* Definitions for FlightFSMTask */
 osThreadId_t FlightFSMTaskHandle;
 const osThreadAttr_t FlightFSMTask_attributes = {
@@ -191,22 +191,6 @@ uint8_t flag_airbrakes = 0;
 bool acknowledge_flag = false;
 
 buzzer_t buzzer = {0};
-uint32_t flash_addr1 = FLASH_START_ADDRESS;
-uint32_t flash_addr2 = FLASH_START_ADDRESS +(uint32_t)32;
-uint32_t flash_addr3 = FLASH_START_ADDRESS +(uint32_t)44;
-uint32_t flash_addr4 = FLASH_START_ADDRESS +(uint32_t)76;
-uint32_t flash_addr5 = FLASH_START_ADDRESS +(uint32_t)88;
-uint32_t flash_addr6 = FLASH_START_ADDRESS +(uint32_t)120;
-uint32_t flash_addr7 = FLASH_START_ADDRESS +(uint32_t)132;
-uint32_t flash_addr8 = FLASH_START_ADDRESS +(uint32_t)164;
-uint32_t flash_addr9 = FLASH_START_ADDRESS +(uint32_t)176;
-uint32_t flash_addr10 = FLASH_START_ADDRESS +(uint32_t)208;
-uint32_t flash_addr11 = FLASH_START_ADDRESS +(uint32_t)220;
-uint32_t flash_addr12 = FLASH_START_ADDRESS +(uint32_t)252;
-uint32_t flash_addr13 = FLASH_START_ADDRESS +(uint32_t)264;
-uint32_t flash_addr14 = FLASH_START_ADDRESS +(uint32_t)296;
-uint32_t flash_addr15 = FLASH_START_ADDRESS +(uint32_t)308;
-uint32_t flash_addr16 = FLASH_START_ADDRESS +(uint32_t)340;
 
 
 /* DECLARATION AND DEFINITION OF THE GLOBAL VARIABLES FOR THE FLIGHT */
@@ -331,11 +315,11 @@ float_t Pressure_1;
 float_t Pressure_2;
 
 //uint8_t send_buffer[35]="Hello There!bro";
-uint8_t receive_buffer[2] ={0,0};
-int16_t Lora_result;
-uint8_t all_reg_rx[8], all_reg_tx[8];
-
-struct LoRa_Handler LoraTX={0},LoraRX={0};
+//uint8_t receive_buffer[2] ={0,0};
+//int16_t Lora_result;
+//uint8_t all_reg_rx[8], all_reg_tx[8];
+//
+//struct LoRa_Handler LoraTX={0},LoraRX={0};
 
 /* USER CODE END PV */
 
@@ -352,7 +336,7 @@ static void MX_TIM4_Init(void);
 void Startup(void *argument);
 void FlashWrite(void *argument);
 void SensorsRead(void *argument);
-void CommunicationBoard(void *argument);
+//void CommunicationBoard(void *argument);
 void FlightFSM(void *argument);
 void SystemHealthCheck(void *argument);
 void ModelStepCheck(void *argument);
@@ -574,24 +558,24 @@ int main(void)
 //	if (result == 0)	LED_OFF(DEBUG_LED_FLASH_GPIO_Port, DEBUG_LED_FLASH_Pin);
 //  	uint8_t angle = 0;
 
-    LoraTX.uart_handler=&huart1;
-    LoraTX.M_GPIO_PORT=GPIOA;
-    LoraTX.AUX_GPIO_PORT=GPIOA;
-    LoraTX.M0_PIN=GPIO_PIN_2;
-    LoraTX.M1_PIN=GPIO_PIN_3;
-    LoraTX.MAUX_PIN=GPIO_PIN_8;
-//
-    LoraRX.uart_handler=&huart1;
-    LoraRX.M_GPIO_PORT=GPIOA;
-    LoraRX.AUX_GPIO_PORT=GPIOA;
-    LoraRX.M0_PIN=GPIO_PIN_2;
-    LoraRX.M1_PIN=GPIO_PIN_3;
-    LoraRX.MAUX_PIN=GPIO_PIN_8;
+//    LoraTX.uart_handler=&huart1;
+//    LoraTX.M_GPIO_PORT=GPIOA;
+//    LoraTX.AUX_GPIO_PORT=GPIOA;
+//    LoraTX.M0_PIN=GPIO_PIN_2;
+//    LoraTX.M1_PIN=GPIO_PIN_3;
+//    LoraTX.MAUX_PIN=GPIO_PIN_8;
+////
+//    LoraRX.uart_handler=&huart1;
+//    LoraRX.M_GPIO_PORT=GPIOA;
+//    LoraRX.AUX_GPIO_PORT=GPIOA;
+//    LoraRX.M0_PIN=GPIO_PIN_2;
+//    LoraRX.M1_PIN=GPIO_PIN_3;
+//    LoraRX.MAUX_PIN=GPIO_PIN_8;
 
 
 
-    while (E220_enter_config_mode(&LoraTX)!=1);
-    while (E220_enter_config_mode(&LoraRX)!=1);
+//    while (E220_enter_config_mode(&LoraTX)!=1);
+//    while (E220_enter_config_mode(&LoraRX)!=1);
 //    E220_reset(&LoraRX);
 //    E220_reset(&LoraTX);
 //    E220_set_packetsize_32k(&LoraTX);
@@ -602,9 +586,9 @@ int main(void)
 //    Lora_result=E220_read_register_all(&LoraRX,all_reg_rx);
 
 
-    E220_enter_normal_mode(&LoraRX);
-    E220_enter_normal_mode(&LoraTX);
-    E220_read_register(&LoraTX,REG1);
+//    E220_enter_normal_mode(&LoraRX);
+//    E220_enter_normal_mode(&LoraTX);
+//    E220_read_register(&LoraTX,REG1);
 
 
 	flight_state.flight_state = flight_phase;
@@ -745,7 +729,7 @@ int main(void)
   SensorsReadTaskHandle = osThreadNew(SensorsRead, NULL, &SensorsReadTask_attributes);
 
   /* creation of COMBoardTask */
-  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
+//  COMBoardTaskHandle = osThreadNew(CommunicationBoard, NULL, &COMBoardTask_attributes);
 
   /* creation of FlightFSMTask */
   FlightFSMTaskHandle = osThreadNew(FlightFSM, NULL, &FlightFSMTask_attributes);
@@ -1527,11 +1511,12 @@ void SensorsRead(void *argument)
 				case INVALID:
 					break;
 			}
-
-			/* computing offset of the buffer and storing the data to the buffer */
-			data_1_2.velocity=(altitude - prev_altitude)*0,01;
+			data_1_2.velocity=(altitude - prev_altitude)*100;
 			velocity = data_1_2.velocity;
 
+			prev_altitude = altitude;
+
+			/* computing offset of the buffer and storing the data to the buffer */
 
 			size_t offset = num_meas_stored_in_buffer * sizeof(sensor_data);
 			size_t offset_2 = num_meas_stored_in_buffer * sizeof(sensor_data_2);
@@ -1570,112 +1555,112 @@ void SensorsRead(void *argument)
 	}
   /* USER CODE END SensorsRead */
 }
-
-/* USER CODE BEGIN Header_CommunicationBoard */
-/**
-* @brief Function implementing the COMBoardTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_CommunicationBoard */
-void CommunicationBoard(void *argument)
-{
-  /* USER CODE BEGIN CommunicationBoard */
-	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-
-	uint32_t tick;
-
-	tick = osKernelGetTickCount();
-	Lora_Package package;
-	uint8_t array[45];
-	uint8_t result;
-	  /* Infinite loop */
-	for(;;)
-	{
-		receive_buffer[0] = 0;
-		receive_buffer[1] = 0;
-		package.carattere = 'D';
-	    package.acc_x = acceleration_mg_1[0];
-	    package.acc_y = acceleration_mg_1[1];
-	    package.acc_z = acceleration_mg_1[2];
-	    package.dps_x = angular_rate_mdps_1[0];
-	    package.dps_y = angular_rate_mdps_1[1];
-	    package.dps_z = angular_rate_mdps_1[2];
-	    package.temperature = barometer_data_1.temperature;
-	    package.pressure = barometer_data_1.pressure;
-	    package.altitude =  altitude;
-	    package.velocity = 0;
-	    switch (flight_state.flight_state){
-			case INVALID:
-				package.phase = 0.0;
-				break;
-			case CALIBRATING:
-				package.phase = 1.0;
-				break;
-			case READY:
-				package.phase = 2.0;
-				break;
-			case BURNING:
-				package.phase = 3.0;
-				break;
-			case ABCSDEPLOYED:
-				package.phase = 4.0;
-				break;
-			case DROGUE:
-				package.phase = 5.0;
-				break;
-			case MAIN:
-				package.phase = 6.0;
-				break;
-			case TOUCHDOWN:
-				package.phase = 7.0;
-				break;
-	    }
-
-	    memcpy((uint8_t*)array, &package, sizeof(Lora_Package));
-	    //memcpy((float*)test, &package+1, sizeof(Lora_Package));
-//	    acknowledge_flag =true;
-	    if(acknowledge_flag){
-	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
-	    	if (tx_status != 1) {
-	    		printf("Transmission failed with status: %d\n", tx_status);
-	    	}
-
-	    	osDelay(500);
-	    }
-	    else{
-	    	array[0] ='C';
-	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
-//	    	E220_transmit_payload(&LoraTX,"merda", 5);
-	    	if (tx_status == 1) {
-	    		printf("Transmission failed with status: %d\n", tx_status);
-	    	}
-
-	    	osDelay(500);
-	    }
-
-		E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer));
-		if(!acknowledge_flag && receive_buffer[0] == 'C'){
-			acknowledge_flag = true;
-		}
-		if(acknowledge_flag && receive_buffer[0] == 'F' && receive_buffer[1] < 65 ){
-			E220_write_register(&LoraTX,REG2,receive_buffer[1]);
-			E220_write_register(&LoraRX,REG2,receive_buffer[1]);
-			result = E220_read_register(&LoraTX,REG2);
-			result = E220_read_register(&LoraRX,REG2);
-
-		}
-
-		tick += COMMUNICATION_BOARD_TASK_PERIOD;
-		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
-		if (uxHighWaterMark)
-		{
-			__asm("nop");
-		}
-		osDelayUntil(tick);
-	}
-  /* USER CODE END CommunicationBoard */
-}
+//
+///* USER CODE BEGIN Header_CommunicationBoard */
+///**
+//* @brief Function implementing the COMBoardTask thread.
+//* @param argument: Not used
+//* @retval None
+//*/
+///* USER CODE END Header_CommunicationBoard */
+//void CommunicationBoard(void *argument)
+//{
+//  /* USER CODE BEGIN CommunicationBoard */
+//	UBaseType_t uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+//
+//	uint32_t tick;
+//
+//	tick = osKernelGetTickCount();
+//	Lora_Package package;
+//	uint8_t array[45];
+//	uint8_t result;
+//	  /* Infinite loop */
+//	for(;;)
+//	{
+//		receive_buffer[0] = 0;
+//		receive_buffer[1] = 0;
+//		package.carattere = 'D';
+//	    package.acc_x = acceleration_mg_1[0];
+//	    package.acc_y = acceleration_mg_1[1];
+//	    package.acc_z = acceleration_mg_1[2];
+//	    package.dps_x = angular_rate_mdps_1[0];
+//	    package.dps_y = angular_rate_mdps_1[1];
+//	    package.dps_z = angular_rate_mdps_1[2];
+//	    package.temperature = barometer_data_1.temperature;
+//	    package.pressure = barometer_data_1.pressure;
+//	    package.altitude =  altitude;
+//	    package.velocity = 0;
+//	    switch (flight_state.flight_state){
+//			case INVALID:
+//				package.phase = 0.0;
+//				break;
+//			case CALIBRATING:
+//				package.phase = 1.0;
+//				break;
+//			case READY:
+//				package.phase = 2.0;
+//				break;
+//			case BURNING:
+//				package.phase = 3.0;
+//				break;
+//			case ABCSDEPLOYED:
+//				package.phase = 4.0;
+//				break;
+//			case DROGUE:
+//				package.phase = 5.0;
+//				break;
+//			case MAIN:
+//				package.phase = 6.0;
+//				break;
+//			case TOUCHDOWN:
+//				package.phase = 7.0;
+//				break;
+//	    }
+//
+//	    memcpy((uint8_t*)array, &package, sizeof(Lora_Package));
+//	    //memcpy((float*)test, &package+1, sizeof(Lora_Package));
+////	    acknowledge_flag =true;
+//	    if(acknowledge_flag){
+//	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
+//	    	if (tx_status != 1) {
+//	    		printf("Transmission failed with status: %d\n", tx_status);
+//	    	}
+//
+//	    	osDelay(500);
+//	    }
+//	    else{
+//	    	array[0] ='C';
+//	    	int tx_status = E220_transmit_payload(&LoraTX,array, 45);
+////	    	E220_transmit_payload(&LoraTX,"merda", 5);
+//	    	if (tx_status == 1) {
+//	    		printf("Transmission failed with status: %d\n", tx_status);
+//	    	}
+//
+//	    	osDelay(500);
+//	    }
+//
+//		E220_receive_payload(&LoraRX,receive_buffer,sizeof(receive_buffer));
+//		if(!acknowledge_flag && receive_buffer[0] == 'C'){
+//			acknowledge_flag = true;
+//		}
+//		if(acknowledge_flag && receive_buffer[0] == 'F' && receive_buffer[1] < 65 ){
+//			E220_write_register(&LoraTX,REG2,receive_buffer[1]);
+//			E220_write_register(&LoraRX,REG2,receive_buffer[1]);
+//			result = E220_read_register(&LoraTX,REG2);
+//			result = E220_read_register(&LoraRX,REG2);
+//
+//		}
+//
+//		tick += COMMUNICATION_BOARD_TASK_PERIOD;
+//		uxHighWaterMark = uxTaskGetStackHighWaterMark( NULL );
+//		if (uxHighWaterMark)
+//		{
+//			__asm("nop");
+//		}
+//		osDelayUntil(tick);
+//	}
+//  /* USER CODE END CommunicationBoard */
+//}
 
 /* USER CODE BEGIN Header_FlightFSM */
 /**

@@ -1,0 +1,16 @@
+../Core/Src/main.c:1221:6:Startup	1
+../Core/Src/main.c:1721:6:SystemHealthCheck	2
+../Core/Src/main.c:1242:6:FlashWrite	5
+../Core/Src/main.c:1672:6:FlightFSM	2
+../Core/Src/main.c:1752:6:ModelStepCheck	4
+../Core/Src/main.c:460:12:get_flash	1
+../Core/Src/main.c:464:10:get_servo	1
+../Core/Src/main.c:468:10:get_flag_air	1
+../Core/Src/main.c:472:9:readAltitude	1
+../Core/Src/main.c:1320:6:SensorsRead	8
+../Core/Src/main.c:480:6:Set_Flash_Flag	1
+../Core/Src/main.c:484:6:Get_Flash_Flag	1
+../Core/Src/main.c:769:6:SystemClock_Config	3
+../Core/Src/main.c:494:5:main	17
+../Core/Src/main.c:1793:6:HAL_TIM_PeriodElapsedCallback	2
+../Core/Src/main.c:1810:6:Error_Handler	1
